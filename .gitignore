@@ -8,3 +8,4 @@ dist/
 .cache/
 .local/
 .DS_Store
+.vercel
