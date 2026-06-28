@@ -274,6 +274,8 @@ function HeroVfx() {
       spr.scale.setScalar(f.size * (0.7 + k * 0.6));
       spr.material.rotation = f.rot;
       spr.material.opacity = k;
+      if (f.color) spr.material.color.set(f.color);
+      else spr.material.color.set("#ffd27f");
     }
 
     // Fire bolts (travelling trails).

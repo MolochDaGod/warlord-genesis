@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 import { HERO_PRESETS } from "../../game/anim/presets";
 import { useRoster, effectiveWeaponClass } from "../../game/roster";
-import { heroThumb } from "../../game/heroModels";
+import { heroThumb, HERO_GRUDGE_RACE } from "../../game/heroModels";
 import { HeroCarousel, type CarouselHero } from "./HeroCarousel";
 import { Loadout } from "./Loadout";
 import "./characterSelect.css";
@@ -55,6 +55,11 @@ export function CharacterSelect() {
 
       <div className="gw-cs-hero">
         <div className="gw-cs-hero-name">{preset.name}</div>
+        {HERO_GRUDGE_RACE[preset.id] && (
+          <div className="gw-cs-race" title="GRUDGE 6 race affinity">
+            {HERO_GRUDGE_RACE[preset.id].replace(/-/g, " ")}
+          </div>
+        )}
         <div className="gw-cs-hero-weapon">
           {equippedWeapon ? equippedWeapon.name : preset.weaponLabel}
           <span className="gw-cs-hero-class">· {weaponClass}</span>

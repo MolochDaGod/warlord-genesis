@@ -11,6 +11,15 @@ const _to = new THREE.Vector3();
 
 const FACTION_ACCENT: Record<string, string> = { ally: "#e0b252", enemy: "#c0392b" };
 
+/** Muzzle flash tint + size per turret archetype so shots read at a glance. */
+const TURRET_MUZZLE: Partial<Record<StructureEntity["kind"], { color: string; size: number }>> = {
+  cannon: { color: "#ffc080", size: 0.85 },
+  ballista: { color: "#ffe8b0", size: 0.65 },
+  mage: { color: "#c9a3ff", size: 0.75 },
+  tower: { color: "#ffb070", size: 0.7 },
+  core: { color: "#ff7b3a", size: 1.1 },
+};
+
 function StructureMesh({ kind, faction }: { kind: StructureEntity["kind"]; faction: string }) {
   const accent = FACTION_ACCENT[faction];
   const mats = useMemo(() => {
@@ -184,11 +193,15 @@ export function Structures() {
         s.yaw = Math.atan2(aimX - s.pos.x, aimZ - s.pos.z);
         if (s.fireTimer <= 0) {
           s.fireTimer = s.fireRate;
-          s.muzzleFlash = 0.08;
+          s.muzzleFlash = 0.12;
           _from.copy(s.pos).setY(
             s.kind === "core" ? 4.4 : s.kind === "tower" ? 4 : s.kind === "mage" ? 3.2 : 1.3,
           );
           _to.set(aimX, fireHero ? 1.2 : target ? 1 : 1, aimZ);
+          const muzzle = TURRET_MUZZLE[s.kind];
+          EM.addMuzzleFlash(_from, muzzle);
+          if (s.kind === "mage") EM.addEmber(_from.clone(), "#c9a3ff");
+          else if (s.kind === "cannon" || s.kind === "core") EM.addEmber(_from.clone(), "#ffc080");
           const shell = STRUCT_PROJECTILE[s.kind];
           // Army-wide buffs (relic + ally tech) scale a structure's outgoing dmg.
           const dmg = s.damage * EM.factionDmgMult(s.faction);

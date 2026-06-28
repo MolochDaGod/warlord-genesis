@@ -13,6 +13,15 @@
   font-weight: 700;
 }
 
+.gw-cs-race {
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #e0b252;
+  opacity: 0.85;
+  margin-top: 2px;
+}
+
 /* --------------------------------------------------------------- carousel */
 
 .gw-cs-carousel {

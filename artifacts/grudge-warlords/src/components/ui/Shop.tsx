@@ -69,7 +69,12 @@ export function Shop() {
     <div className="gw-shop">
       <div className="gw-shop-group">
         <span className="gw-shop-title"><img className="gw-title-icon" src={ICONS.fist} alt="" draggable={false} />Warband</span>
-        {SHOP_UNITS.map((item) => (
+        {SHOP_UNITS.map((item) => {
+          const unitGlyph =
+            item.ref === "footman" ? "🗡️" :
+            item.ref === "archer" ? "🏹" :
+            item.ref === "knight" ? "🛡️" : "⚔️";
+          return (
           <button
             key={item.id}
             className="gw-shop-item"
@@ -77,10 +82,11 @@ export function Shop() {
             title={item.description}
             onClick={() => buyUnit(item)}
           >
-            <span className="gw-shop-name">{item.name}</span>
+            <span className="gw-shop-name">{unitGlyph} {item.name}</span>
             <span className={`gw-shop-cost${credits < item.cost ? " gw-cost-cant" : ""}`}>{item.cost}</span>
           </button>
-        ))}
+        );
+        })}
       </div>
 
       <div className="gw-shop-group">

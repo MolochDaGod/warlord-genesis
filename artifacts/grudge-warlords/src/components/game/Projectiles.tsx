@@ -200,9 +200,11 @@ export function Projectiles() {
         const f = p.traveled / p.dist;
         p.pos.y += p.arc * 4 * f * (1 - f);
       }
-      // Motion trail — helps read shell velocity and arc at a glance.
-      if (Math.random() < 0.22) {
-        const tint = PROJECTILES[p.model].tint ?? "#ffd8a8";
+      // Motion trail — heavier splash shells leave a denser ember wake.
+      const def = PROJECTILES[p.model];
+      const trailRate = def.splash ? 0.38 : 0.22;
+      if (Math.random() < trailRate) {
+        const tint = def.tint ?? (def.splash ? "#ffd0a6" : "#d4b890");
         EM.addEmber(p.pos.clone(), tint);
       }
     }

@@ -106,6 +106,8 @@ export interface MuzzleFlash {
   maxLife: number;
   size: number;
   rot: number;
+  /** Optional tint — turret/cannon flashes use warmer or arcane hues. */
+  color?: string;
 }
 
 export interface FireBolt {
@@ -613,14 +615,15 @@ class EntityManager {
     this.sparks.push({ id: this.id(), pos: pos.clone(), life: 0.35, color });
   }
 
-  addMuzzleFlash(pos: THREE.Vector3) {
+  addMuzzleFlash(pos: THREE.Vector3, opts?: { color?: string; size?: number }) {
     this.muzzleFlashes.push({
       id: this.id(),
       pos: pos.clone(),
       life: 0.06,
       maxLife: 0.06,
-      size: 0.55 + Math.random() * 0.2,
+      size: (opts?.size ?? 0.55) + Math.random() * 0.2,
       rot: Math.random() * Math.PI,
+      color: opts?.color,
     });
   }
 
