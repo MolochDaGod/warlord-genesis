@@ -1,0 +1,250 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Mini 2D RTS (HTML + JS)</title>
+  <style>
+    html,body{height:100%;margin:0;font-family:Inter,system-ui,Segoe UI,Arial}
+    #ui{position:fixed;left:8px;top:8px;z-index:10;background:rgba(0,0,0,0.5);color:#fff;padding:8px;border-radius:6px}
+    canvas{display:block;background:#0b1220;cursor:crosshair}
+    .legend{font-size:13px;margin-top:6px}
+    .hint{opacity:0.9;font-size:12px;margin-top:6px}
+  </style>
+</head>
+<body>
+  <div id="ui">
+    <strong>Mini 2D RTS</strong>
+    <div class="legend">Controls: Left-click to select, drag to box-select, Right-click to move or attack</div>
+    <div class="hint">Blue = Player team. Red = Enemy team (AI). Press <code>R</code> to respawn units.</div>
+  </div>
+  <canvas id="c"></canvas>
+
+<script>
+(() => {
+  const canvas = document.getElementById('c');
+  const ctx = canvas.getContext('2d');
+  function resize(){ canvas.width = innerWidth; canvas.height = innerHeight; }
+  addEventListener('resize', resize); resize();
+
+  // Basic helper
+  const dist = (a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const clamp = (v,a,b)=>Math.max(a,Math.min(b,v));
+
+  // Unit definitions
+  const UNIT_TYPES = {
+    archer: {radius:10, speed:0.9, range:220, dmg:14, cooldown:1.1, projectile:true},
+    swordsman: {radius:11, speed:1.0, range:22, dmg:22, cooldown:0.9, projectile:false},
+    spearman: {radius:11, speed:0.95, range:34, dmg:18, cooldown:1.0, projectile:false, bonusAgainst:'cavalry', bonusMult:1.5},
+    cavalry: {radius:12, speed:1.6, range:20, dmg:28, cooldown:1.4, projectile:false}
+  };
+
+  let entities = [];
+  let projectiles = [];
+  let mouse = {x:0,y:0,down:false,button:0};
+  let selectionRect = null; // {x1,y1,x2,y2}
+
+  // Create a unit
+  function spawnUnit(type,team,x,y){
+    const def = UNIT_TYPES[type];
+    const u = {
+      id: Math.random().toString(36).slice(2),
+      type, team, x, y,
+      vx:0, vy:0,
+      radius:def.radius,
+      maxHp: 100 + (type==='cavalry'?40:0),
+      hp: 100 + (type==='cavalry'?40:0),
+      speed:def.speed,
+      range:def.range,
+      dmg:def.dmg,
+      cooldown:def.cooldown,
+      projectile:def.projectile||false,
+      bonusAgainst:def.bonusAgainst||null,
+      bonusMult:def.bonusMult||1,
+      selected:false,
+      target:null, // unit id
+      moveTarget:null, // {x,y}
+      lastAttack:0
+    };
+    entities.push(u);
+    return u;
+  }
+
+  function clearAndSpawn(){ entities = []; projectiles = [];
+    // spawn some player units (team 0 -> blue)
+    for(let i=0;i<6;i++) spawnUnit('swordsman',0,150 + i*28, 120 + (i%2)*20);
+    for(let i=0;i<4;i++) spawnUnit('archer',0,100 + i*28, 180 + (i%2)*24);
+    spawnUnit('cavalry',0,220,80);
+    spawnUnit('spearman',0,180,60);
+    // enemy team (team 1 -> red)
+    for(let i=0;i<5;i++) spawnUnit('swordsman',1, innerWidth-200 + i*26, innerHeight-180 - (i%2)*18);
+    for(let i=0;i<5;i++) spawnUnit('archer',1, innerWidth-240 + i*32, innerHeight-120 - (i%2)*25);
+    spawnUnit('cavalry',1, innerWidth-200, innerHeight-80);
+  }
+  clearAndSpawn();
+
+  // Input
+  canvas.addEventListener('contextmenu', e=>e.preventDefault());
+  canvas.addEventListener('mousemove', e=>{ const r=canvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top; if(mouse.down && selectionRect){ selectionRect.x2=mouse.x; selectionRect.y2=mouse.y; }});
+  canvas.addEventListener('mousedown', e=>{
+    mouse.down=true; mouse.button=e.button; const r=canvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
+    if(e.button===0){ // left - start selection
+      selectionRect = {x1:mouse.x,y1:mouse.y,x2:mouse.x,y2:mouse.y};
+    } else if(e.button===2){ // right - move/attack orders for selected units
+      // find clicked enemy
+      const clicked = entities.find(u=>u.team!==0 && pointInCircle(mouse,u));
+      const selected = entities.filter(u=>u.selected);
+      if(selected.length===0) return;
+      if(clicked){
+        // attack this clicked unit
+        selected.forEach(u=>{ u.target = clicked.id; u.moveTarget = null; });
+      } else {
+        // move to location (spread them a little)
+        selected.forEach((u,i)=>{ u.moveTarget={x:mouse.x + (i%3)*12 - 12, y:mouse.y + Math.floor(i/3)*12 - 12}; u.target=null; });
+      }
+    }
+  });
+  addEventListener('mouseup', e=>{
+    mouse.down=false; const r=canvas.getBoundingClientRect(); mouse.x=e.clientX-r.left; mouse.y=e.clientY-r.top;
+    if(selectionRect){
+      // finalize selection
+      const rect = normalizedRect(selectionRect);
+      const inRect = entities.filter(u=>u.team===0 && pointInRect(u,rect));
+      const lastSelected = entities.some(u=>u.selected);
+      // if click without drag, select single unit under cursor
+      if(Math.abs(rect.x2-rect.x1)<6 && Math.abs(rect.y2-rect.y1)<6){
+        // click
+        let clicked = entities.findLast(u=>u.team===0 && pointInCircle({x:mouse.x,y:mouse.y},u));
+        if(clicked){
+          // set selection to that one
+          entities.forEach(u=>u.selected=false);
+          clicked.selected=true;
+        } else {
+          // clicked empty - clear selection
+          entities.forEach(u=>u.selected=false);
+        }
+      } else {
+        // box select
+        entities.forEach(u=>u.selected = (u.team===0 && pointInRect(u,rect)));
+      }
+      selectionRect=null;
+    }
+  });
+
+  function pointInCircle(p,u){ return Math.hypot(p.x-u.x,p.y-u.y) <= u.radius; }
+  function pointInRect(u,rect){ return u.x>=rect.x1 && u.x<=rect.x2 && u.y>=rect.y1 && u.y<=rect.y2; }
+  function normalizedRect(r){ const x1=Math.min(r.x1,r.x2), x2=Math.max(r.x1,r.x2), y1=Math.min(r.y1,r.y2), y2=Math.max(r.y1,r.y2); return {x1,y1,x2,y2}; }
+
+  // Game loop
+  let lastTime = performance.now();
+  function step(now){
+    const dt = Math.min(0.05, (now-lastTime)/1000); lastTime=now;
+    update(dt);
+    render();
+    requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+
+  // Update logic
+  function update(dt){
+    // projectiles
+    for(let i=projectiles.length-1;i>=0;i--){ const p=projectiles[i]; p.x += p.vx*dt; p.y += p.vy*dt; p.life -= dt; if(p.life<=0){ projectiles.splice(i,1); continue;} // check collision
+      for(let j=entities.length-1;j>=0;j--){ const u=entities[j]; if(u.team===p.team) continue; if(Math.hypot(u.x-p.x,u.y-p.y) < u.radius+2){ u.hp -= p.dmg; projectiles.splice(i,1); break; } }
+    }
+
+    // entities
+    const nowt = performance.now()/1000;
+    for(const u of entities){
+      // dead?
+      if(u.hp<=0) continue;
+      // resolve target id
+      if(u.target){ const t = entities.find(x=>x.id===u.target && x.hp>0); if(!t) u.target=null; }
+
+      // AI for enemy team (1): simple auto-attack nearest enemy
+      if(u.team===1){ // enemy AI
+        if(!u.target){ // find player unit in sight
+          let nearest = null; let dmin=1e9;
+          for(const p of entities){ if(p.team!==u.team && p.hp>0){ const d = (u.x-p.x)**2 + (u.y-p.y)**2; if(d<dmin){ dmin=d; nearest=p; } } }
+          if(nearest) u.target = nearest.id;
+        }
+      }
+
+      // movement: either towards moveTarget or towards target if out of range
+      let moveTo = null;
+      if(u.moveTarget){ moveTo = u.moveTarget; }
+      if(u.target){ const t=entities.find(x=>x.id===u.target); if(t){ const d = Math.hypot(t.x-u.x,t.y-u.y); if(d > u.range - 2) moveTo = {x:t.x,y:t.y}; else moveTo = null; } }
+
+      if(moveTo){ const dx = moveTo.x - u.x, dy = moveTo.y - u.y; const d = Math.hypot(dx,dy); if(d>1){ u.vx = (dx/d)*u.speed; u.vy = (dy/d)*u.speed; u.x += u.vx * dt * 60; u.y += u.vy * dt * 60; } else { u.vx=0; u.vy=0; if(u.moveTarget) u.moveTarget=null; } } else { u.vx=0; u.vy=0; }
+
+      // attack
+      if(u.target){ const t = entities.find(x=>x.id===u.target && x.hp>0); if(t){ const d = Math.hypot(t.x-u.x,t.y-u.y); if(d <= u.range + 2){ // in range -> attack if cooldown
+            if(nowt - u.lastAttack >= u.cooldown){ u.lastAttack = nowt; let damage = u.dmg;
+              // spearman bonus vs cavalry
+              if(u.bonusAgainst && t.type===u.bonusAgainst) damage *= u.bonusMult;
+              if(u.projectile){ // shoot
+                const angle = Math.atan2(t.y-u.y,t.x-u.x);
+                const speed = 420; const pvx=Math.cos(angle)*speed, pvy=Math.sin(angle)*speed;
+                projectiles.push({x:u.x + Math.cos(angle)*u.radius, y:u.y + Math.sin(angle)*u.radius, vx:pvx, vy:pvy, life:3, dmg:damage, team:u.team});
+              } else {
+                // melee hit instantly
+                t.hp -= damage;
+                // cavalry charge: small knockback
+                if(u.type==='cavalry'){ const k = 6; const ang=Math.atan2(t.y-u.y,t.x-u.x); t.x += Math.cos(ang)*k; t.y += Math.sin(ang)*k; }
+              }
+            }
+          }
+        } else {
+          u.target = null;
+        }
+      }
+    }
+
+    // remove dead
+    for(let i=entities.length-1;i>=0;i--){ if(entities[i].hp<=0){ entities.splice(i,1); } }
+  }
+
+  // Render
+  function render(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    // grid
+    drawGrid();
+
+    // projectiles
+    for(const p of projectiles){ ctx.beginPath(); ctx.fillStyle = p.team===0? 'rgba(120,200,255,0.95)':'rgba(255,160,160,0.95)'; ctx.arc(p.x,p.y,3,0,Math.PI*2); ctx.fill(); }
+
+    // units
+    for(const u of entities){
+      // body
+      ctx.beginPath(); ctx.arc(u.x,u.y,u.radius,0,Math.PI*2);
+      ctx.fillStyle = u.team===0? '#3fa9ff' : '#ff6b6b';
+      ctx.fill();
+      // outline when selected or low hp
+      if(u.selected){ ctx.lineWidth=2; ctx.strokeStyle='rgba(255,255,255,0.9)'; ctx.stroke(); }
+      // type marker
+      ctx.fillStyle='rgba(0,0,0,0.25)'; ctx.font='10px sans-serif'; ctx.textAlign='center'; ctx.fillText(u.type[0].toUpperCase(), u.x, u.y+3);
+      // health bar
+      const hw = u.radius*2.4; const hh=4;
+      const hpRatio = clamp(u.hp/u.maxHp,0,1);
+      ctx.fillStyle='rgba(0,0,0,0.6)'; ctx.fillRect(u.x-hw/2, u.y-u.radius-12, hw, hh);
+      ctx.fillStyle = hpRatio>0.6? '#7ee37e' : (hpRatio>0.3? '#ffd166' : '#ff6b6b');
+      ctx.fillRect(u.x-hw/2, u.y-u.radius-12, hw*hpRatio, hh);
+      ctx.strokeStyle='rgba(0,0,0,0.6)'; ctx.strokeRect(u.x-hw/2, u.y-u.radius-12, hw, hh);
+    }
+
+    // selection rectangle
+    if(selectionRect){ const r=normalizedRect(selectionRect); ctx.fillStyle='rgba(100,150,255,0.12)'; ctx.strokeStyle='rgba(150,200,255,0.6)'; ctx.fillRect(r.x1,r.y1,r.x2-r.x1,r.y2-r.y1); ctx.strokeRect(r.x1,r.y1,r.x2-r.x1,r.y2-r.y1); }
+
+    // HUD: selected units info
+    const sel = entities.filter(u=>u.selected);
+    if(sel.length){ ctx.fillStyle='rgba(0,0,0,0.45)'; ctx.fillRect(8, innerHeight-60, 240, 52); ctx.fillStyle='#fff'; ctx.font='12px sans-serif'; ctx.textAlign='left'; ctx.fillText(sel.length + ' unit(s) selected', 16, innerHeight-42); ctx.fillText(sel.map(s=>s.type).join(', '), 16, innerHeight-24); }
+  }
+
+  function drawGrid(){ const size=48; ctx.strokeStyle='rgba(255,255,255,0.03)'; ctx.lineWidth=1; for(let x=0;x<canvas.width;x+=size){ ctx.beginPath(); ctx.moveTo(x,0); ctx.lineTo(x,canvas.height); ctx.stroke(); } for(let y=0;y<canvas.height;y+=size){ ctx.beginPath(); ctx.moveTo(0,y); ctx.lineTo(canvas.width,y); ctx.stroke(); } }
+
+  // keyboard
+  addEventListener('keydown', e=>{ if(e.key==='r' || e.key==='R'){ clearAndSpawn(); } });
+
+})();
+</script>
+</body>
+</html>

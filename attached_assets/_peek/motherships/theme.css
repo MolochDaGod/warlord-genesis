@@ -1,0 +1,32 @@
+.gk-root[data-gk-theme="fantasy"] {
+  --gk-font: "Cinzel Decorative", "Cinzel", Georgia, serif;
+  --gk-font-body: "EB Garamond", Georgia, serif;
+  --gk-font-scale: 1;
+  --gk-radius: 10px;
+  --gk-bg: #070910;
+  --gk-surface: #11141f;
+  --gk-surface-2: #191e2e;
+  --gk-ink: #f3dcc4;
+  --gk-ink-dim: #ec9109;
+  --gk-accent: #c0d0ff;
+  --gk-accent-2: #ff4fa3;
+  --gk-good: #ffb02e;
+  --gk-warn: #c98a1a;
+  --gk-danger: #a8341f;
+  --gk-mana: #3f6fb0;
+  --gk-xp: #ffb02e;
+  --gk-slot-size: 58px;
+  --gk-glow: 0 0 0 1px rgba(192,208,255,0.18), 0 0 16px rgba(255,79,163,0.18);
+  --gk-pixelated: auto;
+  --gk-btn-bg: linear-gradient(180deg,#caa14e,#a9802f);
+  --gk-btn-border: rgba(255,176,46,0.5);
+  --gk-fr-window-border: 2px solid color-mix(in srgb, var(--gk-accent) 80%, #fff);
+  --gk-fr-window-bg: linear-gradient(180deg, rgba(255,240,200,0.25), rgba(0,0,0,0.05)), var(--gk-surface);
+  --gk-fr-window-shadow: 0 0 24px color-mix(in srgb, var(--gk-accent) 35%, transparent), inset 0 0 0 1px rgba(120,80,20,0.3);
+  --gk-fr-slot-border: 1px solid var(--gk-accent);
+  --gk-fr-slot-bg: var(--gk-surface-2);
+  --gk-fr-slot-shadow: 0 0 0 2px color-mix(in srgb, var(--gk-accent) 30%, transparent), inset 0 2px 6px rgba(0,0,0,0.45);
+  --gk-fr-slot-radius: 12px;
+  --gk-fr-window-radius: 18px;
+  --gk-font-scale: 1.25;
+}

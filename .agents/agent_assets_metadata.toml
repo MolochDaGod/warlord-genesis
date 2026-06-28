@@ -1,0 +1,8 @@
+uploads = []
+generated = []
+
+[[outputs]]
+id = "HkE5DqOdTqsDf6Pu_WB4c"
+uri = "file://attached_assets/tpose/grudge-tpose-models.tar.gz"
+type = "unspecified"
+title = "Grudge Warlords - 6 T-pose character models (GLB, no weapons)"

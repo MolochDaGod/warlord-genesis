@@ -1,0 +1,31 @@
+kind = "web"
+previewPath = "/"
+title = "Grudge Warlords"
+version = "1.0.0"
+id = "artifacts/grudge-warlords"
+router = "path"
+
+[[integratedSkills]]
+name = "react-vite"
+version = "1.0.0"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19276
+
+[services.development]
+run = "pnpm --filter @workspace/grudge-warlords run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/grudge-warlords", "run", "build" ]
+publicDir = "artifacts/grudge-warlords/dist/public"
+serve = "static"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19276"
+BASE_PATH = "/"

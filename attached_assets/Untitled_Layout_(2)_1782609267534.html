@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<title>Untitled Layout — HYDRA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:#000;overflow:hidden;width:1920px;height:1080px;font-family:'Inter',sans-serif;}
+:root{--ca:#fff;--ct:#fff;--cb:rgba(255,255,255,.06);--slot:rgba(255,255,255,.06);--sb:rgba(255,255,255,.15)}
+.gtitle{font-size:.57rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ca);padding:4px 6px 3px;border-bottom:1px solid var(--sb);}
+.sgrid{display:grid;gap:3px;padding:5px;}.gslot{background:var(--slot);border:1px solid var(--sb);border-radius:3px;}
+.hbrow{display:flex;gap:3px;padding:5px;align-items:center;justify-content:center;height:100%;}.hbsl{background:var(--slot);border:1px solid var(--sb);border-radius:3px;display:flex;align-items:flex-end;justify-content:flex-end;padding:2px;flex-shrink:0;}.hbnum{font-size:.46rem;color:var(--ca);}
+.hb2wrap{display:flex;flex-direction:column;gap:3px;padding:4px;height:100%;justify-content:center;}
+.bwrap{padding:5px 7px;display:flex;flex-direction:column;gap:3px;height:100%;justify-content:center;}.brow{display:flex;justify-content:space-between;}.blbl{font-size:.57rem;font-weight:700;color:var(--ca);}.bval{font-size:.55rem;color:var(--ct);}.btrack{background:rgba(0,0,0,.5);border:1px solid var(--sb);border-radius:20px;overflow:hidden;height:8px;}.bfill{height:100%;border-radius:20px;}.xpfill{background:linear-gradient(90deg,#f59e0b,#fcd34d)!important;}
+.mmwrap{width:100%;height:100%;position:relative;overflow:hidden;}.mmbg{position:absolute;inset:0;background:radial-gradient(circle,rgba(30,60,40,.6),rgba(5,15,10,.9));}.mmgrid{position:absolute;inset:0;background-image:linear-gradient(rgba(74,222,128,.07) 1px,transparent 1px),linear-gradient(90deg,rgba(74,222,128,.07) 1px,transparent 1px);background-size:18px 18px;}.mmdot{width:5px;height:5px;border-radius:50%;background:#4ade80;position:absolute;top:45%;left:50%;transform:translate(-50%,-50%);box-shadow:0 0 4px #4ade80;z-index:2;}.mmbd{position:absolute;inset:0;border-radius:inherit;border:1px solid var(--sb);}
+.pwrap{display:flex;flex-direction:column;align-items:center;padding:5px;gap:3px;height:100%;justify-content:center;}.pface{flex:1;width:100%;background:var(--slot);border:1px solid var(--sb);border-radius:3px;display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:var(--ca);min-height:0;}.pname{font-size:.57rem;font-weight:700;color:var(--ct);}.plvl{font-size:.53rem;color:var(--ca);}
+.cwrap{display:flex;align-items:center;gap:5px;padding:3px 7px;height:100%;}.camt{font-size:.76rem;font-weight:700;color:var(--ca);}.clbl{font-size:.53rem;color:var(--ct);}
+.chatwrap{display:flex;flex-direction:column;height:100%;}.chatmsgs{flex:1;padding:3px 5px;display:flex;flex-direction:column;gap:2px;overflow:hidden;justify-content:flex-end;}.chatmsg{font-size:.51rem;line-height:1.4;}.chatu{color:var(--ca);font-weight:600;}.chatt{color:var(--ct);}.chatinp{display:flex;gap:3px;padding:3px 5px;border-top:1px solid var(--sb);}.chatfake{flex:1;height:15px;background:var(--slot);border:1px solid var(--sb);border-radius:3px;}
+.eqgrid{display:grid;grid-template-columns:1fr 1fr 1fr;grid-template-rows:repeat(4,1fr);gap:3px;padding:5px;height:100%;}.eqsl{background:var(--slot);border:1px solid var(--sb);border-radius:3px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;}.eqsl i{font-size:.58rem;color:var(--ca);}.eqn{font-size:.38rem;color:rgba(255,255,255,.4);}
+.stwrap{position:relative;width:100%;height:100%;overflow:hidden;}.stnode{position:absolute;width:28px;height:28px;border-radius:50%;background:var(--slot);border:2px solid var(--sb);display:flex;align-items:center;justify-content:center;}.stnode.on{background:var(--cb);border-color:var(--ca);}.stnode i{font-size:.55rem;color:var(--ca);}.stedge{position:absolute;background:var(--sb);transform-origin:left center;}
+.shwrap{display:flex;flex-direction:column;height:100%;}.shitems{flex:1;padding:3px 5px;display:flex;flex-direction:column;gap:2px;overflow:hidden;}.shitem{display:flex;align-items:center;gap:4px;padding:3px 4px;border-radius:3px;background:var(--slot);border:1px solid var(--sb);}.shico{width:17px;height:17px;border-radius:3px;background:var(--cb);display:flex;align-items:center;justify-content:center;font-size:.56rem;}.shnm{flex:1;font-size:.54rem;color:var(--ct);}.shpr{font-size:.54rem;font-weight:700;color:var(--ca);}.shbuy{margin:3px 5px 4px;padding:3px;border-radius:4px;text-align:center;background:var(--cb);border:1px solid var(--sb);font-size:.54rem;font-weight:700;color:var(--ca);}
+.xhwrap{display:flex;align-items:center;justify-content:center;height:100%;color:var(--ca,rgba(255,255,255,.9));position:relative;}.xhwrap::before,.xhwrap::after{content:'';position:absolute;background:currentColor;border-radius:1px;}.xhwrap::before{width:11px;height:1.5px;}.xhwrap::after{width:1.5px;height:11px;}.xhdot{width:3px;height:3px;border-radius:50%;border:1px solid currentColor;position:absolute;}
+.txwrap{display:flex;align-items:center;height:100%;padding:0 5px;}.txin{color:var(--ct,#fff);font-weight:600;}
+.ufwrap{display:flex;align-items:center;gap:6px;padding:4px 6px;height:100%;}.ufface{width:40px;height:40px;border-radius:4px;background:var(--slot);border:2px solid var(--ca);display:flex;align-items:center;justify-content:center;font-size:1rem;color:var(--ca);flex-shrink:0;}.ufinfo{flex:1;display:flex;flex-direction:column;gap:2px;}.ufname{font-size:.6rem;font-weight:700;color:#e0e2f0;}.uflvl{font-size:.52rem;color:var(--ca);font-weight:400;}.ufbar{height:7px;background:rgba(0,0,0,.5);border-radius:4px;overflow:hidden;}.ufhp{height:100%;background:linear-gradient(90deg,#e11d48,#f87171);border-radius:4px;}.ufbarlbl{font-size:.46rem;color:#52546e;}.ufmpbar{margin-top:1px;}.ufmp{height:100%;background:linear-gradient(90deg,#2563eb,#60a5fa);border-radius:4px;}
+.afwrap{display:flex;align-items:center;gap:4px;padding:3px 5px;height:100%;}.afface{width:26px;height:26px;border-radius:3px;background:rgba(255,255,255,.06);border:1px solid rgba(74,222,128,.3);display:flex;align-items:center;justify-content:center;font-size:.66rem;color:#4ade80;flex-shrink:0;}.afinfo{flex:1;display:flex;flex-direction:column;gap:2px;}.afname{font-size:.54rem;font-weight:600;}.afbar{height:5px;background:rgba(0,0,0,.5);border-radius:3px;overflow:hidden;}.afhp{height:100%;background:#22c55e;border-radius:3px;}
+.orbwrap{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;}.orbval{position:absolute;font-size:.62rem;font-weight:700;}.orblbl{position:absolute;bottom:8%;font-size:.47rem;letter-spacing:.1em;text-transform:uppercase;color:rgba(255,255,255,.4);}
+.mdwrap{display:flex;align-items:center;gap:3px;padding:3px;height:100%;justify-content:center;}.mdbtn{display:flex;flex-direction:column;align-items:center;gap:2px;padding:3px 8px;border-radius:5px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);font-size:.46rem;color:rgba(255,255,255,.5);flex:1;}.mdbtn i{font-size:.72rem;color:var(--ca);}
+.clwrap{display:flex;flex-direction:column;height:100%;}.clmsgs{flex:1;padding:3px 5px;display:flex;flex-direction:column;gap:2px;overflow:hidden;justify-content:flex-end;}.clm{font-size:.52rem;line-height:1.4;}.clm.dmg{color:#f87171;}.clm.heal{color:#4ade80;}.clm.sys{color:#9496b0;font-style:italic;}.clt{font-weight:700;}.cldmg{font-weight:700;color:#fca5a5;}.clheal{font-weight:700;}
+.objwrap{height:100%;display:flex;flex-direction:column;}.objlist{padding:3px 6px;display:flex;flex-direction:column;gap:3px;flex:1;}.objitem{font-size:.6rem;color:#9496b0;display:flex;align-items:center;gap:5px;}.objitem.done{color:#52546e;text-decoration:line-through;}.objitem i{font-size:.5rem;color:var(--ca);flex-shrink:0;}.objprog{color:var(--ca);font-weight:600;}
+.dlgwrap{display:flex;flex-direction:column;height:100%;padding:8px 12px;gap:5px;}.dlgspk{font-size:.65rem;font-weight:700;color:var(--ca);letter-spacing:.05em;text-transform:uppercase;}.dlgtxt{flex:1;font-size:.68rem;line-height:1.6;}.dlgbtns{display:flex;gap:5px;}.dlgbtn{padding:4px 12px;border-radius:5px;border:1px solid rgba(255,255,255,.12);background:rgba(255,255,255,.04);font-size:.6rem;font-weight:600;}
+.qtwrap{height:100%;display:flex;flex-direction:column;}.qtitle{padding:3px 6px;font-size:.65rem;font-weight:700;color:var(--ca);}.qtobj{padding:0 6px;font-size:.6rem;color:#9496b0;line-height:1.5;}
+.albwrap{display:flex;align-items:center;justify-content:center;gap:8px;height:100%;padding:0 14px;border:1px solid;border-radius:inherit;}.albtxt{font-size:.75rem;font-weight:700;letter-spacing:.08em;}
+.ipwrap{display:flex;align-items:center;gap:8px;height:100%;padding:0 12px;}.ipkey{width:28px;height:28px;border-radius:5px;border:2px solid rgba(255,255,255,.35);background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:.72rem;font-weight:700;color:#fff;flex-shrink:0;}.ipact{font-size:.7rem;font-weight:600;}
+.attrlist{padding:2px 4px;display:flex;flex-direction:column;gap:1px;height:100%;justify-content:space-around;overflow:hidden;}.attrow{display:flex;align-items:center;gap:5px;padding:2px 4px;border-radius:4px;background:rgba(255,255,255,.02);}.attic{font-size:.66rem;width:16px;text-align:center;}.attn{flex:1;font-size:.58rem;font-weight:600;color:#9496b0;letter-spacing:.06em;}.attv{font-size:.62rem;font-weight:700;color:var(--ca);}
+.wswrap{display:flex;align-items:center;gap:3px;padding:3px 5px;height:100%;}.wsbtn{padding:3px 8px;border-radius:5px;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.03);font-size:.54rem;color:#9496b0;white-space:nowrap;}.wsbtn.on{background:rgba(74,222,128,.1);border-color:rgba(74,222,128,.3);color:var(--ca);}
+.cpixwrap{width:100%;height:100%;display:flex;align-items:center;justify-content:center;}.cpixwrap img{width:100%;height:100%;object-fit:contain;display:block;}
+</style>
+</head>
+<body>
+<div id="ui" style="position:relative;width:1920px;height:1080px">
+<div style="position:absolute;left:1456px;top:0px;width:224px;height:224px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="mmwrap" style=""><div class="mmbg" style=""></div><div class="mmgrid"></div><div class="mmdot"></div><div class="mmbd" style=""></div></div></div></div>
+<div style="position:absolute;left:800px;top:832px;width:174px;height:20px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="bwrap"><div class="brow"><span class="blbl">HP</span><span class="bval">75/100</span></div>
+        <div class="btrack"><div class="bfill" style="width:75%;background:#22c55e"></div></div></div></div></div>
+<div style="position:absolute;left:1008px;top:832px;width:174px;height:20px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="bwrap"><div class="brow"><span class="blbl">MP</span><span class="bval">50/100</span></div>
+        <div class="btrack"><div class="bfill" style="width:50%;background:#3b82f6"></div></div></div></div></div>
+<div style="position:absolute;left:720px;top:736px;width:112px;height:96px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="pwrap"><div class="pface"><i class="fa fa-user"></i></div><div class="pname">Grudge</div><div class="plvl">Lv 8</div></div></div></div>
+<div style="position:absolute;left:352px;top:784px;width:280px;height:170px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="gtitle">Chat</div><div class="chatwrap"><div class="chatmsgs">
+        <div class="chatmsg"><span class="chatu">HYDRA: </span><span class="chatt">Welcome!</span></div>
+        <div class="chatmsg"><span class="chatu">Player: </span><span class="chatt">GG</span></div>
+      </div><div class="chatinp"><div class="chatfake"></div></div></div></div></div>
+<div style="position:absolute;left:832px;top:768px;width:304px;height:48px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="wswrap"><div class="wsbtn on">⚔️ Sword</div><div class="wsbtn ">🗡️ Dagger</div><div class="wsbtn ">🏹 Bow</div><div class="wsbtn ">🔮 Staff</div><div class="wsbtn ">🛡️ Shield</div></div></div></div>
+<div style="position:absolute;left:864px;top:960px;width:280px;height:13px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="bwrap"><div class="brow"><span class="blbl">XP</span><span class="bval">45/100</span></div>
+        <div class="btrack"><div class="bfill xpfill" style="width:45%;background:#f59e0b"></div></div></div></div></div>
+<div style="position:absolute;left:256px;top:288px;width:220px;height:56px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="ufwrap"><div class="ufface"><i class="fa fa-user"></i></div><div class="ufinfo"><div class="ufname">Warrior <span class="uflvl">Lv24</span></div><div class="ufbar"><div class="ufhp" style="width:100%"></div></div><div class="ufbarlbl">19800/19800</div><div class="ufbar ufmpbar"><div class="ufmp" style="width:78%"></div></div></div></div></div></div>
+<div style="position:absolute;left:1296px;top:272px;width:224px;height:64px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="ufwrap tfwrap"><div class="ufinfo" style="flex-direction:column-reverse"><div class="ufbar"><div class="ufhp" style="width:70.2127659574468%;background:#f43f5e"></div></div><div class="ufbarlbl">6600/9400</div><div class="ufname">Mage Priest <span class="uflvl" style="color:#f43f5e">Lv11</span></div></div><div class="ufface" style="order:-1;border-color:#f43f5e"><i class="fa fa-user" style="color:#f43f5e"></i></div></div></div></div>
+<div style="position:absolute;left:672px;top:832px;width:128px;height:112px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="orbwrap"><svg viewBox="0 0 80 80" width="100%" height="100%"><circle cx="40" cy="40" r="34" fill="rgba(0,0,0,.6)" stroke="#e11d4844" stroke-width="2"/><circle cx="40" cy="40" r="34" fill="none" stroke="#e11d48" stroke-width="3" stroke-dasharray="170.6356049797296 999" stroke-linecap="round" transform="rotate(-90 40 40)"/></svg><div class="orbval" style="color:#e11d48">75%</div><div class="orblbl">HP</div></div></div></div>
+<div style="position:absolute;left:1184px;top:832px;width:112px;height:112px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="orbwrap"><svg viewBox="0 0 80 80" width="100%" height="100%"><circle cx="40" cy="40" r="34" fill="rgba(0,0,0,.6)" stroke="#3b82f644" stroke-width="2"/><circle cx="40" cy="40" r="34" fill="none" stroke="#3b82f6" stroke-width="3" stroke-dasharray="136.5084839837837 999" stroke-linecap="round" transform="rotate(-90 40 40)"/></svg><div class="orbval" style="color:#3b82f6">60%</div><div class="orblbl">MP</div></div></div></div>
+<div style="position:absolute;left:1136px;top:752px;width:80px;height:80px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="orbwrap"><svg viewBox="0 0 80 80" width="100%" height="100%"><circle cx="40" cy="40" r="34" fill="rgba(0,0,0,.6)" stroke="#f59e0b44" stroke-width="2"/><circle cx="40" cy="40" r="34" fill="none" stroke="#f59e0b" stroke-width="3" stroke-dasharray="204.76272597567552 999" stroke-linecap="round" transform="rotate(-90 40 40)"/></svg><div class="orbval" style="color:#f59e0b">90%</div><div class="orblbl">AP</div></div></div></div>
+<div style="position:absolute;left:800px;top:832px;width:384px;height:130px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="hb2wrap"><div class="hbrow"><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">1</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">2</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">3</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">4</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">5</span></div></div><div class="hbrow"><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">6</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">7</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">8</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">9</span></div><div class="hbsl" style="width:52px;height:52px"><span class="hbnum">10</span></div></div></div></div></div>
+<div style="position:absolute;left:896px;top:736px;width:200px;height:48px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="ipwrap"><div class="ipkey">E</div><span class="ipact">Open Chest</span></div></div></div>
+<div style="position:absolute;left:1456px;top:400px;width:220px;height:100px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="objwrap"><div class="gtitle">Objectives</div><div class="objlist"><div class="objitem done"><i class="fa fa-check"></i>Talk to the Elder</div><div class="objitem"><i class="fa fa-circle"></i>Collect 5 Shadow Seeds <span class="objprog">(2/5)</span></div><div class="objitem"><i class="fa fa-circle"></i>Return to base</div></div></div></div></div>
+<div style="position:absolute;left:1008px;top:480px;width:40px;height:40px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="xhwrap"><div class="xhdot"></div></div></div></div>
+<div style="position:absolute;left:608px;top:80px;width:600px;height:52px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="albwrap" style="border-color:#f43f5e44;background:#f43f5e18"><i class="fa fa-triangle-exclamation" style="color:#f43f5e"></i><span class="albtxt" style="color:#f43f5e">ENEMY DETECTED IN SECTOR 4</span></div></div></div>
+<div style="position:absolute;left:1392px;top:704px;width:288px;height:256px;transform:rotate(0deg);opacity:1;filter:"><div style="width:100%;height:100%;overflow:hidden;border-radius:0px;background:rgba(0,0,0,.75);border:1px solid rgba(255,255,255,.18)"><div class="gtitle">Skills</div><div class="stwrap"><div class="stedge" style="left:50%;top:26%;width:34%;height:1px;transform:rotate(151.92751306414706deg)"></div><div class="stedge" style="left:50%;top:26%;width:34%;height:1px;transform:rotate(28.072486935852954deg)"></div><div class="stedge" style="left:20%;top:58%;width:20.518284528683193%;height:1px;transform:rotate(136.97493401088198deg)"></div><div class="stedge" style="left:50%;top:26%;width:46%;height:1px;transform:rotate(90deg)"></div><div class="stedge" style="left:80%;top:58%;width:17.204650534085253%;height:1px;transform:rotate(54.46232220802562deg)"></div><div class="stnode on" style="left:calc(50% - 14px);top:calc(10% - 14px)"><i class="fa fa-bolt"></i></div><div class="stnode " style="left:calc(20% - 14px);top:calc(42% - 14px)"><i class="fa fa-fire"></i></div><div class="stnode " style="left:calc(80% - 14px);top:calc(42% - 14px)"><i class="fa fa-shield"></i></div><div class="stnode " style="left:calc(5% - 14px);top:calc(72% - 14px)"><i class="fa fa-wand-sparkles"></i></div><div class="stnode on" style="left:calc(50% - 14px);top:calc(72% - 14px)"><i class="fa fa-star"></i></div><div class="stnode " style="left:calc(90% - 14px);top:calc(72% - 14px)"><i class="fa fa-sword"></i></div></div></div></div>
+</div>
+
+
+<!--
+  ╔══════════════════════════════════════════════════╗
+  ║  HYDRA AI HANDOFF — Machine-readable layout data ║
+  ╚══════════════════════════════════════════════════╝
+  To modify with AI: paste this block into Claude/GPT.
+  Re-import via HYDRA Studio → Deploy → Load Scene JSON.
+  {
+    "tool": "HYDRA Game UI Studio",
+    "version": "2.0",
+    "exported": "2026-06-28T01:12:54.371Z",
+    "scene": {
+      "name": "Untitled Layout",
+      "resolution": {
+        "w": 1920,
+        "h": 1080
+      },
+      "theme": "q",
+      "themeName": "FPS",
+      "mode": "hud",
+      "componentCount": 18
+    },
+    "components": [
+      {
+        "id": "c7zzy4n",
+        "type": "minimap",
+        "label": "Minimap",
+        "x": 1456,
+        "y": 0,
+        "w": 224,
+        "h": 224,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "shape": "square",
+          "label": ""
+        }
+      },
+      {
+        "id": "c8pstan",
+        "type": "healthbar",
+        "label": "Health Bar",
+        "x": 800,
+        "y": 832,
+        "w": 174,
+        "h": 20,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 75,
+          "max": 100,
+          "label": "HP",
+          "color": "#22c55e"
+        }
+      },
+      {
+        "id": "c8b7u33",
+        "type": "manabar",
+        "label": "Mana Bar",
+        "x": 1008,
+        "y": 832,
+        "w": 174,
+        "h": 20,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 50,
+          "max": 100,
+          "label": "MP",
+          "color": "#3b82f6"
+        }
+      },
+      {
+        "id": "c5utkqz",
+        "type": "portrait",
+        "label": "Portrait",
+        "x": 720,
+        "y": 736,
+        "w": 112,
+        "h": 96,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "name": "Grudge",
+          "level": 8
+        }
+      },
+      {
+        "id": "c8g54xl",
+        "type": "chat-window",
+        "label": "Chat",
+        "x": 352,
+        "y": 784,
+        "w": 280,
+        "h": 170,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "label": "Chat"
+        }
+      },
+      {
+        "id": "cn5zi7t",
+        "type": "weapon-selector",
+        "label": "Weapon Select",
+        "x": 832,
+        "y": 768,
+        "w": 304,
+        "h": 48,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "label": ""
+        }
+      },
+      {
+        "id": "cjk3hnz",
+        "type": "xp-bar",
+        "label": "XP Bar",
+        "x": 864,
+        "y": 960,
+        "w": 280,
+        "h": 13,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 45,
+          "max": 100,
+          "label": "XP",
+          "color": "#f59e0b"
+        }
+      },
+      {
+        "id": "c0as9c4",
+        "type": "player-frame",
+        "label": "Player Frame",
+        "x": 256,
+        "y": 288,
+        "w": 220,
+        "h": 56,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "name": "Warrior",
+          "level": 24,
+          "hp": 19800,
+          "hpMax": 19800,
+          "mp": 468,
+          "mpMax": 600
+        }
+      },
+      {
+        "id": "c98prdp",
+        "type": "target-frame",
+        "label": "Target Frame",
+        "x": 1296,
+        "y": 272,
+        "w": 224,
+        "h": 64,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "name": "Mage Priest",
+          "level": 11,
+          "hp": 6600,
+          "hpMax": 9400,
+          "hostile": true
+        }
+      },
+      {
+        "id": "cvhyzfl",
+        "type": "health-orb",
+        "label": "Health Orb",
+        "x": 672,
+        "y": 832,
+        "w": 128,
+        "h": 112,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 75,
+          "max": 100,
+          "color": "#e11d48",
+          "label": "HP"
+        }
+      },
+      {
+        "id": "cadwvq4",
+        "type": "mana-orb",
+        "label": "Mana Orb",
+        "x": 1184,
+        "y": 832,
+        "w": 112,
+        "h": 112,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 60,
+          "max": 100,
+          "color": "#3b82f6",
+          "label": "MP"
+        }
+      },
+      {
+        "id": "ca1wsz6",
+        "type": "action-orb",
+        "label": "Action Orb",
+        "x": 1136,
+        "y": 752,
+        "w": 80,
+        "h": 80,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "value": 90,
+          "max": 100,
+          "color": "#f59e0b",
+          "label": "AP"
+        }
+      },
+      {
+        "id": "ctpg7kf",
+        "type": "hotbar-2row",
+        "label": "Hotbar 2-Row",
+        "x": 800,
+        "y": 832,
+        "w": 384,
+        "h": 130,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "slots": 10,
+          "slotSize": 52
+        }
+      },
+      {
+        "id": "cpzlbf0",
+        "type": "interaction-prompt",
+        "label": "Interaction Prompt",
+        "x": 896,
+        "y": 736,
+        "w": 200,
+        "h": 48,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "key": "E",
+          "action": "Open Chest",
+          "label": ""
+        }
+      },
+      {
+        "id": "c710t3p",
+        "type": "objectives",
+        "label": "Objectives",
+        "x": 1456,
+        "y": 400,
+        "w": 220,
+        "h": 100,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "label": "Objectives"
+        }
+      },
+      {
+        "id": "cxyj3ba",
+        "type": "crosshair",
+        "label": "Crosshair",
+        "x": 1008,
+        "y": 480,
+        "w": 40,
+        "h": 40,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {}
+      },
+      {
+        "id": "c17npjb",
+        "type": "alert-banner",
+        "label": "Alert Banner",
+        "x": 608,
+        "y": 80,
+        "w": 600,
+        "h": 52,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "text": "ENEMY DETECTED IN SECTOR 4",
+          "type": "danger"
+        }
+      },
+      {
+        "id": "cmketts",
+        "type": "skill-tree",
+        "label": "Skill Tree",
+        "x": 1392,
+        "y": 704,
+        "w": 288,
+        "h": 256,
+        "rot": 0,
+        "opacity": 1,
+        "borderRadius": 0,
+        "shadow": false,
+        "props": {
+          "label": "Skills"
+        }
+      }
+    ],
+    "ai_instructions": "This is a game UI layout exported from HYDRA Game UI Studio. To modify it with AI: import the scene_json below into the studio via Load, then use the AI tab to describe changes. Component types and positions are listed above. All coordinates use a top-left origin at 0,0.",
+    "schema_reference": {
+      "inventory-grid": "props{cols,rows,slotSize,gap,label}",
+      "equipment-slots": "props{label}",
+      "hotbar": "props{slots,slotSize,label}",
+      "hotbar-2row": "props{slots,slotSize}",
+      "healthbar/manabar/xp-bar": "props{value,max,label,color}",
+      "minimap": "props{shape:\"circle\"|\"square\"}",
+      "portrait": "props{name,level}",
+      "player-frame": "props{name,level,hp,hpMax,mp,mpMax}",
+      "target-frame": "props{name,level,hp,hpMax,hostile:bool}",
+      "ally-frame": "props{name,level,hp,hpMax}",
+      "health-orb/mana-orb/action-orb": "props{value,max,color,label}",
+      "menu-dock": "props{buttons:\"comma,separated,names\"}",
+      "combat-log": "props{label}",
+      "objectives": "props{label}",
+      "dialogue-box": "props{speaker,text}",
+      "quest-tracker": "props{title,objective,label}",
+      "alert-banner": "props{text,type:\"danger\"|\"warning\"|\"info\"|\"success\"}",
+      "interaction-prompt": "props{key,action}",
+      "attr-panel": "props{label}",
+      "weapon-selector": "props{label}",
+      "currency-display": "props{amount,label}",
+      "chat-window": "props{label}",
+      "skill-tree": "props{label}",
+      "shop-panel": "props{label}",
+      "crosshair": "props{}",
+      "text-label": "props{text,size,align:\"left\"|\"center\"|\"right\"}"
+    },
+    "scene_json": {
+      "name": "Untitled Layout",
+      "resolution": {
+        "w": 1920,
+        "h": 1080
+      },
+      "theme": "q",
+      "comps": [
+        {
+          "id": "c7zzy4n",
+          "type": "minimap",
+          "x": 1456,
+          "y": 0,
+          "w": 224,
+          "h": 224,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "shape": "square",
+            "label": ""
+          }
+        },
+        {
+          "id": "c8pstan",
+          "type": "healthbar",
+          "x": 800,
+          "y": 832,
+          "w": 174,
+          "h": 20,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 75,
+            "max": 100,
+            "label": "HP",
+            "color": "#22c55e"
+          }
+        },
+        {
+          "id": "c8b7u33",
+          "type": "manabar",
+          "x": 1008,
+          "y": 832,
+          "w": 174,
+          "h": 20,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 50,
+            "max": 100,
+            "label": "MP",
+            "color": "#3b82f6"
+          }
+        },
+        {
+          "id": "c5utkqz",
+          "type": "portrait",
+          "x": 720,
+          "y": 736,
+          "w": 112,
+          "h": 96,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "name": "Grudge",
+            "level": 8
+          }
+        },
+        {
+          "id": "c8g54xl",
+          "type": "chat-window",
+          "x": 352,
+          "y": 784,
+          "w": 280,
+          "h": 170,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "label": "Chat"
+          }
+        },
+        {
+          "id": "cn5zi7t",
+          "type": "weapon-selector",
+          "x": 832,
+          "y": 768,
+          "w": 304,
+          "h": 48,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "label": ""
+          }
+        },
+        {
+          "id": "cjk3hnz",
+          "type": "xp-bar",
+          "x": 864,
+          "y": 960,
+          "w": 280,
+          "h": 13,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 45,
+            "max": 100,
+            "label": "XP",
+            "color": "#f59e0b"
+          }
+        },
+        {
+          "id": "c0as9c4",
+          "type": "player-frame",
+          "x": 256,
+          "y": 288,
+          "w": 220,
+          "h": 56,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "name": "Warrior",
+            "level": 24,
+            "hp": 19800,
+            "hpMax": 19800,
+            "mp": 468,
+            "mpMax": 600
+          }
+        },
+        {
+          "id": "c98prdp",
+          "type": "target-frame",
+          "x": 1296,
+          "y": 272,
+          "w": 224,
+          "h": 64,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "name": "Mage Priest",
+            "level": 11,
+            "hp": 6600,
+            "hpMax": 9400,
+            "hostile": true
+          }
+        },
+        {
+          "id": "cvhyzfl",
+          "type": "health-orb",
+          "x": 672,
+          "y": 832,
+          "w": 128,
+          "h": 112,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 75,
+            "max": 100,
+            "color": "#e11d48",
+            "label": "HP"
+          }
+        },
+        {
+          "id": "cadwvq4",
+          "type": "mana-orb",
+          "x": 1184,
+          "y": 832,
+          "w": 112,
+          "h": 112,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 60,
+            "max": 100,
+            "color": "#3b82f6",
+            "label": "MP"
+          }
+        },
+        {
+          "id": "ca1wsz6",
+          "type": "action-orb",
+          "x": 1136,
+          "y": 752,
+          "w": 80,
+          "h": 80,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "value": 90,
+            "max": 100,
+            "color": "#f59e0b",
+            "label": "AP"
+          }
+        },
+        {
+          "id": "ctpg7kf",
+          "type": "hotbar-2row",
+          "x": 800,
+          "y": 832,
+          "w": 384,
+          "h": 130,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "slots": 10,
+            "slotSize": 52
+          }
+        },
+        {
+          "id": "cpzlbf0",
+          "type": "interaction-prompt",
+          "x": 896,
+          "y": 736,
+          "w": 200,
+          "h": 48,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "key": "E",
+            "action": "Open Chest",
+            "label": ""
+          }
+        },
+        {
+          "id": "c710t3p",
+          "type": "objectives",
+          "x": 1456,
+          "y": 400,
+          "w": 220,
+          "h": 100,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "label": "Objectives"
+          }
+        },
+        {
+          "id": "cxyj3ba",
+          "type": "crosshair",
+          "x": 1008,
+          "y": 480,
+          "w": 40,
+          "h": 40,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {}
+        },
+        {
+          "id": "c17npjb",
+          "type": "alert-banner",
+          "x": 608,
+          "y": 80,
+          "w": 600,
+          "h": 52,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "text": "ENEMY DETECTED IN SECTOR 4",
+            "type": "danger"
+          }
+        },
+        {
+          "id": "cmketts",
+          "type": "skill-tree",
+          "x": 1392,
+          "y": 704,
+          "w": 288,
+          "h": 256,
+          "rot": 0,
+          "op": 1,
+          "br": 0,
+          "shd": false,
+          "props": {
+            "label": "Skills"
+          }
+        }
+      ]
+    }
+  }
+-->
+</body>
+</html>

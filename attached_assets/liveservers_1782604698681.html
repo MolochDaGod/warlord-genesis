@@ -1,0 +1,342 @@
+
+<!DOCTYPE html><script src="/__replco/static/devtools/injected.js"onerror="parent.postMessage({event:'error',payload:'script.onerror: Failed to load '+event.target.src},'https://replit.com')"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Deploy Carrier — How the PvP Server Goes Live</title>
+<style>
+  :root {
+    --bg: #05070f;
+    --bg-2: #0a0f1e;
+    --panel: #0e1424;
+    --panel-2: #131b30;
+    --line: #1e2942;
+    --ink: #e8edff;
+    --muted: #8a97bd;
+    --dim: #5a688f;
+    --accent: #4ea1ff;
+    --accent-2: #28e0c8;
+    --hot: #ff5d73;
+    --gold: #ffcf6b;
+    --glow: 0 0 30px rgba(78,161,255,0.25);
+    --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Fira Code", Menlo, Consolas, monospace;
+    --sans: "Inter", system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background:
+      radial-gradient(1100px 600px at 80% -10%, rgba(40,224,200,0.10), transparent 60%),
+      radial-gradient(900px 600px at 10% 0%, rgba(78,161,255,0.14), transparent 55%),
+      var(--bg);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .stars {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none; opacity: 0.7;
+    background-image:
+      radial-gradient(1px 1px at 20% 30%, #fff, transparent),
+      radial-gradient(1px 1px at 70% 60%, #cfe0ff, transparent),
+      radial-gradient(1px 1px at 40% 80%, #fff, transparent),
+      radial-gradient(2px 2px at 85% 20%, #9fc4ff, transparent),
+      radial-gradient(1px 1px at 55% 15%, #fff, transparent),
+      radial-gradient(1px 1px at 12% 70%, #bcd0ff, transparent);
+    background-repeat: repeat;
+    background-size: 600px 600px;
+  }
+  .wrap { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 24px 96px; }
+
+  /* HERO */
+  header.hero {
+    text-align: center;
+    padding: 84px 0 48px;
+    border-bottom: 1px solid var(--line);
+  }
+  .kicker {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: var(--mono); font-size: 12px; letter-spacing: 0.22em;
+    text-transform: uppercase; color: var(--accent-2);
+    border: 1px solid var(--line); border-radius: 999px;
+    padding: 6px 14px; background: rgba(40,224,200,0.06);
+  }
+  .kicker .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent-2); box-shadow: 0 0 10px var(--accent-2); animation: pulse 1.8s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
+  h1 {
+    font-size: clamp(34px, 6vw, 60px); line-height: 1.05; margin: 22px 0 14px;
+    letter-spacing: -0.02em; font-weight: 800;
+    background: linear-gradient(180deg, #fff, #9fc0ff 90%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .sub { color: var(--muted); font-size: clamp(15px, 2.2vw, 19px); max-width: 660px; margin: 0 auto; }
+  .hero-tags { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-top: 26px; }
+  .tag { font-family: var(--mono); font-size: 12px; color: var(--ink);
+    border: 1px solid var(--line); background: var(--panel); padding: 7px 12px; border-radius: 8px; }
+  .tag b { color: var(--accent); }
+
+  section { padding: 52px 0 0; }
+  h2 { font-size: clamp(22px, 3.5vw, 30px); letter-spacing: -0.01em; margin: 0 0 6px; }
+  h2 .num { font-family: var(--mono); color: var(--accent); font-size: 0.7em; margin-right: 12px; }
+  .lead { color: var(--muted); max-width: 720px; margin: 0 0 26px; }
+
+  .insight {
+    border: 1px solid var(--line); border-left: 3px solid var(--accent-2);
+    background: linear-gradient(90deg, rgba(40,224,200,0.07), transparent 70%);
+    padding: 16px 20px; border-radius: 10px; margin: 22px 0;
+  }
+  .insight b { color: var(--accent-2); }
+
+  /* DIAGRAM */
+  .diagram {
+    display: grid; grid-template-columns: 1fr auto 1fr; align-items: stretch; gap: 0;
+    border: 1px solid var(--line); border-radius: 16px; overflow: hidden; margin: 8px 0 6px;
+    background: var(--panel);
+  }
+  .node { padding: 24px 22px; }
+  .node.mid { background: var(--bg-2); border-left: 1px solid var(--line); border-right: 1px solid var(--line);
+    display: flex; flex-direction: column; align-items: center; justify-content: center; min-width: 150px; }
+  .node h3 { margin: 0 0 4px; font-size: 15px; letter-spacing: 0.04em; text-transform: uppercase; }
+  .node .role { font-family: var(--mono); font-size: 11px; color: var(--muted); margin-bottom: 14px; }
+  .chip { display: block; font-family: var(--mono); font-size: 12px; color: var(--ink);
+    background: var(--panel-2); border: 1px solid var(--line); border-radius: 7px; padding: 7px 10px; margin: 6px 0; }
+  .chip span { color: var(--accent); }
+  .arrows { text-align: center; }
+  .arrows .lbl { font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 2px 0; }
+  .arrows .up { color: var(--gold); }
+  .arrows .down { color: var(--accent-2); }
+  .pill { display: inline-block; font-family: var(--mono); font-size: 11px; padding: 4px 9px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted); margin-top: 12px; }
+  @media (max-width: 720px) {
+    .diagram { grid-template-columns: 1fr; }
+    .node.mid { border: none; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+  }
+
+  /* STEPS */
+  .steps { display: grid; gap: 14px; counter-reset: step; }
+  .step {
+    display: grid; grid-template-columns: 44px 1fr; gap: 16px; align-items: start;
+    border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 18px 20px;
+    transition: border-color .2s, transform .2s;
+  }
+  .step:hover { border-color: var(--accent); transform: translateX(2px); }
+  .step .n {
+    counter-increment: step; width: 44px; height: 44px; border-radius: 11px;
+    display: grid; place-items: center; font-family: var(--mono); font-weight: 700; font-size: 18px;
+    color: var(--bg); background: linear-gradient(135deg, var(--accent), var(--accent-2)); box-shadow: var(--glow);
+  }
+  .step .n::before { content: counter(step); }
+  .step h3 { margin: 2px 0 4px; font-size: 17px; }
+  .step p { margin: 0; color: var(--muted); font-size: 14.5px; }
+  .step code { font-family: var(--mono); font-size: 13px; color: var(--gold);
+    background: rgba(255,207,107,0.08); padding: 1px 6px; border-radius: 5px; }
+
+  /* CODE */
+  pre {
+    background: #060a14; border: 1px solid var(--line); border-radius: 12px;
+    padding: 18px 20px; overflow-x: auto; font-family: var(--mono); font-size: 13px; line-height: 1.7;
+    color: #cdd8f5; margin: 18px 0;
+  }
+  pre .c { color: #5a688f; } /* comment */
+  pre .k { color: #4ea1ff; } /* keyword */
+  pre .s { color: #28e0c8; } /* string */
+  pre .f { color: #ffcf6b; } /* fn/path */
+  .codecap { font-family: var(--mono); font-size: 11px; color: var(--muted); margin: 0 0 -8px 4px; }
+
+  /* WHY GRID */
+  .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; }
+  @media (max-width: 640px) { .grid { grid-template-columns: 1fr; } }
+  .card { border: 1px solid var(--line); background: var(--panel); border-radius: 12px; padding: 20px; }
+  .card .ic { font-size: 22px; }
+  .card h3 { margin: 10px 0 6px; font-size: 16px; }
+  .card p { margin: 0; color: var(--muted); font-size: 14px; }
+
+  /* CALLOUT */
+  .live {
+    margin-top: 40px; text-align: center; border: 1px solid var(--line);
+    border-radius: 16px; padding: 34px 24px;
+    background: linear-gradient(180deg, rgba(78,161,255,0.10), transparent);
+  }
+  .live .cmd { display: inline-block; font-family: var(--mono); font-size: 15px; color: var(--ink);
+    background: #060a14; border: 1px solid var(--accent); border-radius: 10px; padding: 12px 20px; margin-top: 14px; box-shadow: var(--glow); }
+  .live .cmd span { color: var(--accent-2); }
+
+  footer { margin-top: 60px; padding-top: 22px; border-top: 1px solid var(--line);
+    color: var(--dim); font-size: 12.5px; font-family: var(--mono); text-align: center; }
+
+  .note { font-size: 12.5px; color: var(--dim); font-family: var(--mono); }
+</style>
+</head>
+<body>
+<div class="stars"></div>
+<div class="wrap">
+
+  <header class="hero">
+    <span class="kicker"><span class="dot"></span> Carrier · Real-Time PvP</span>
+    <h1>How we make the<br />PvP server live so easily</h1>
+    <p class="sub">There is no separate game server to rent, configure, or babysit. The authoritative
+      multiplayer brain rides <em>inside</em> the API server you already deploy — one push and the dogfight is live.</p>
+    <div class="hero-tags">
+      <span class="tag"><b>1</b> shared HTTP + WebSocket server</span>
+      <span class="tag"><b>30&nbsp;Hz</b> authoritative tick</span>
+      <span class="tag"><b>0</b> realtime infra to manage</span>
+    </div>
+  </header>
+
+  <section>
+    <h2><span class="num">01</span>The trick: the server isn't separate</h2>
+    <p class="lead">Most teams stand up a whole second machine for real-time play — a socket box, its own
+      ports, its own deploy pipeline. Carrier doesn't. The PvP room is a <b>WebSocket upgrade</b> bolted onto
+      the same Express HTTP server that already serves the API.</p>
+
+    <div class="insight">
+      <b>One server, two doors.</b> Normal traffic stays HTTP. When a browser asks to "upgrade" the connection
+      on the path <code style="font-family:var(--mono);color:var(--gold)">/api/carrier</code>, the same process hands it to the
+      game room instead. Same deploy, same domain, same TLS — no extra moving parts.
+    </div>
+
+    <p class="codecap">artifacts/api-server/src/game/carrier-server.ts</p>
+    <pre><span class="c">// The PvP room attaches to the EXISTING http server — no new process.</span>
+<span class="k">const</span> wss = <span class="k">new</span> <span class="f">WebSocketServer</span>({ noServer: <span class="k">true</span> });
+<span class="k">const</span> room = <span class="f">getCarrierRoom</span>();        <span class="c">// one shared room, every commander</span>
+
+server.<span class="f">on</span>(<span class="s">"upgrade"</span>, (req, socket, head) => {
+  <span class="k">if</span> (pathname !== <span class="s">"/api/carrier"</span>) <span class="k">return</span>;  <span class="c">// only OUR path upgrades</span>
+  wss.<span class="f">handleUpgrade</span>(req, socket, head, (ws) => wss.<span class="f">emit</span>(<span class="s">"connection"</span>, ws, req));
+});</pre>
+  </section>
+
+  <section>
+    <h2><span class="num">02</span>The shape of a live match</h2>
+    <p class="lead">Every player runs the <em>same simulation code</em> the server runs. The server is the
+      referee; clients predict locally and get corrected by snapshots. That shared brain is what makes it
+      both smooth and cheat-resistant.</p>
+
+    <div class="diagram">
+      <div class="node">
+        <h3>Player Browser</h3>
+        <div class="role">predicts + interpolates</div>
+        <span class="chip">join · <span>name, ship, faction</span></span>
+        <span class="chip">input · <span>thrust, turn, fire</span></span>
+        <span class="chip">deploy / build / become</span>
+      </div>
+      <div class="node mid arrows">
+        <div class="lbl up">▲ inputs ▲</div>
+        <div class="lbl">wss · /api/carrier</div>
+        <div class="lbl down">▼ snapshots ▼</div>
+        <span class="pill">wss:// auto on HTTPS</span>
+      </div>
+      <div class="node">
+        <h3>Carrier Room</h3>
+        <div class="role">authoritative referee</div>
+        <span class="chip">tick @ <span>30 Hz</span> · stepShip</span>
+        <span class="chip">snapshot @ <span>20 Hz</span></span>
+        <span class="chip">seeded world · fleet AI</span>
+      </div>
+    </div>
+    <p class="note" style="margin-top:14px">Clients send intent, never truth. The room advances a fixed-step
+      world from a fixed <code style="font-family:var(--mono);color:var(--gold)">WORLD_SEED</code> (and a tick counter, never the wall clock),
+      so every boot lays out an identical, replayable battlefield.</p>
+  </section>
+
+  <section>
+    <h2><span class="num">03</span>Why the same code runs on both ends</h2>
+    <p class="lead">The physics, the ship stepping, the message format — all live in one shared library,
+      <code style="font-family:var(--mono);color:var(--gold)">@workspace/carrier-net</code>. The client imports it to predict; the server imports it to
+      rule. They can never drift, because there is only one copy.</p>
+
+    <div class="grid">
+      <div class="card">
+        <div class="ic">🧠</div>
+        <h3>One sim, two roles</h3>
+        <p>The exact <code style="font-family:var(--mono);color:var(--gold)">stepShip</code> the client predicts with is the one the server enforces.
+          No "client version vs server version" divergence to debug.</p>
+      </div>
+      <div class="card">
+        <div class="ic">🎲</div>
+        <h3>Deterministic world</h3>
+        <p>Planets, asteroids, reward boxes and enemy pockets all derive from a seed + tick count — reproducible,
+          fair, and trivially testable.</p>
+      </div>
+      <div class="card">
+        <div class="ic">🔌</div>
+        <h3>Auto protocol</h3>
+        <p>The client picks <code style="font-family:var(--mono);color:var(--gold)">wss://</code> on HTTPS and <code style="font-family:var(--mono);color:var(--gold)">ws://</code> in dev from
+          <code style="font-family:var(--mono);color:var(--gold)">window.location.host</code> — zero URLs to hardcode per environment.</p>
+      </div>
+      <div class="card">
+        <div class="ic">🛰️</div>
+        <h3>Isolated room</h3>
+        <p>Carrier owns its <code style="font-family:var(--mono);color:var(--gold)">/api/carrier</code> path, separate from sibling games — so its
+          state never collides with anyone else's match.</p>
+      </div>
+    </div>
+
+    <p class="codecap" style="margin-top:24px">artifacts/carrier/src/game/net.ts — the client never hardcodes a host</p>
+    <pre><span class="k">function</span> <span class="f">wsUrl</span>() {
+  <span class="k">const</span> proto = window.location.protocol === <span class="s">"https:"</span> ? <span class="s">"wss:"</span> : <span class="s">"ws:"</span>;
+  <span class="k">return</span> <span class="s">`</span>${proto}<span class="s">//</span>${window.location.host}${WS_PATH}<span class="s">`</span>;  <span class="c">// follows wherever it's deployed</span>
+}</pre>
+  </section>
+
+  <section>
+    <h2><span class="num">04</span>Going live, step by step</h2>
+    <p class="lead">Because the realtime server is just part of the API server, "deploying PvP" is the same
+      motion as deploying any backend. Here is the whole thing.</p>
+
+    <div class="steps">
+      <div class="step">
+        <div class="n"></div>
+        <div>
+          <h3>Build the shared contract</h3>
+          <p>Generate API hooks + schemas so client and server speak the same language: <code>pnpm --filter @workspace/api-spec run codegen</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n"></div>
+        <div>
+          <h3>Provision persistence</h3>
+          <p>Point <code>DATABASE_URL</code> at Postgres and push the schema: <code>pnpm --filter @workspace/db run push</code>. Identity rides on Puter — no auth servers to run.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n"></div>
+        <div>
+          <h3>Bundle the server</h3>
+          <p>One esbuild pass produces the runnable backend (API + WebSocket room together): <code>pnpm run build</code></p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n"></div>
+        <div>
+          <h3>Publish</h3>
+          <p>Hit Publish. The platform serves the build over HTTPS and routes <code>/api/carrier</code> to the same process — the WebSocket upgrade just works, TLS included.</p>
+        </div>
+      </div>
+      <div class="step">
+        <div class="n"></div>
+        <div>
+          <h3>Players connect</h3>
+          <p>The Carrier app derives <code>wss://your-domain/api/carrier</code> from the browser URL automatically. First player in spawns the shared room; everyone else joins it. PvP is live.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="live">
+    <h2 style="border:none;margin-bottom:4px">That's the whole secret</h2>
+    <p class="lead" style="margin:0 auto 6px">No socket cluster. No second deploy. No port wrangling. The
+      authoritative arena ships with the API server you were already deploying.</p>
+    <div class="cmd">pnpm run build &nbsp;<span>→</span>&nbsp; Publish &nbsp;<span>→</span>&nbsp; PvP is live</div>
+  </div>
+
+  <footer>
+    Carrier · GRUDOX platform — authoritative real-time multiplayer on a shared HTTP + WebSocket server.
+  </footer>
+
+</div>
+</body>
+</html>

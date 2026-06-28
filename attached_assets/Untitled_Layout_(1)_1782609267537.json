@@ -1,0 +1,311 @@
+{
+  "name": "Untitled Layout",
+  "resolution": {
+    "w": 1920,
+    "h": 1080
+  },
+  "theme": "q",
+  "comps": [
+    {
+      "id": "c7zzy4n",
+      "type": "minimap",
+      "x": 1456,
+      "y": 0,
+      "w": 224,
+      "h": 224,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "shape": "square",
+        "label": ""
+      }
+    },
+    {
+      "id": "c8pstan",
+      "type": "healthbar",
+      "x": 800,
+      "y": 832,
+      "w": 174,
+      "h": 20,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 75,
+        "max": 100,
+        "label": "HP",
+        "color": "#22c55e"
+      }
+    },
+    {
+      "id": "c8b7u33",
+      "type": "manabar",
+      "x": 1008,
+      "y": 832,
+      "w": 174,
+      "h": 20,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 50,
+        "max": 100,
+        "label": "MP",
+        "color": "#3b82f6"
+      }
+    },
+    {
+      "id": "c5utkqz",
+      "type": "portrait",
+      "x": 720,
+      "y": 736,
+      "w": 112,
+      "h": 96,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "name": "Grudge",
+        "level": 8
+      }
+    },
+    {
+      "id": "c8g54xl",
+      "type": "chat-window",
+      "x": 352,
+      "y": 784,
+      "w": 280,
+      "h": 170,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "label": "Chat"
+      }
+    },
+    {
+      "id": "cn5zi7t",
+      "type": "weapon-selector",
+      "x": 832,
+      "y": 768,
+      "w": 304,
+      "h": 48,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "label": ""
+      }
+    },
+    {
+      "id": "cjk3hnz",
+      "type": "xp-bar",
+      "x": 864,
+      "y": 960,
+      "w": 280,
+      "h": 13,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 45,
+        "max": 100,
+        "label": "XP",
+        "color": "#f59e0b"
+      }
+    },
+    {
+      "id": "c0as9c4",
+      "type": "player-frame",
+      "x": 256,
+      "y": 288,
+      "w": 220,
+      "h": 56,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "name": "Warrior",
+        "level": 24,
+        "hp": 19800,
+        "hpMax": 19800,
+        "mp": 468,
+        "mpMax": 600
+      }
+    },
+    {
+      "id": "c98prdp",
+      "type": "target-frame",
+      "x": 1296,
+      "y": 272,
+      "w": 224,
+      "h": 64,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "name": "Mage Priest",
+        "level": 11,
+        "hp": 6600,
+        "hpMax": 9400,
+        "hostile": true
+      }
+    },
+    {
+      "id": "cvhyzfl",
+      "type": "health-orb",
+      "x": 672,
+      "y": 832,
+      "w": 128,
+      "h": 112,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 75,
+        "max": 100,
+        "color": "#e11d48",
+        "label": "HP"
+      }
+    },
+    {
+      "id": "cadwvq4",
+      "type": "mana-orb",
+      "x": 1184,
+      "y": 832,
+      "w": 112,
+      "h": 112,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 60,
+        "max": 100,
+        "color": "#3b82f6",
+        "label": "MP"
+      }
+    },
+    {
+      "id": "ca1wsz6",
+      "type": "action-orb",
+      "x": 1136,
+      "y": 752,
+      "w": 80,
+      "h": 80,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "value": 90,
+        "max": 100,
+        "color": "#f59e0b",
+        "label": "AP"
+      }
+    },
+    {
+      "id": "ctpg7kf",
+      "type": "hotbar-2row",
+      "x": 800,
+      "y": 832,
+      "w": 384,
+      "h": 130,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "slots": 10,
+        "slotSize": 52
+      }
+    },
+    {
+      "id": "cpzlbf0",
+      "type": "interaction-prompt",
+      "x": 896,
+      "y": 736,
+      "w": 200,
+      "h": 48,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "key": "E",
+        "action": "Open Chest",
+        "label": ""
+      }
+    },
+    {
+      "id": "c710t3p",
+      "type": "objectives",
+      "x": 1456,
+      "y": 400,
+      "w": 220,
+      "h": 100,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "label": "Objectives"
+      }
+    },
+    {
+      "id": "cxyj3ba",
+      "type": "crosshair",
+      "x": 1008,
+      "y": 480,
+      "w": 40,
+      "h": 40,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {}
+    },
+    {
+      "id": "c17npjb",
+      "type": "alert-banner",
+      "x": 608,
+      "y": 80,
+      "w": 600,
+      "h": 52,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "text": "ENEMY DETECTED IN SECTOR 4",
+        "type": "danger"
+      }
+    },
+    {
+      "id": "cmketts",
+      "type": "skill-tree",
+      "x": 1392,
+      "y": 704,
+      "w": 288,
+      "h": 256,
+      "rot": 0,
+      "op": 1,
+      "br": 0,
+      "shd": false,
+      "props": {
+        "label": "Skills"
+      }
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game UI Kit — Fantasy (HTML5)</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../kit.css" />
+  <link rel="stylesheet" href="../theme.css" />
+  <style> body { margin: 0; background: var(--gk-bg, #0a0e1a); min-height: 100vh; padding: 40px; } </style>
+</head>
+<body>
+  <div class="gk-root" data-gk-theme="fantasy">
+    <div style="max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px;">
+      <div class="gk-panel">
+        <div class="gk-titlebar"><span class="gk-title">Game UI Kit</span></div>
+        <div class="gk-panel__body">
+          <p>Pure HTML + CSS. No JavaScript needed — every widget is markup with <code>.gk-*</code> classes.</p>
+          <div class="gk-stack" style="max-width: 320px; margin-top: 12px;">
+            <div class="gk-bar gk-bar--health"><div class="gk-bar__fill" style="width: 72%"></div><span class="gk-bar__label">Health</span></div>
+            <div class="gk-bar gk-bar--mana"><div class="gk-bar__fill" style="width: 48%"></div><span class="gk-bar__label">Mana</span></div>
+          </div>
+          <div class="gk-grid" style="--gk-cols: 5; margin-top: 16px;">
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_01.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_02.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_03.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_04.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_05.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_06.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_07.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_08.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_09.png'); width: 22px; height: 22px;"></i></div>
+            <div class="gk-slot"><i class="gk-icon" style="--icon: url('../assets/cyberpunk/3_icons/icons/icon_10.png'); width: 22px; height: 22px;"></i></div>
+          </div>
+          <div class="gk-row-flex" style="margin-top: 16px;">
+            <button class="gk-btn gk-btn--primary">Confirm</button>
+            <button class="gk-btn">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

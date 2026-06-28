@@ -1,0 +1,143 @@
+Puter.js Integration
+The ObjectStore uses Puter.js v2 for free, serverless AI and cloud storage — no API keys or backend needed.
+
+APIs Used
+API	Purpose
+puter.ai.chat()	Vision analysis, sprite editing chat, streaming responses
+puter.ai.txt2img()	Sprite generation with GPT Image 1.5
+puter.fs.write()	Save sprites to Puter cloud storage
+puter.kv.set()/get()	Persist chat history and user preferences
+💡 Free for Users
+Puter.js uses a user-pays model — each user's Puter account covers their own AI usage. Developers pay nothing regardless of scale.
+
+JavaScript SDK v5.0
+Single import for all backend services + static game data:
+
+// CDN
+import { GrudgeSDK } from 'https://objectstore.grudge-studio.com/sdk/grudge-sdk.js';
+
+// or NPM
+// npm install @grudgstudio/core
+import { GrudgeSDK } from '@grudgstudio/core';
+
+const sdk = new GrudgeSDK({ token: '<JWT>' });
+
+// Static game data
+const weapons = await sdk.getWeapons();
+const swords  = await sdk.getWeaponsByCategory('swords');
+const items   = await sdk.getItemsDatabase();   // 3,425 items
+const chars   = await sdk.getSpriteCharacters(); // 275 animated chars
+const results = await sdk.search('iron');
+
+// Tier colors
+const t5 = GrudgeSDK.getTierColor(5); // { name: 'Red', hex: '#ff4d4d', label: 'Legendary' }
+Backend Service Clients (SDK v5.0)
+The SDK v5.0 includes authenticated clients for all Grudge Studio VPS services:
+
+Client	URL	Description
+sdk.auth	id.grudge-studio.com	Login, register, guest, wallet, Discord, Puter auth
+sdk.game	api.grudge-studio.com	Characters, crafting, combat, lobbies, islands
+sdk.account	account.grudge-studio.com	Profile, friends, inventory management
+sdk.launcher	launcher.grudge-studio.com	App manifest, patch notes, update checks
+sdk.assets	assets-api.grudge-studio.com	R2 asset listing, upload, CDN URL resolution
+sdk.ws	ws.grudge-studio.com	Real-time WebSocket for islands, PvP, chat
+const sdk = new GrudgeSDK({ token: '<JWT>' });
+
+// Auth
+const res  = await sdk.auth.login('username', 'password');
+const me   = await sdk.auth.getMe();
+
+// Game API
+const chars   = await sdk.game.listCharacters();
+const balance = await sdk.game.getBalance(charId);
+await sdk.game.startCraft({ char_id: 1, recipe_key: 'iron-sword' });
+
+// Account
+const profile = await sdk.account.getProfile(grudgeId);
+const friends = await sdk.account.listFriends();
+
+// Asset Service (R2)
+const assets = await sdk.assets.listAssets({ prefix: 'models/' });
+
+// WebSocket
+const socket = sdk.ws.game();
+socket.emit('join-island', { island_key: 'island_1' });
+Python Examples
+import requests
+
+BASE_URL = "https://objectstore.grudge-studio.com/api/v1"
+
+# Get all weapons
+weapons = requests.get(f"{BASE_URL}/weapons.json").json()
+
+# Find all swords
+swords = weapons["categories"]["swords"]["items"]
+print(f"Found {len(swords)} swords")
+
+# Get materials
+materials = requests.get(f"{BASE_URL}/materials.json").json()
+
+# Find T5+ ores
+high_tier_ores = [m for m in materials["materials"] 
+                  if m["category"] == "ore" and m["tier"] >= 5]
+Search API (Serverless)
+GET
+/api/search?q={query}&type={type}&limit={limit}
+Serverless search across all ObjectStore data. Searches weapons, armor, materials, consumables, enemies, bosses, skills, and sprites.
+
+Parameters
+Param	Required	Default	Description
+q	Yes	—	Search query string
+type	No	all	Filter by type: weapons, armor, materials, consumables, enemies, bosses, skills, sprites
+limit	No	50	Max results (1-200)
+Example
+GET /api/search?q=iron&type=materials&limit=10
+
+{
+  "query": "iron",
+  "type": "materials",
+  "totalResults": 3,
+  "results": [
+    { "type": "material", "id": "iron-ore", "name": "Iron Ore", "category": "ore", "tier": 2 },
+    { "type": "material", "id": "iron-ingot", "name": "Iron Ingot", "category": "ingot", "tier": 2 }
+  ]
+}
+💡 Vercel Only
+The /api/search and /api/stats endpoints are serverless functions available only when deployed on Vercel. The static JSON files work on both GitHub Pages and Vercel.
+
+Stats API (Serverless)
+GET
+/api/stats
+Returns aggregate statistics for all ObjectStore data — total counts by category, available endpoints, and browser pages.
+
+AI Integration
+The ObjectStore API is designed for AI agent consumption:
+
+No Authentication - Direct HTTP access
+JSON Format - Easy to parse
+Stable Schema - Rarely changes
+Complete Data - All game definitions in one place
+💡 Recommended: Cache Responses
+Game data updates infrequently. Cache API responses for 24 hours to reduce requests and improve performance.
+
+Example: AI Crafting Assistant
+// Fetch required data
+const [weapons, materials] = await Promise.all([
+  fetch(BASE_URL + '/weapons.json').then(r => r.json()),
+  fetch(BASE_URL + '/materials.json').then(r => r.json())
+]);
+
+// Helper: Get materials needed for a weapon
+function getCraftingRequirements(weaponId, tier) {
+  const weapon = findWeapon(weapons, weaponId);
+  const tierMaterials = materials.materials.filter(m => m.tier === tier);
+  
+  return {
+    weapon: weapon.name,
+    tier: tier,
+    profession: weapon.craftedBy,
+    primaryMaterial: tierMaterials.find(m => 
+      m.gatheredBy === weapon.craftedBy
+    )
+  };
+}

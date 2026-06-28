@@ -1,0 +1,232 @@
+{
+  "fire": {
+    "enabled": false,
+    "innerColor": "#fff1b8",
+    "outerColor": "#ff3b00",
+    "count": 280,
+    "size": 0.5,
+    "height": 2.4,
+    "rise": 1,
+    "radius": 0.7,
+    "turbulence": 0.55
+  },
+  "arcane": {
+    "enabled": false,
+    "color": "#d946ef",
+    "coreColor": "#f5d0fe",
+    "ribbons": 5,
+    "spin": 1.3,
+    "radius": 0.95,
+    "height": 2.7,
+    "particles": 160,
+    "chargeTime": 2.6,
+    "fireRate": 1.6,
+    "autoAttack": true
+  },
+  "burst": {
+    "enabled": false,
+    "coreColor": "#c9fbff",
+    "tipColor": "#4f7bff",
+    "shards": 80,
+    "length": 1.7,
+    "pulse": 0.6,
+    "particles": 140
+  },
+  "slash": {
+    "color": "#7dd3fc",
+    "arcDegrees": 150,
+    "arcOffset": 0,
+    "thickness": 0.42,
+    "speed": 0.28,
+    "radius": 1.8,
+    "travelSpeed": 14,
+    "scale": 1.5,
+    "attack": "crescent"
+  },
+  "geometric": {
+    "color": "#67e8f9",
+    "scale": 0.8,
+    "travelSpeed": 16,
+    "charge": 0.45
+  },
+  "weapon": {
+    "weapon": "thin",
+    "scale": -0.014,
+    "posX": 0,
+    "posY": 0,
+    "posZ": 0,
+    "rotX": 104.839,
+    "rotY": -42.35,
+    "rotZ": 33.124
+  },
+  "moonBeam": {
+    "color": "#bcd4ff",
+    "coreColor": "#f2f8ff",
+    "radius": 0.8,
+    "height": 7,
+    "motes": 90,
+    "duration": 1.2
+  },
+  "frostWave": {
+    "color": "#8fe6ff",
+    "crestColor": "#eaffff",
+    "radius": 6,
+    "spikes": 46,
+    "height": 1.1,
+    "duration": 1.4
+  },
+  "projectile": {
+    "color": "#ff7a18",
+    "speed": 16,
+    "size": 0.34,
+    "gravity": 9,
+    "lifetime": 3,
+    "spin": 6
+  },
+  "dragon": {
+    "color": "#ff5a1f",
+    "scale": 1,
+    "meteorSize": 0.5,
+    "burnTime": 3
+  },
+  "turret": {
+    "color": "#ff7a18",
+    "scale": 1,
+    "shots": 5,
+    "interval": 0.74,
+    "shotSize": 0.14,
+    "burnTime": 2.5
+  },
+  "iceSnake": {
+    "color": "#7fd8ff",
+    "coreColor": "#eaffff",
+    "speed": 9,
+    "amplitude": 1.15,
+    "frequency": 7,
+    "homing": 2.6,
+    "thickness": 0.34,
+    "lifetime": 4
+  },
+  "hotHands": {
+    "enabled": true,
+    "variant": "fire",
+    "innerColor": "#fff1b8",
+    "outerColor": "#ff3b00",
+    "count": 60,
+    "size": 0.12,
+    "height": 0.32,
+    "rise": 1.3,
+    "radius": 0.11,
+    "turbulence": 0.7
+  },
+  "castingHands": {
+    "enabled": true,
+    "variant": "fire",
+    "innerColor": "#fff1b8",
+    "outerColor": "#ff3b00",
+    "count": 60,
+    "size": 0.12,
+    "height": 0.32,
+    "rise": 1.3,
+    "radius": 0.11,
+    "turbulence": 0.7
+  },
+  "flameBody": {
+    "enabled": false,
+    "color": "#ff5a1f"
+  },
+  "flameThrow": {
+    "coreColor": "#ffd27a",
+    "color": "#ff4d12",
+    "range": 4.4,
+    "spread": 0.75,
+    "count": 220,
+    "speed": 7,
+    "chargeSize": 0.45,
+    "burstTime": 1
+  },
+  "auraRing": {
+    "color": "#a855f7",
+    "coreColor": "#f0abfc",
+    "radius": 0.55,
+    "pulses": 2,
+    "pulseInterval": 0.45,
+    "travel": 4,
+    "height": 1.2
+  },
+  "earthWave": {
+    "element": "earth",
+    "groundColor": "#7a5230",
+    "voxelSize": 0.42,
+    "travelTime": 1.1,
+    "eruptHeight": 4,
+    "power": 1.9
+  },
+  "earthWall": {
+    "color": "#6c6f78",
+    "voxelSize": 0.42,
+    "width": 5,
+    "height": 7,
+    "holdTime": 3,
+    "dropHeight": 6
+  },
+  "meteorShower": {
+    "color": "#ff7a18",
+    "count": 14,
+    "radius": 3.2,
+    "duration": 2.2,
+    "blastScale": 0.7
+  },
+  "blizzard": {
+    "color": "#8fe6ff",
+    "crestColor": "#eaffff",
+    "count": 22,
+    "radius": 3.4,
+    "duration": 2.6,
+    "blastScale": 0.55
+  },
+  "shockwave": {
+    "color": "#ff7a2e",
+    "coreColor": "#ffe7a8",
+    "radius": 5.5,
+    "power": 1.7,
+    "duration": 0.62,
+    "particles": 120
+  },
+  "layout": {
+    "caster": {
+      "posX": 0,
+      "posY": -0.1,
+      "posZ": 0,
+      "rotX": 0,
+      "rotY": 0,
+      "rotZ": -13,
+      "scale": 0.85
+    },
+    "dummy": {
+      "posX": 0,
+      "posY": 0,
+      "posZ": 0,
+      "rotX": 0,
+      "rotY": 0,
+      "rotZ": 1,
+      "scale": 1
+    }
+  },
+  "scene": {
+    "floorColor": "#0b0e15",
+    "fogColor": "#04040a",
+    "bloom": 1.35,
+    "ambient": 0.28,
+    "autoRotate": false,
+    "showDummy": true,
+    "dummyDistance": 5.5,
+    "dummyShield": false,
+    "spellOrigin": "weapon",
+    "skybox": false,
+    "timeOfDay": "noon",
+    "casterRace": "high_elf",
+    "caveFireColor": "#ff8a30",
+    "caveFireIntensity": 22
+  }
+}

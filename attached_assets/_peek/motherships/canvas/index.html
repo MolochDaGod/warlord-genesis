@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game UI Kit — Canvas renderer</title>
+  <style> body { margin: 0; background: #07090f; display: grid; place-items: center; min-height: 100vh; } canvas { image-rendering: pixelated; } </style>
+</head>
+<body>
+  <canvas id="hud" width="560" height="380"></canvas>
+  <script type="module">
+    import { boot } from "./canvas-renderer.js";
+    boot(document.getElementById("hud")).catch(console.error);
+  </script>
+</body>
+</html>

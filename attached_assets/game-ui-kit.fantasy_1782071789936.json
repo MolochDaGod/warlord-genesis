@@ -1,0 +1,136 @@
+{
+  "theme": "fantasy",
+  "baseVars": {
+    "--gk-font": "\"Cinzel Decorative\", \"Cinzel\", Georgia, serif",
+    "--gk-font-body": "\"EB Garamond\", Georgia, serif",
+    "--gk-font-scale": "1",
+    "--gk-radius": "10px",
+    "--gk-bg": "#241a12",
+    "--gk-surface": "#efe2c4",
+    "--gk-surface-2": "#e3d2ab",
+    "--gk-ink": "#3a2a17",
+    "--gk-ink-dim": "#7c6646",
+    "--gk-accent": "#b8860b",
+    "--gk-accent-2": "#8a3324",
+    "--gk-good": "#5a8f3c",
+    "--gk-warn": "#c98a1a",
+    "--gk-danger": "#a8341f",
+    "--gk-mana": "#3f6fb0",
+    "--gk-xp": "#b8860b",
+    "--gk-slot-size": "58px",
+    "--gk-glow": "0 6px 20px rgba(0,0,0,0.35)",
+    "--gk-pixelated": "auto",
+    "--gk-btn-bg": "linear-gradient(180deg,#caa14e,#a9802f)",
+    "--gk-btn-border": "#7c5a22",
+    "--gk-fr-window-border": "3px solid var(--gk-accent)",
+    "--gk-fr-window-bg": "linear-gradient(180deg, rgba(255,255,255,0.18), rgba(0,0,0,0.04)), var(--gk-surface)",
+    "--gk-fr-window-shadow": "0 8px 26px rgba(0,0,0,0.45), inset 0 0 0 2px rgba(120,80,20,0.35)",
+    "--gk-fr-slot-border": "1px solid color-mix(in srgb, var(--gk-accent) 50%, transparent)",
+    "--gk-fr-slot-bg": "var(--gk-surface-2)",
+    "--gk-fr-slot-shadow": "inset 0 2px 6px rgba(0,0,0,0.4)"
+  },
+  "overrides": {
+    "--gk-surface": "#241412",
+    "--gk-accent": "#c0392b",
+    "--gk-xp": "#000000",
+    "--gk-ink": "#f3dcc4",
+    "--gk-surface-2": "#33201c",
+    "--gk-ink-dim": "#000000",
+    "--gk-accent-2": "#e0b252",
+    "--gk-bg": "#160d0b"
+  },
+  "fontScale": 1,
+  "frames": {
+    "fantasy": {},
+    "rpg": {
+      "window": {
+        "src": "rpg/part_10/complete/c_container.png",
+        "slice": 120,
+        "width": 30,
+        "repeat": "stretch"
+      },
+      "inset": {
+        "src": "rpg/part_4/text_container_1/papper_container.png",
+        "slice": 40,
+        "width": 22,
+        "repeat": "stretch"
+      }
+    }
+  },
+  "genre": "moba",
+  "skillSet": "violet",
+  "artPreset": {
+    "fantasy": "fan-parchment",
+    "rpg": "rpg-blood"
+  },
+  "controlScheme": {
+    "mouse": "marquee",
+    "flags": {
+      "boxSelect": false,
+      "pointerLockAim": false,
+      "clickToMove": true,
+      "weaponScroll": false,
+      "dragInventory": true,
+      "inventoryClick": "select",
+      "equipMode": "button"
+    },
+    "hotkeys": [
+      {
+        "id": "abilityQ",
+        "label": "Ability Q",
+        "defaultKey": "q"
+      },
+      {
+        "id": "abilityW",
+        "label": "Ability W",
+        "defaultKey": "w"
+      },
+      {
+        "id": "abilityE",
+        "label": "Ability E",
+        "defaultKey": "e"
+      },
+      {
+        "id": "ultimate",
+        "label": "Ultimate R",
+        "defaultKey": "r"
+      },
+      {
+        "id": "summoner1",
+        "label": "Summoner 1",
+        "defaultKey": "d"
+      },
+      {
+        "id": "summoner2",
+        "label": "Summoner 2",
+        "defaultKey": "f"
+      },
+      {
+        "id": "recall",
+        "label": "Recall",
+        "defaultKey": "b"
+      },
+      {
+        "id": "shop",
+        "label": "Shop",
+        "defaultKey": "p"
+      },
+      {
+        "id": "levelAbility",
+        "label": "Level Ability",
+        "defaultKey": "Control"
+      },
+      {
+        "id": "scoreboard",
+        "label": "Scoreboard",
+        "defaultKey": "Tab"
+      }
+    ]
+  },
+  "layout": {},
+  "systemConfig": {
+    "skilltree": {
+      "slotSize": 10
+    }
+  }
+}

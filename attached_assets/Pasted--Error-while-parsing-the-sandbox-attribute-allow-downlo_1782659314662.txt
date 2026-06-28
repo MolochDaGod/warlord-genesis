@@ -1,0 +1,368 @@
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+recaptcha__en.js:1514 Uncaught (in promise) 
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+/graphql:1  Failed to load resource: the server responded with a status of 502 ()
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+t0.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://id.grudge-studio.com&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+t2.gstatic.com/faviconV2?client=SOCIAL&type=FAVICON&fallback_opts=TYPE,SIZE,URL&url=http://e.data&size=32:1  Failed to load resource: the server responded with a status of 404 ()
+ WebSocket is already in CLOSING or CLOSED state.
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis/task…95d7-3669f83efb26:1 Uncaught (in promise) 
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) 
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+ WebSocket connection to 'wss://eval.worf.platform.replit.com/wsv2/v2.public.Q2dZSWxNQ0IwZ1lTQmdpejNJSFNCaUlFZDI5eVpqQUFPb3NDQ2lSbE5tRmlaV00xT0MweVpUSTBMVFEzTURndFlXWm1OQzAyWlRObU5UTmpNRFZtTURFU0EyNXBlQm9XY21Wd2JHbDBMWEpsY0d3dFptbHNaWE10ZDI5eVppSVBWMkZ5Ykc5eVpDMUhaVzVsYzJsektncHFiMjVpWlcxdGIyNXpRazRLRjNKbGNHeHBkQzF5WlhCc0xXSnNiMk5yY3kxM2IzSm1FaFZ5WlhCc2FYUXRjbVZ3YkMxdFpYUmhMWGR2Y21ZYUhISmxjR3hwZEMxdFlYSm5ZWEpwYm1VdFlteHZZMnR6TFhkdmNtWktCd2puMHV3VEVBRlFBRm9JWlhod2JHOXlaWEphRDJsdWRHVnVkRjl3WlhKemIyNWhiSGdBZ2dFVlkyOXVibVZqZEc5eWN5NXlaWEJzYVhRdVkyOXRpZ0VZQ2hCRVQxOVRSVU5WVWtsVVdWOVRRMEZPRWdSMGNuVmxVaVVJQVJDQWdJQ0FRQmtBQUFBQUFBQWdRQ0VBQUFBQUFBQWdRQ2lBZ0lDQTZBY3dBamdBWUFCcUVRam4wdXdURWdwcWIyNWlaVzF0YjI1emdnRUNNZ0NhQVFvS0NEQXVNQzQyTWpJMG9BRUJ5Z0VGYkdGeVoyVT38S8Fy-LKt71A0GoNinmx_hXdMYyZDqNaKLAJzANpJS5aFcwzyXueOt14KVmjCVbeqZMQPiwPMUQbjMXsheAIN.Q2dad2NtOWtPak1pQ25KbGNHeHBkQzVqYjIwPQ' failed: 
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Uncaught (in promise) 
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+chrome-extension://d…/all-frames.js:1120 Uncaught (in promise) Error: Uncaught Error: Could not establish connection. Receiving end does not exist.
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a59d-01a5cc5eb199:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+0i8wy8tbht2ow.js:sourcemap:2 Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+C @ 0i8wy8tbht2ow.js:sourcemap:2
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+about:blank:1 Uncaught (in promise) Error: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+Warlord-Genesis:1 Unchecked runtime.lastError: Could not establish connection. Receiving end does not exist.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/plan…a414-ffea2a844c21:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis/task…b05c-00be13a313ca:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/task…b05c-00be13a313ca:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/task…b05c-00be13a313ca:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis/task…b05c-00be13a313ca:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+ Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received
+Warlord-Genesis:1 Uncaught (in promise) Error: A listener indicated an asynchronous response by returning true, but the message channel closed before a response was received

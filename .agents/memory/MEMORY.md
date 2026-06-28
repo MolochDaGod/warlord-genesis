@@ -1,0 +1,20 @@
+- [Hero controller (mouse-look + camera)](hero-controller.md) — hero uses a custom pointer-lock/look model (drei PointerLockControls removed) + momentum movement; ordering & why.
+- [Projectile visuals](projectile-visuals.md) — ranged combat is hitscan; flying shell meshes are cosmetic-only and must never carry damage (melee waves are the opposite).
+- [Hero dual-arsenal combat](hero-arsenal-combat.md) — hero carries one melee + one ranged (Q swaps, F dash); block flag must clear on swap/exit/death; projectile AoE radius needs a splashRadius override or it uses the model default.
+- [Anim asset staging](anim-asset-staging.md) — only ~8 of ~20 animation packs are present; unstaged melee/magic classes fall back to the `unarmed` clip set via `animClassFor()` while keeping their weapon mesh.
+- [Anim reaction fallback](anim-reaction-fallback.md) — hit-reaction clips must use guaranteed-staged keys, not class-specific ones that resolve to missing folders.
+- [WebGL screenshot limit](webgl-screenshot-limit.md) — "Error creating WebGL context" in the screenshot/preview sandbox is an env limitation (no GPU), not a code bug; verify via typecheck + Vite boot.
+- [Pointer-lock engage binding](pointer-lock-binding.md) — drei PointerLockControls binds click at mount; #lock-target must be in DOM same commit
+- [Puter primary auth](puter-primary-auth.md) — Puter verifies identity server-side; account is server-owned keyed strictly on Puter uuid; CSRF via X-Grudge-Client header + lax cookie; atomic upsert.
+- [Deterministic movement](deterministic-movement.md) — no randomness in unit movement (PvP lockstep); chokepoints solved by goal-distance-asymmetric capped separation + id-parity sidestep, not jitter.
+- [Animator crossfade T-pose guard](anim-crossfade-tpose.md) — never crossFadeFrom a stopped/zero-weight action; the bind pose bleeds through. Guard on source liveness, else fadeIn.
+- [NPC unit models](unit-models.md) — footman/archer/knight use per-type GLBs (not ff.fbx); UnitMesh splits GLB vs procedural so GLB units skip material hooks; albedo is an external Color_Palette.png bound globally (no embedded texture).
+- [GLB warcamp hero](glb-hero-model-mode.md) — chosen warcamp GLB IS the playable hero via VoxelCharacter model mode; path existed but Player.tsx forgot to pass `model`; don't trust "preview-only" notes over the GLB node graph.
+- [Ally creep sources](ally-creep-sources.md) — every ally lane gets exactly one creep source; production buildings own their lane, spawnAllyPush skips building lanes (covers centre only).
+- [WebSocket testing in this repo](ws-testing-sandbox.md) — code_execution sandbox has no `ws`/global WebSocket; run WS test scripts from inside a package that depends on `ws`.
+- [PvP client prediction](pvp-client-prediction.md) — client predicts its hero by running a local copy of the shared Sim (loadSnapshot + replay order + predict-mode step), never a hand-rolled mover.
+- [Map scaling](map-scaling.md) — large map is true-MOBA scale; lane/tower/building placement must be fractions of coreZ (not fixed offsets) or towers bunch at the base; watch camera far-plane + tree counts.
+- [Lane flow routing](lane-flow-routing.md) — creeps steer by a flow field, not a path; lanes sharing endpoints (corner map) need per-lane MASKED flow fields or all creeps collapse onto the shortest route.
+- [Procedural tree rendering](tree-rendering.md) — trees = archetype-instanced branches + leaf cards (treegen.ts); tree VISUAL changes must never touch collider/blocked-mask/HP/seating (those live in entities.ts + TREE config).
+- [Hero foot grounding](hero-grounding.md) — rig is grounded only in bind pose; idle/stance clips float. Ground by LIVE posed sole (lowestSoleWorldY), not hips/capsule offset; skip while airborne.
+- [Lane creep staging](lane-creep-staging.md) — single-player creeps stage outside tower range + group into waves before diving; any wave gate needs an anti-stall release or lanes freeze.

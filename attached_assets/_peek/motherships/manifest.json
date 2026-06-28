@@ -1,0 +1,174 @@
+{
+  "name": "game-ui-kit-export",
+  "theme": "fantasy",
+  "targets": [
+    "html5",
+    "vanilla-js",
+    "canvas",
+    "webgl"
+  ],
+  "tokens": {
+    "--gk-font": "\"Cinzel Decorative\", \"Cinzel\", Georgia, serif",
+    "--gk-font-body": "\"EB Garamond\", Georgia, serif",
+    "--gk-font-scale": "1.25",
+    "--gk-radius": "10px",
+    "--gk-bg": "#070910",
+    "--gk-surface": "#11141f",
+    "--gk-surface-2": "#191e2e",
+    "--gk-ink": "#f3dcc4",
+    "--gk-ink-dim": "#ec9109",
+    "--gk-accent": "#c0d0ff",
+    "--gk-accent-2": "#ff4fa3",
+    "--gk-good": "#ffb02e",
+    "--gk-warn": "#c98a1a",
+    "--gk-danger": "#a8341f",
+    "--gk-mana": "#3f6fb0",
+    "--gk-xp": "#ffb02e",
+    "--gk-slot-size": "58px",
+    "--gk-glow": "0 0 0 1px rgba(192,208,255,0.18), 0 0 16px rgba(255,79,163,0.18)",
+    "--gk-pixelated": "auto",
+    "--gk-btn-bg": "linear-gradient(180deg,#caa14e,#a9802f)",
+    "--gk-btn-border": "rgba(255,176,46,0.5)",
+    "--gk-fr-window-border": "2px solid color-mix(in srgb, var(--gk-accent) 80%, #fff)",
+    "--gk-fr-window-bg": "linear-gradient(180deg, rgba(255,240,200,0.25), rgba(0,0,0,0.05)), var(--gk-surface)",
+    "--gk-fr-window-shadow": "0 0 24px color-mix(in srgb, var(--gk-accent) 35%, transparent), inset 0 0 0 1px rgba(120,80,20,0.3)",
+    "--gk-fr-slot-border": "1px solid var(--gk-accent)",
+    "--gk-fr-slot-bg": "var(--gk-surface-2)",
+    "--gk-fr-slot-shadow": "0 0 0 2px color-mix(in srgb, var(--gk-accent) 30%, transparent), inset 0 2px 6px rgba(0,0,0,0.45)",
+    "--gk-fr-slot-radius": "12px",
+    "--gk-fr-window-radius": "18px"
+  },
+  "images": {},
+  "genre": "rts",
+  "artPreset": null,
+  "skillSet": {
+    "id": "mono",
+    "label": "Mono Outline",
+    "count": 40,
+    "icons": [
+      "cyberpunk/skill_sets/mono/skill_01.png",
+      "cyberpunk/skill_sets/mono/skill_02.png",
+      "cyberpunk/skill_sets/mono/skill_03.png",
+      "cyberpunk/skill_sets/mono/skill_04.png",
+      "cyberpunk/skill_sets/mono/skill_05.png",
+      "cyberpunk/skill_sets/mono/skill_06.png",
+      "cyberpunk/skill_sets/mono/skill_07.png",
+      "cyberpunk/skill_sets/mono/skill_08.png",
+      "cyberpunk/skill_sets/mono/skill_09.png",
+      "cyberpunk/skill_sets/mono/skill_10.png",
+      "cyberpunk/skill_sets/mono/skill_11.png",
+      "cyberpunk/skill_sets/mono/skill_12.png",
+      "cyberpunk/skill_sets/mono/skill_13.png",
+      "cyberpunk/skill_sets/mono/skill_14.png",
+      "cyberpunk/skill_sets/mono/skill_15.png",
+      "cyberpunk/skill_sets/mono/skill_16.png",
+      "cyberpunk/skill_sets/mono/skill_17.png",
+      "cyberpunk/skill_sets/mono/skill_18.png",
+      "cyberpunk/skill_sets/mono/skill_19.png",
+      "cyberpunk/skill_sets/mono/skill_20.png",
+      "cyberpunk/skill_sets/mono/skill_21.png",
+      "cyberpunk/skill_sets/mono/skill_22.png",
+      "cyberpunk/skill_sets/mono/skill_23.png",
+      "cyberpunk/skill_sets/mono/skill_24.png",
+      "cyberpunk/skill_sets/mono/skill_25.png",
+      "cyberpunk/skill_sets/mono/skill_26.png",
+      "cyberpunk/skill_sets/mono/skill_27.png",
+      "cyberpunk/skill_sets/mono/skill_28.png",
+      "cyberpunk/skill_sets/mono/skill_29.png",
+      "cyberpunk/skill_sets/mono/skill_30.png",
+      "cyberpunk/skill_sets/mono/skill_31.png",
+      "cyberpunk/skill_sets/mono/skill_32.png",
+      "cyberpunk/skill_sets/mono/skill_33.png",
+      "cyberpunk/skill_sets/mono/skill_34.png",
+      "cyberpunk/skill_sets/mono/skill_35.png",
+      "cyberpunk/skill_sets/mono/skill_36.png",
+      "cyberpunk/skill_sets/mono/skill_37.png",
+      "cyberpunk/skill_sets/mono/skill_38.png",
+      "cyberpunk/skill_sets/mono/skill_39.png",
+      "cyberpunk/skill_sets/mono/skill_40.png"
+    ]
+  },
+  "controlScheme": {
+    "mouse": "marquee",
+    "flags": {
+      "boxSelect": true,
+      "pointerLockAim": false,
+      "clickToMove": true,
+      "weaponScroll": false,
+      "dragInventory": true,
+      "inventoryClick": "select",
+      "equipMode": "button"
+    },
+    "hotkeys": [
+      {
+        "id": "attackMove",
+        "label": "Attack-Move",
+        "defaultKey": "a"
+      },
+      {
+        "id": "stop",
+        "label": "Stop",
+        "defaultKey": "s"
+      },
+      {
+        "id": "hold",
+        "label": "Hold Position",
+        "defaultKey": "h"
+      },
+      {
+        "id": "patrol",
+        "label": "Patrol",
+        "defaultKey": "p"
+      },
+      {
+        "id": "build",
+        "label": "Build Menu",
+        "defaultKey": "b"
+      },
+      {
+        "id": "group1",
+        "label": "Control Group 1",
+        "defaultKey": "1"
+      },
+      {
+        "id": "group2",
+        "label": "Control Group 2",
+        "defaultKey": "2"
+      },
+      {
+        "id": "group3",
+        "label": "Control Group 3",
+        "defaultKey": "3"
+      },
+      {
+        "id": "idleWorker",
+        "label": "Idle Worker",
+        "defaultKey": "."
+      },
+      {
+        "id": "cancel",
+        "label": "Cancel",
+        "defaultKey": "Escape"
+      }
+    ]
+  },
+  "layout": {
+    "hud": {
+      "fps-hotbar": {
+        "x": -3,
+        "y": 0
+      }
+    }
+  },
+  "classes": [
+    "gk-panel",
+    "gk-slot",
+    "gk-bar",
+    "gk-btn",
+    "gk-icon",
+    "gk-tabs",
+    "gk-node",
+    "gk-card"
+  ],
+  "generatedAt": "2026-06-20T23:44:10.726Z"
+}

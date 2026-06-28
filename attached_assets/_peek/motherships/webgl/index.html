@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Game UI Kit — WebGL HUD overlay</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700&family=EB+Garamond&family=Rajdhani:wght@500;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="../kit.css" />
+  <link rel="stylesheet" href="../theme.css" />
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    #scene { position: fixed; inset: 0; width: 100%; height: 100%; display: block; }
+    /* The HUD is a normal DOM kit overlaid on the WebGL scene — the standard
+       production pattern for crisp, accessible game UI on top of a GL canvas. */
+    #hud { position: fixed; inset: 0; pointer-events: none; padding: 28px; }
+    #hud .gk-panel, #hud .gk-btn { pointer-events: auto; }
+  </style>
+</head>
+<body>
+  <canvas id="scene"></canvas>
+  <div id="hud"><div class="gk-root" data-gk-theme="fantasy" style="max-width: 360px;">
+        <div class="gk-panel">
+          <div class="gk-titlebar"><span class="gk-title">WebGL HUD</span></div>
+          <div class="gk-panel__body">
+            <p>DOM kit overlaid on a live WebGL scene.</p>
+            <div class="gk-stack" style="margin-top: 10px;">
+              <div class="gk-bar gk-bar--health"><div class="gk-bar__fill" style="width: 64%"></div><span class="gk-bar__label">Shields</span></div>
+              <div class="gk-bar gk-bar--mana"><div class="gk-bar__fill" style="width: 80%"></div><span class="gk-bar__label">Energy</span></div>
+            </div>
+            <div class="gk-row-flex" style="margin-top: 14px;"><button class="gk-btn gk-btn--primary">Engage</button></div>
+          </div>
+        </div>
+      </div></div>
+  <script type="module">
+    import { startScene } from "./webgl-scene.js";
+    startScene(document.getElementById("scene"));
+  </script>
+</body>
+</html>
