@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm install --frozen-lockfile",
+  "installCommand": "pnpm config set minimumReleaseAge 0 && pnpm install --frozen-lockfile",
   "buildCommand": "BASE_PATH=/ PORT=5173 pnpm --filter @workspace/grudge-warlords run build",
   "outputDirectory": "artifacts/grudge-warlords/dist/public",
   "framework": null,
