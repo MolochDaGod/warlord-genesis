@@ -305,8 +305,8 @@ export function mountWeapons(
       character.mounts.leftHand.add(shield);
       w.objects.push(shield);
     } else if (weapon === "ranged") {
-      // Long gun: lock the off hand onto the foregrip ahead of the trigger.
-      w.supportGrip = addGrip(w.holder!, "left", [0, 0, 0.18]);
+      // Long gun: lock the off hand onto the foregrip (scaled to manifest mount size).
+      w.supportGrip = addGrip(w.holder!, "left", [0, 0.01, 0.14]);
     }
     return w;
   }

@@ -29,7 +29,7 @@ export interface WeaponTuning {
 
 export type TuningField = keyof WeaponTuning;
 
-const STORAGE_KEY = "gw_weapon_tuning_v1";
+const STORAGE_KEY = "gw_weapon_tuning_v2";
 
 /** The factory default tuning for a model, taken from its model def. */
 export function defaultTuning(key: WeaponModelKey): WeaponTuning {

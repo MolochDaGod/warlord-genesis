@@ -1,25 +1,19 @@
-import { useMemo, useEffect } from "react";
+import { useMemo, useEffect, useState } from "react";
 import * as THREE from "three";
 import { useGLTF, useAnimations, useTexture } from "@react-three/drei";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
 import type { UnitDef } from "../../game/config";
+import { bootEngine, getEngine } from "../../engine/boot";
+import { resolveUnitAssets } from "../../engine/assets";
 
-const BASE = import.meta.env.BASE_URL;
-
-/** Skinned low-poly character GLBs (with weapons baked in) per unit archetype. */
-const UNIT_URLS: Record<string, string> = {
-  footman: `${BASE}models/units/footman.glb`,
-  archer: `${BASE}models/units/archer.glb`,
-  knight: `${BASE}models/units/knight.glb`,
-};
-
-/**
- * Shared palette atlas the unit GLBs were authored against. The models ship with
- * UVs (TEXCOORD_0) that index into this 256x256 colour swatch but no bound
- * texture, so without it every material falls back to glTF's default white. We
- * bind it manually at load to colour the meshes.
- */
-const PALETTE_URL = `${BASE}models/units/Color_Palette.png`;
+/** R2 CDN when reachable, else local public (Vercel /assets proxy). */
+function useUnitAssets() {
+  const [assets, setAssets] = useState(() => resolveUnitAssets(getEngine().cdnReachable));
+  useEffect(() => {
+    bootEngine().then((s) => setAssets(resolveUnitAssets(s.cdnReachable)));
+  }, []);
+  return assets;
+}
 
 /** Target world height the model is normalized to (parent group then applies def.scale). */
 const UNIT_FIT_HEIGHT = 1.7;
@@ -37,9 +31,9 @@ const FACTION_TINT: Record<string, string> = {
   enemy: "#d65a47",
 };
 
-function GLBUnit({ url, tint }: { url: string; tint: string }) {
+function GLBUnit({ url, paletteUrl, tint }: { url: string; paletteUrl: string; tint: string }) {
   const { scene, animations } = useGLTF(url);
-  const palette = useTexture(PALETTE_URL);
+  const palette = useTexture(paletteUrl);
   // Build the instance scene AND its own cloned materials so the per-faction tint
   // never bleeds onto the other army (the GLTF cache shares source materials).
   const { root, mats } = useMemo(() => {
@@ -103,16 +97,17 @@ function GLBUnit({ url, tint }: { url: string; tint: string }) {
  */
 export function UnitMesh({ def, faction }: { def: UnitDef; faction: string }) {
   const tint = FACTION_TINT[faction] ?? "#ffffff";
+  const { models: unitUrls, palette } = useUnitAssets();
   switch (def.mesh) {
     case "footman":
     case "grunt":
-      return <GLBUnit url={UNIT_URLS.footman} tint={tint} />;
+      return <GLBUnit url={unitUrls.footman} paletteUrl={palette} tint={tint} />;
     case "archer":
     case "raider":
-      return <GLBUnit url={UNIT_URLS.archer} tint={tint} />;
+      return <GLBUnit url={unitUrls.archer} paletteUrl={palette} tint={tint} />;
     case "knight":
     case "ogre":
-      return <GLBUnit url={UNIT_URLS.knight} tint={tint} />;
+      return <GLBUnit url={unitUrls.knight} paletteUrl={palette} tint={tint} />;
     default:
       return <ProceduralUnit def={def} />;
   }

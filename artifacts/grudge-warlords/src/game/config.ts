@@ -271,6 +271,10 @@ export type UnitMeshKind = "footman" | "archer" | "knight" | "grunt" | "raider" 
 export interface UnitDef {
   id: string;
   name: string;
+  /** Barracks/archery tier (1–3) when spawned from production buildings. */
+  tier?: 1 | 2 | 3;
+  /** Combat line for UI + manifest alignment. */
+  line?: "melee" | "ranged";
   hp: number;
   speed: number;
   damage: number;
@@ -289,9 +293,49 @@ export interface UnitDef {
 
 export const UNIT_TYPES: Record<string, UnitDef> = {
   // --- Player-summoned, commandable allies ---
+  skirmisher: {
+    id: "skirmisher",
+    name: "Skirmisher",
+    tier: 1,
+    line: "ranged",
+    hp: 72,
+    speed: 5.4,
+    damage: 14,
+    attackRange: 13,
+    attackCooldown: 1.05,
+    aggroRange: 15,
+    ranged: true,
+    radius: 0.46,
+    scale: 0.84,
+    color: "#6a9f4a",
+    accent: "#a8e86b",
+    mesh: "archer",
+    reward: 0,
+  },
+  marksman: {
+    id: "marksman",
+    name: "Marksman",
+    tier: 3,
+    line: "ranged",
+    hp: 118,
+    speed: 4.8,
+    damage: 32,
+    attackRange: 18,
+    attackCooldown: 1.35,
+    aggroRange: 20,
+    ranged: true,
+    radius: 0.52,
+    scale: 1.05,
+    color: "#3d6b8f",
+    accent: "#7ec8ff",
+    mesh: "archer",
+    reward: 0,
+  },
   footman: {
     id: "footman",
     name: "Footman",
+    tier: 2,
+    line: "melee",
     hp: 150,
     speed: 5.4,
     damage: 16,
@@ -309,6 +353,8 @@ export const UNIT_TYPES: Record<string, UnitDef> = {
   archer: {
     id: "archer",
     name: "Archer",
+    tier: 2,
+    line: "ranged",
     hp: 90,
     speed: 5,
     damage: 20,
@@ -326,6 +372,8 @@ export const UNIT_TYPES: Record<string, UnitDef> = {
   knight: {
     id: "knight",
     name: "Knight",
+    tier: 3,
+    line: "melee",
     hp: 320,
     speed: 4.6,
     damage: 26,
@@ -344,6 +392,8 @@ export const UNIT_TYPES: Record<string, UnitDef> = {
   militia: {
     id: "militia",
     name: "Militia",
+    tier: 1,
+    line: "melee",
     hp: 95,
     speed: 5,
     damage: 10,
@@ -570,9 +620,9 @@ export const BUILDINGS: Record<
   archery: {
     name: "Archery Range",
     levels: [
-      { interval: 21, count: 2, type: "archer", statMult: 1, upgradeCost: 280 },
-      { interval: 17, count: 3, type: "archer", statMult: 1.25, upgradeCost: 480 },
-      { interval: 14, count: 4, type: "archer", statMult: 1.5 },
+      { interval: 21, count: 2, type: "skirmisher", statMult: 1, upgradeCost: 280 },
+      { interval: 17, count: 3, type: "archer", statMult: 1.15, upgradeCost: 480 },
+      { interval: 14, count: 4, type: "marksman", statMult: 1.25 },
     ],
   },
 };

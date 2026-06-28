@@ -1068,6 +1068,42 @@ kbd {
 .gw-landing .gw-screen-inner { gap: 22px; padding: 48px 32px; }
 .gw-landing-cta { margin-top: 6px; padding: 18px 64px; font-size: 19px; }
 
+/* ===== Intro / opening screen ===== */
+.gw-intro { position: relative; overflow: hidden; }
+.gw-intro-bg {
+  position: absolute; inset: 0; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 50% 20%, rgba(224, 178, 82, 0.12) 0%, transparent 55%),
+    radial-gradient(ellipse 60% 50% at 80% 80%, rgba(100, 140, 255, 0.08) 0%, transparent 50%),
+    linear-gradient(180deg, #0a0e18 0%, #12182a 45%, #0a0e18 100%);
+  animation: gw-intro-pulse 8s ease-in-out infinite alternate;
+}
+@keyframes gw-intro-pulse {
+  from { opacity: 0.85; }
+  to { opacity: 1; }
+}
+.gw-intro-inner { position: relative; z-index: 1; gap: 18px; padding: 40px 28px; max-width: 720px; }
+.gw-intro-prelude { display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.gw-intro-badges { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+.gw-intro-badge {
+  font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 10px; border-radius: 12px;
+  background: rgba(224, 178, 82, 0.1); border: 1px solid rgba(224, 178, 82, 0.35);
+  color: #e0b252;
+}
+.gw-intro-brand { text-align: center; }
+.gw-intro-tagline { font-size: 13px; color: #8a9ab8; line-height: 1.55; max-width: 520px; margin: 8px auto 0; }
+.gw-intro-stats {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%;
+  padding: 14px; border-radius: 10px;
+  background: rgba(8, 12, 22, 0.65); border: 1px solid rgba(120, 150, 200, 0.15);
+}
+.gw-intro-stat-col { display: flex; flex-direction: column; gap: 4px; align-items: center; }
+.gw-intro-stat-label { font-size: 9px; letter-spacing: 0.2em; color: #607090; text-transform: uppercase; }
+.gw-intro-stat-row { font-size: 11px; font-weight: 600; color: #c8d4e8; }
+.gw-intro-cta { margin-top: 4px; padding: 16px 56px; font-size: 18px; }
+.gw-intro-cta-secondary { margin-top: 0; }
+
 /* ===== Lobby page ===== */
 .gw-lobby {
   display: block;

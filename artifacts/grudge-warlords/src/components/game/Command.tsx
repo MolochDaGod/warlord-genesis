@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { EM } from "../../game/entities";
+import { Terrain } from "../../engine/terrain";
 import { useCommand } from "../../game/command";
 import { useGame } from "../../game/store";
 import { SHOP_BUILDS } from "../../game/config";
@@ -288,7 +289,8 @@ export function CommandLayer() {
     const gp = ground.current;
     const ok = canPlace(gp.x, gp.z) && useGame.getState().credits >= build.cost;
     ghost.mesh.visible = true;
-    ghost.mesh.position.set(gp.x, EM.map.heightAt(gp.x, gp.z) + 1, gp.z);
+    const snapped = Terrain.snapDeploy(gp.x, gp.z);
+    ghost.mesh.position.set(snapped.x, snapped.y + 1, snapped.z);
     ghost.mat.color.set(ok ? "#7ee37e" : "#ff6b6b");
   });
 

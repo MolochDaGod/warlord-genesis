@@ -6,6 +6,7 @@ import { useGame } from "../game/store";
 import { useCommand } from "../game/command";
 import { DIFFICULTY } from "../game/config";
 import { ICONS } from "../components/ui/icons";
+import { bootEngine } from "../engine/boot";
 
 /** Victory / defeat banner shown over the battlefield once the match resolves. */
 function MatchEndOverlay() {
@@ -62,6 +63,10 @@ export function Play() {
   const phase = useGame((s) => s.phase);
   const mode = useCommand((s) => s.mode);
   const [locked, setLocked] = useState(false);
+
+  useEffect(() => {
+    void bootEngine();
+  }, []);
 
   useEffect(() => {
     const onChange = () => setLocked(!!document.pointerLockElement);

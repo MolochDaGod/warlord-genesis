@@ -9,8 +9,10 @@ import {
   MAX_BUILDING_LEVEL,
   ALLY_TECH,
   MAX_ALLY_TECH,
+  UNIT_TYPES,
   type ShopItem,
 } from "../../game/config";
+import { WARLORD_MANIFEST } from "../../engine/warlordManifest";
 import { ICONS } from "./icons";
 
 function buyUnit(item: ShopItem) {
@@ -74,6 +76,8 @@ export function Shop() {
             item.ref === "footman" ? "🗡️" :
             item.ref === "archer" ? "🏹" :
             item.ref === "knight" ? "🛡️" : "⚔️";
+          const udef = UNIT_TYPES[item.ref];
+          const tierTag = udef?.tier ? `T${udef.tier}` : "";
           return (
           <button
             key={item.id}
@@ -82,7 +86,7 @@ export function Shop() {
             title={item.description}
             onClick={() => buyUnit(item)}
           >
-            <span className="gw-shop-name">{unitGlyph} {item.name}</span>
+            <span className="gw-shop-name">{unitGlyph} {item.name}{tierTag ? ` · ${tierTag}` : ""}</span>
             <span className={`gw-shop-cost${credits < item.cost ? " gw-cost-cant" : ""}`}>{item.cost}</span>
           </button>
         );
@@ -96,11 +100,8 @@ export function Shop() {
           const full = isRepair && allyCoreHp >= allyCoreMax;
           const disabled = credits < item.cost || full;
           const isArmed = !isRepair && armed?.ref === item.ref;
-          const towerGlyph =
-            item.ref === "cannon" ? "💣" :
-            item.ref === "ballista" ? "🏹" :
-            item.ref === "mage" ? "🔮" :
-            item.ref === "barrier" ? "🧱" : "🔧";
+          const turret = WARLORD_MANIFEST.turrets.find((t) => t.kind === item.ref);
+          const towerGlyph = turret?.glyph ?? "🔧";
           return (
             <button
               key={item.id}

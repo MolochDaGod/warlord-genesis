@@ -1,5 +1,6 @@
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
+import { WARLORD_MANIFEST } from "../../engine/warlordManifest";
 
 /**
  * Real voxel weapon models (KayKit-style) mounted in the hero's hand in place of
@@ -38,27 +39,26 @@ export interface WeaponModelDef {
  * point for the in-game tuning panel (persisted per model to localStorage), so
  * they only need to be in the right ballpark — the panel dials them in live.
  */
+function mountDef(key: WeaponModelKey, hand: "left" | "right", file: string): WeaponModelDef {
+  const m = WARLORD_MANIFEST.weaponMounts[key];
+  return {
+    file,
+    hand,
+    targetSize: m.targetSize,
+    pos: m.pos,
+    rot: m.rot,
+    scale: m.scale,
+    muzzle: m.muzzle,
+  };
+}
+
+/** In-hand mounts from Grudge Engine manifest — sized for voxel grip bones. */
 export const WEAPON_MODEL_DEFS: Record<WeaponModelKey, WeaponModelDef> = {
-  bow: {
-    file: "bow", hand: "left", targetSize: 1.4,
-    pos: [0, 0.05, 0], rot: [0, 0, Math.PI / 2], scale: 1, muzzle: [0, 0.6, 0],
-  },
-  pistol: {
-    file: "pistol", hand: "right", targetSize: 0.42,
-    pos: [0, 0.02, 0.04], rot: [Math.PI / 2, 0, 0], scale: 1, muzzle: [0, 0, 0.32],
-  },
-  rifle: {
-    file: "rifle", hand: "right", targetSize: 1.0,
-    pos: [0, 0.02, 0.05], rot: [Math.PI / 2, 0, 0], scale: 1, muzzle: [0, 0, 0.6],
-  },
-  sniper: {
-    file: "sniper", hand: "right", targetSize: 1.15,
-    pos: [0, 0.02, 0.05], rot: [Math.PI / 2, 0, 0], scale: 1, muzzle: [0, 0, 0.7],
-  },
-  sword: {
-    file: "sword", hand: "right", targetSize: 1.0,
-    pos: [0, 0.05, 0], rot: [Math.PI / 2, 0, 0], scale: 1, muzzle: [0, 0.55, 0],
-  },
+  bow: mountDef("bow", "left", "bow"),
+  pistol: mountDef("pistol", "right", "pistol"),
+  rifle: mountDef("rifle", "right", "rifle"),
+  sniper: mountDef("sniper", "right", "sniper"),
+  sword: mountDef("sword", "right", "sword"),
 };
 
 export const WEAPON_MODEL_KEYS = Object.keys(WEAPON_MODEL_DEFS) as WeaponModelKey[];
@@ -88,6 +88,10 @@ function prepareModel(raw: THREE.Group, def: WeaponModelDef): THREE.Group {
   const size = box.getSize(new THREE.Vector3());
   const maxDim = Math.max(size.x, size.y, size.z) || 1;
   raw.scale.setScalar(def.targetSize / maxDim);
+  // Recenter grip at holder origin so rotation pivots in the fist.
+  const box2 = new THREE.Box3().setFromObject(raw);
+  const grip = box2.getCenter(new THREE.Vector3());
+  raw.position.sub(grip);
 
   const palette = getPalette();
   const mat = new THREE.MeshStandardMaterial({ map: palette, roughness: 0.7, metalness: 0.1 });
