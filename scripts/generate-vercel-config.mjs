@@ -62,6 +62,14 @@ const rewrites = [
     source: "/api/objectstore/:path*",
     destination: "https://objectstore.grudge-studio.com/api/:path*",
   },
+  {
+    source: "/media/heroes/portraits/:path*",
+    destination: "https://molochdagod.github.io/ObjectStore/heroes/portraits/:path*",
+  },
+  {
+    source: "/media/heroes/videos/:path*",
+    destination: "https://molochdagod.github.io/ObjectStore/heroes/videos/:path*",
+  },
 ];
 
 for (const prefix of PREFIXES) {
