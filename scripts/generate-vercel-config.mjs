@@ -55,22 +55,45 @@ const AUTH_PATHS = [
   "complete-profile",
 ];
 
+const OBJECTSTORE = "https://objectstore.grudge-studio.com";
+
+/** KayKit creeps, GRUDGE6 FBX heroes, projectiles — live on ObjectStore, not in this static deploy. */
+const OBJECTSTORE_MODEL_PREFIXES = [
+  "kaykit",
+  "characters",
+  "grudge6",
+  "units",
+  "projectiles",
+  "rts",
+];
+
 const rewrites = [
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
   { source: "/api/assets/:path*", destination: "https://assets.grudge-studio.com/:path*" },
   {
     source: "/api/objectstore/:path*",
-    destination: "https://objectstore.grudge-studio.com/api/:path*",
+    destination: `${OBJECTSTORE}/api/:path*`,
+  },
+  {
+    source: "/assets/skills/:path*",
+    destination: `${OBJECTSTORE}/assets/skills/:path*`,
   },
   {
     source: "/media/heroes/portraits/:path*",
-    destination: "https://molochdagod.github.io/ObjectStore/heroes/portraits/:path*",
+    destination: `${OBJECTSTORE}/heroes/portraits/:path*`,
   },
   {
     source: "/media/heroes/videos/:path*",
-    destination: "https://molochdagod.github.io/ObjectStore/heroes/videos/:path*",
+    destination: `${OBJECTSTORE}/heroes/videos/:path*`,
   },
 ];
+
+for (const prefix of OBJECTSTORE_MODEL_PREFIXES) {
+  rewrites.push({
+    source: `/models/${prefix}/:path*`,
+    destination: `${OBJECTSTORE}/models/${prefix}/:path*`,
+  });
+}
 
 for (const prefix of PREFIXES) {
   rewrites.push(
@@ -91,7 +114,7 @@ rewrites.push(
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
   { source: "/api/:path*", destination: "https://api.grudge-studio.com/api/:path*" },
   {
-    source: "/((?!assets/|models/|media/|api/|favicon\\.svg).*)",
+    source: "/((?!assets/|models/|media/|textures/|api/|favicon\\.svg).*)",
     destination: "/index.html",
   },
 );
@@ -109,6 +132,10 @@ const config = {
     {
       source: "/models/(.*)",
       headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
+    },
+    {
+      source: "/textures/(.*)",
+      headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
   ],
   rewrites,

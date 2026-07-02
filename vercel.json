@@ -21,6 +21,15 @@
           "value": "public, max-age=0, must-revalidate"
         }
       ]
+    },
+    {
+      "source": "/textures/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, immutable"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -37,12 +46,40 @@
       "destination": "https://objectstore.grudge-studio.com/api/:path*"
     },
     {
+      "source": "/assets/skills/:path*",
+      "destination": "https://objectstore.grudge-studio.com/assets/skills/:path*"
+    },
+    {
       "source": "/media/heroes/portraits/:path*",
-      "destination": "https://molochdagod.github.io/ObjectStore/heroes/portraits/:path*"
+      "destination": "https://objectstore.grudge-studio.com/heroes/portraits/:path*"
     },
     {
       "source": "/media/heroes/videos/:path*",
-      "destination": "https://molochdagod.github.io/ObjectStore/heroes/videos/:path*"
+      "destination": "https://objectstore.grudge-studio.com/heroes/videos/:path*"
+    },
+    {
+      "source": "/models/kaykit/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/kaykit/:path*"
+    },
+    {
+      "source": "/models/characters/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/characters/:path*"
+    },
+    {
+      "source": "/models/grudge6/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/grudge6/:path*"
+    },
+    {
+      "source": "/models/units/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/units/:path*"
+    },
+    {
+      "source": "/models/projectiles/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/projectiles/:path*"
+    },
+    {
+      "source": "/models/rts/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/rts/:path*"
     },
     {
       "source": "/api/health",
@@ -281,7 +318,7 @@
       "destination": "https://api.grudge-studio.com/api/:path*"
     },
     {
-      "source": "/((?!assets/|models/|media/|api/|favicon\\.svg).*)",
+      "source": "/((?!assets/|models/|media/|textures/|api/|favicon\\.svg).*)",
       "destination": "/index.html"
     }
   ]

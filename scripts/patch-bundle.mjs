@@ -100,6 +100,16 @@ for (const [from, to] of replacements) {
   }
 }
 
+// FBX models reference WK_StandardUnits_Textures.psd beside the .FBX — remap to webp atlas on CDN.
+if (js.includes("const Jb=new rK;")) {
+  js = js.replace(
+    "const Jb=new rK;",
+    'const Jb=new rK;Jb.setURLModifier(u=>/StandardUnits_Textures\\.psd/i.test(u)?u.replace(/\\/models\\/characters\\/[^?#]+$/i,"/textures/WK_Standard_Units.webp"):u);',
+  );
+} else {
+  console.warn("[patch] LoadingManager hook missing — PSD remap skipped");
+}
+
 // About panel component (lobby tab)
 const ABOUT_COMPONENT = `function WCA(){return d.jsxs("div",{className:"gw-about-panel gw-deploy-panel",children:[d.jsx("span",{className:"gw-deploy-head",children:"About Grudge Studio"}),d.jsxs("p",{className:"gw-about-lead",children:["Warlord Genesis is the ",d.jsx("strong",{children:"Grudge Nexus warcamp"})," — lane-defense RTS on the Grudge Engine with GRUDGE6 viewer heroes, KayKit lane creeps, and canonical player data."]}),d.jsxs("ul",{className:"gw-pipeline-list gw-about-list",children:[d.jsxs("li",{children:[d.jsx("strong",{children:"Live"})," — ",d.jsx("a",{href:"https://warlord-genesis.vercel.app",target:"_blank",rel:"noreferrer",children:"warlord-genesis.vercel.app"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Characters"})," — active hero from ",d.jsx("code",{children:"/api/characters"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Saves"})," — ",d.jsx("code",{children:"warlord_genesis_players"})," on Railway Postgres"]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Assets"})," — ",d.jsx("code",{children:"assets.grudge-studio.com"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Source"})," — ",d.jsx("a",{href:"https://github.com/MolochDaGod/warlord-genesis",target:"_blank",rel:"noreferrer",children:"github.com/MolochDaGod/warlord-genesis"})]})]}),d.jsx("p",{className:"gw-about-muted",children:"Built by MolochDaGod / Grudge Studio — dark-fantasy browser games on Three.js, Vercel, Cloudflare, and Railway."})]})}`;
 
@@ -218,7 +228,7 @@ writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "11";
+const BUNDLE_BUST = "13";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,
