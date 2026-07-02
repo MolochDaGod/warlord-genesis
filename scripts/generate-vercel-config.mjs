@@ -132,7 +132,8 @@ rewrites.push(
 );
 
 const config = {
-  buildCommand: "node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs",
+  buildCommand:
+    "node scripts/stage-assets.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/strip-glb-external-textures.mjs models/towers && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs",
   installCommand: "",
   outputDirectory: ".",
   framework: null,

@@ -2,15 +2,23 @@
 /**
  * Patch production bundle: fleet URLs, lobby/about UI, canonical player sync.
  */
+import { createHash } from "node:crypto";
 import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const MANIFEST_PATH = join(ROOT, "deploy-manifest.json");
 const SRC = join(ROOT, "assets", "index-warlord-fix2.js");
 const OUT = join(ROOT, "assets", "index-warlord-fix3.js");
 const INDEX = join(ROOT, "index.html");
 const CSS = join(ROOT, "assets", "index-BNWYZMT1.css");
+
+const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+const patchFailures = [];
+function mustPatch(id, ok) {
+  if (!ok) patchFailures.push(id);
+}
 
 let js = readFileSync(SRC, "utf8");
 
@@ -113,8 +121,9 @@ const TITLE_XO_NEW =
   'function xO(){const C=Fh(),A=MN(o=>o.openHub),I=Rh(o=>o.user),g=Rh(o=>o.loading),i=Rh(o=>o.error),e=Rh(o=>o.guest),t=Rh(o=>o.signInWithPuter),[Q,o]=T.useState(!0),[s,l]=T.useState(!1);T.useEffect(()=>{WS().then(h=>{l(h.cdnReachable),o(!1)})},[]);return d.jsxs("div",{className:"gw-screen gw-title-v3",children:[d.jsx("div",{className:"gw-title-bg","aria-hidden":!0}),d.jsxs("header",{className:"gw-auth-bar",children:[d.jsx("span",{className:"gw-auth-brand",children:"Grudge Studio"}),d.jsxs("div",{className:"gw-auth-actions",children:[g&&d.jsx("span",{className:"gw-auth-pill is-loading",children:"Connecting session…"}),!g&&I&&d.jsxs("span",{className:"gw-auth-pill is-ok",title:I.grudgeId,children:[I.role==="guest"?"Guest":"Account"," · ",I.displayName||I.username]}),!g&&!I&&d.jsx("span",{className:"gw-auth-pill is-warn",children:"Not signed in"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn",onClick:e,children:"Continue as guest"}),d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:t,disabled:g,children:"Sign in with Puter"})]})]}),d.jsxs("main",{className:"gw-title-main",children:[d.jsx("p",{className:"gw-title-eyebrow",children:"Warlord Genesis · Three-lane RTS"}),d.jsxs("h1",{className:"gw-title-headline",children:["GRUDGE ",d.jsx("span",{children:"WARLORDS"})]}),d.jsx("p",{className:"gw-title-lead",children:"Pick your champion in the warcamp, deploy lane waves, and siege the enemy citadel."}),i&&d.jsx("p",{className:"gw-title-error",children:i}),d.jsxs("div",{className:"gw-title-ctas",children:[d.jsx("button",{type:"button",className:"gw-btn gw-title-play",onClick:()=>C("/lobby"),children:g?"Preparing…":"Enter the Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})]}),d.jsxs("div",{className:"gw-title-chips",children:[d.jsx("span",{className:"gw-title-chip",children:Q?"Booting engine…":"Engine v"+mt.version}),d.jsx("span",{className:"gw-title-chip",children:s?"CDN assets online":"Local assets"}),d.jsx("span",{className:"gw-title-chip",children:"Puter login · Railway saves"})]})]}),d.jsxs("footer",{className:"gw-title-footer",children:[d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"})]})]})}';
 if (TITLE_XO_ORIG && js.includes(TITLE_XO_ORIG)) {
   js = js.replace(TITLE_XO_ORIG, TITLE_XO_NEW);
+  mustPatch("title-v3", true);
 } else {
-  console.warn("[patch] title screen pattern missing — xO not replaced");
+  mustPatch("title-v3", js.includes("gw-screen gw-title-v3"));
 }
 
 for (const [from, to] of replacements) {
@@ -292,11 +301,12 @@ js = js.replace(
 const PLAY_ROUTE_ORIG =
   'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1);if(T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),C==="menu")return d.jsx(aq,{to:"/lobby",replace:!0});';
 const PLAY_ROUTE_PATCHED =
-  'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null);T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(C!=="menu"){o(!0);return}if(WgRestoreMatch()){o(!0);return}const e=XI.getState();if(e.loadoutLocked&&zC.getState().onboardingDone){BI.getState().startGame();o(!0);return}o(!1)},[C]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsx("span",{className:"gw-hint",children:"Preparing the field…"})});if(!boot)return d.jsx(aq,{to:"/lobby",replace:!0});';
+  'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null);T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(!zC.getState().onboardingDone){o(!1);return}if(C!=="menu"){o(!0);return}if(WgRestoreMatch()){o(!0);return}const e=XI.getState();if(e.loadoutLocked){BI.getState().startGame();o(!0);return}o(!1)},[C]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsx("span",{className:"gw-hint",children:"Preparing the field…"})});if(!boot)return d.jsx(aq,{to:"/lobby",replace:!0});';
 if (js.includes(PLAY_ROUTE_ORIG)) {
   js = js.replace(PLAY_ROUTE_ORIG, PLAY_ROUTE_PATCHED);
+  mustPatch("play-boot", true);
 } else {
-  console.warn("[patch] PgA play-route boot guard missing");
+  mustPatch("play-boot", js.includes("gw-play-boot"));
 }
 
 // Tower GLBs — always serve from this deploy (/models/towers). CDN Assimp exports crash GLTFLoader.
@@ -311,22 +321,38 @@ js = js.replace(
 js = js.replace("cdnReachable:!0,bootedAt:0", "cdnReachable:!1,bootedAt:0");
 js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v4"');
 
-// Route map: title → warcamp → play (+ multiplayer). /warcamp aliases /lobby.
+// Route map: / → /lobby (warcamp) → /play (battle) → /mp
 const LOBBY_ROUTE =
   'd.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
 const LOBBY_ROUTE_PATCHED =
-  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
+  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})}),d.jsx(jc,{path:"/battle",element:d.jsx(aq,{to:"/play",replace:!0})})';
 if (js.includes(LOBBY_ROUTE)) {
   js = js.replace(LOBBY_ROUTE, LOBBY_ROUTE_PATCHED);
+  mustPatch("routes", true);
 } else {
-  console.warn("[patch] warcamp route alias missing");
+  mustPatch("routes", js.includes('path:"/warcamp"') && js.includes('path:"/battle"'));
+}
+
+// Manifest-driven patch fingerprints — hard fail if any critical needle missing.
+for (const { id, needle } of manifest.bundlePatches) {
+  mustPatch(id, js.includes(needle));
+}
+
+if (patchFailures.length) {
+  console.error("[patch] FAILED patches:", patchFailures.join(", "));
+  process.exit(1);
 }
 
 writeFileSync(OUT, js);
-console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
+const bundleHash = createHash("sha256").update(js).digest("hex").slice(0, 16);
+manifest.lastBuilt = new Date().toISOString();
+manifest.bundleBytes = js.length;
+manifest.bundleSha256 = bundleHash;
+writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
+console.log("[patch] wrote", OUT, `(${js.length} bytes, sha ${bundleHash})`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "18";
+const BUNDLE_BUST = String(manifest.bundleVersion);
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,

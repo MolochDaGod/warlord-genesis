@@ -1,33 +1,10 @@
-import { readFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+#!/usr/bin/env node
+/** @deprecated Use `npm run verify` — kept for backwards compatibility. */
+import { spawnSync } from "node:child_process";
+import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const j = readFileSync(
-  join(dirname(fileURLToPath(import.meta.url)), "..", "assets", "index-warlord-fix3.js"),
-  "utf8",
-);
-
-const checks = [
-  ["PQ proxy", 'PQ="/api/assets"'],
-  ["Fleet auth base", 'GN="/api/auth"'],
-  ["Guest via puter", 'nO("/puter",{puterId:p,displayName:"Guest"})'],
-  ["Puter sign-in", "async function WgPuterSignIn"],
-  ["Auto guest restore", "const g=await lO()"],
-  ["signInWithPuter", "signInWithPuter:()=>xR(C,WgPuterSignIn)"],
-  ["Puter button", "SIGN IN WITH PUTER"],
-  ["Gbux effect fix", "zC.getState().syncGbuxFromAccount(v)"],
-  ["Token persist", "g.token||g.sessionToken"],
-  ["Bearer /me", "Authorization:`Bearer ${C}`"],
-  ["Fleet kO", "const I=await cO()"],
-  ["Sync Bearer", "WgFleetSync(C){try{const tok=SO()"],
-  ["Title v3 layout", "gw-screen gw-title-v3"],
-  ["Visible Puter auth", "Sign in with Puter"],
-  ["Title play CTA", "Enter the Warcamp"],
-  ["Shard selector fix", 'F.cards.find(e=>e.kind==="character"&&e.id===C.id)?.level'],
-  ["401 clears token", "I.status===401&&NN()"],
-  ["Local snap guard", "WgLocalSnap"],
-];
-
-for (const [label, needle] of checks) {
-  console.log(`${label}:`, j.includes(needle));
-}
+const res = spawnSync("node", [join(dirname(fileURLToPath(import.meta.url)), "verify-deploy.mjs")], {
+  stdio: "inherit",
+});
+process.exit(res.status ?? 1);

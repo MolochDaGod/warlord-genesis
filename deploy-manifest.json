@@ -1,0 +1,139 @@
+{
+  "name": "warlord-genesis",
+  "site": "https://warlord-genesis.vercel.app",
+  "bundleVersion": 19,
+  "bundleFile": "assets/index-warlord-fix3.js",
+  "bundleSource": "assets/index-warlord-fix2.js",
+  "cssFile": "assets/index-BNWYZMT1.css",
+  "routes": [
+    {
+      "path": "/",
+      "id": "title",
+      "screen": "Title / auth",
+      "component": "xO"
+    },
+    {
+      "path": "/lobby",
+      "id": "warcamp",
+      "screen": "Warcamp / loadout",
+      "component": "u7"
+    },
+    {
+      "path": "/warcamp",
+      "id": "warcamp-alias",
+      "redirect": "/lobby"
+    },
+    {
+      "path": "/play",
+      "id": "battle",
+      "screen": "Lane battle",
+      "component": "PgA",
+      "guard": "deploy-or-session"
+    },
+    {
+      "path": "/battle",
+      "id": "battle-alias",
+      "redirect": "/play"
+    },
+    {
+      "path": "/mp",
+      "id": "multiplayer",
+      "screen": "Multiplayer lobby",
+      "component": "NCA"
+    },
+    {
+      "path": "*",
+      "id": "fallback",
+      "redirect": "/"
+    }
+  ],
+  "requiredStatic": [
+    "index.html",
+    "favicon.svg",
+    "vercel.json",
+    "assets/index-warlord-fix3.js",
+    "assets/index-BNWYZMT1.css",
+    "textures/ground_diff.jpg",
+    "textures/ground_nor.jpg",
+    "anims/baked/venom/idle.json",
+    "anims/baked/venom/walk-forward.json",
+    "anims/baked/venom/run-forward.json",
+    "models/towers/medieval/tower_02_1.glb",
+    "models/towers/medieval/tower_03_1_full.glb",
+    "models/towers/medieval/atlas.png",
+    "models/towers/elven/tower_2.glb",
+    "models/towers/elven/tower_3_full.glb",
+    "models/towers/orc/tower_02.glb",
+    "models/towers/orc/tower_3_full.glb",
+    "models/towers/ruins/ruin_11.glb",
+    "models/towers/ruins/ruin_15.glb"
+  ],
+  "vercelRewritesRequired": [
+    "/api/grudge/:path*",
+    "/api/assets/models/maps/:theme/:file",
+    "/api/assets/:path*",
+    "/models/kaykit/:path*",
+    "/models/characters/:path*"
+  ],
+  "bundlePatches": [
+    {
+      "id": "cdn-proxy",
+      "needle": "PQ=\"/api/assets\""
+    },
+    {
+      "id": "fleet-auth",
+      "needle": "GN=\"/api/auth\""
+    },
+    {
+      "id": "local-towers",
+      "needle": "return`${pT}models/towers/${C}/${g}.glb`"
+    },
+    {
+      "id": "local-tower-atlas",
+      "needle": "return`${pT}models/towers/${C}/atlas.png`"
+    },
+    {
+      "id": "cdn-default-off",
+      "needle": "cdnReachable:!1,bootedAt:0"
+    },
+    {
+      "id": "boot-cache-v4",
+      "needle": "gw_engine_boot_v4"
+    },
+    {
+      "id": "match-persist",
+      "needle": "function WgRestoreMatch"
+    },
+    {
+      "id": "play-boot",
+      "needle": "gw-play-boot"
+    },
+    {
+      "id": "warcamp-route",
+      "needle": "path:\"/warcamp\""
+    },
+    {
+      "id": "battle-route",
+      "needle": "path:\"/battle\""
+    },
+    {
+      "id": "title-v3",
+      "needle": "gw-screen gw-title-v3"
+    },
+    {
+      "id": "puter-auth",
+      "needle": "signInWithPuter:()=>xR(C,WgPuterSignIn)"
+    },
+    {
+      "id": "baked-anims-local",
+      "needle": "/anims/baked/"
+    },
+    {
+      "id": "baked-null-guard",
+      "needle": "[warlord] baked clip missing"
+    }
+  ],
+  "lastBuilt": "2026-07-02T23:49:30.063Z",
+  "bundleBytes": 4057246,
+  "bundleSha256": "92f08f81432d0dce"
+}
