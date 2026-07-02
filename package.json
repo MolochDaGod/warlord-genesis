@@ -5,7 +5,12 @@
   "description": "Grudge Warlords warcamp client — https://warlord-genesis.vercel.app",
   "type": "module",
   "scripts": {
-    "deploy": "vercel deploy --prod --yes",
+    "predeploy": "node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs",
+    "deploy": "npm run predeploy && vercel deploy --prod --yes",
+    "patch": "node scripts/patch-bundle.mjs",
+    "vercel:config": "node scripts/generate-vercel-config.mjs",
+    "api:dev": "cd api && npm run dev",
+    "api:migrate": "cd api && npm run db:migrate",
     "assets:strip": "node scripts/strip-glb-external-textures.mjs models/towers",
     "assets:download": "node scripts/download-towers.mjs",
     "assets:upload-r2": "node scripts/upload-r2.mjs"

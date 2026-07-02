@@ -1,5 +1,7 @@
 .vercel
 node_modules
+api/node_modules
+.railway
 .env
 .env.*
 *.log
