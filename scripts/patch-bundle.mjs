@@ -249,11 +249,61 @@ for (const [from, to] of SHARD_FIXES) {
   else js = js.replace(from, to);
 }
 
+// /play boot — persist active match + avoid lobby redirect flicker on refresh/direct URL.
+const MATCH_PERSIST = `const WgMatchKey="wg-active-match";function WgSaveMatch(){try{sessionStorage.setItem(WgMatchKey,JSON.stringify({phase:"battle",at:Date.now()}))}catch{}}function WgClearMatch(){try{sessionStorage.removeItem(WgMatchKey)}catch{}}function WgRestoreMatch(){try{const r=sessionStorage.getItem(WgMatchKey);if(!r)return!1;const p=JSON.parse(r);if(p?.phase==="battle"&&Date.now()-(p.at||0)<18e5)return BI.getState().setPhase("battle"),!0}catch{}return!1}`;
+if (!js.includes("function WgRestoreMatch")) {
+  const hG_ANCHOR = 'const hG={phase:"menu",credits:dp.startCredits';
+  if (js.includes(hG_ANCHOR)) {
+    js = js.replace(hG_ANCHOR, `${MATCH_PERSIST}${hG_ANCHOR}`);
+  } else {
+    console.warn("[patch] match persist anchor missing");
+  }
+}
+
+const START_GAME_SAVE =
+  'A().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)","info")},reset:';
+const START_GAME_SAVE_PATCHED =
+  'A().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)","info"),WgSaveMatch()},reset:';
+if (js.includes(START_GAME_SAVE)) {
+  js = js.replace(START_GAME_SAVE, START_GAME_SAVE_PATCHED);
+} else {
+  console.warn("[patch] startGame save hook missing");
+}
+
+const RESET_ORIG =
+  "reset:()=>{const I=A().mapSize;Z.newMatch(I),_g.getState().resetCommand(),C({...hG,mapSize:I,difficulty:A().difficulty,mapVersion:A().mapVersion+1})}";
+const RESET_PATCHED =
+  "reset:()=>{WgClearMatch();const I=A().mapSize;Z.newMatch(I),_g.getState().resetCommand(),C({...hG,mapSize:I,difficulty:A().difficulty,mapVersion:A().mapVersion+1})}";
+if (js.includes(RESET_ORIG)) {
+  js = js.replace(RESET_ORIG, RESET_PATCHED);
+} else {
+  console.warn("[patch] reset clear hook missing");
+}
+
+js = js.replace(
+  'win:()=>{A().phase==="battle"&&C({phase:"victory"})}',
+  'win:()=>{A().phase==="battle"&&(WgClearMatch(),C({phase:"victory"}))}',
+);
+js = js.replace(
+  'lose:()=>{A().phase==="battle"&&C({phase:"defeat"})}',
+  'lose:()=>{A().phase==="battle"&&(WgClearMatch(),C({phase:"defeat"}))}',
+);
+
+const PLAY_ROUTE_ORIG =
+  'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1);if(T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),C==="menu")return d.jsx(aq,{to:"/lobby",replace:!0});';
+const PLAY_ROUTE_PATCHED =
+  'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null);T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(C!=="menu"){o(!0);return}if(WgRestoreMatch()){o(!0);return}const e=XI.getState();if(e.loadoutLocked&&zC.getState().onboardingDone){BI.getState().startGame();o(!0);return}o(!1)},[C]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsx("span",{className:"gw-hint",children:"Preparing the field…"})});if(!boot)return d.jsx(aq,{to:"/lobby",replace:!0});';
+if (js.includes(PLAY_ROUTE_ORIG)) {
+  js = js.replace(PLAY_ROUTE_ORIG, PLAY_ROUTE_PATCHED);
+} else {
+  console.warn("[patch] PgA play-route boot guard missing");
+}
+
 writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "16";
+const BUNDLE_BUST = "17";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,
