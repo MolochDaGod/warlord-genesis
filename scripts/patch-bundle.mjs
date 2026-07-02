@@ -299,11 +299,34 @@ if (js.includes(PLAY_ROUTE_ORIG)) {
   console.warn("[patch] PgA play-route boot guard missing");
 }
 
+// Tower GLBs — always serve from this deploy (/models/towers). CDN Assimp exports crash GLTFLoader.
+js = js.replace(
+  "function fT(C,A,I){const g=CIA[C][A];return I?`${mt.pipeline.r2.mapTowers}${C}/${g}.glb`:`${pT}models/towers/${C}/${g}.glb`}",
+  "function fT(C,A,I){const g=CIA[C][A];return`${pT}models/towers/${C}/${g}.glb`}",
+);
+js = js.replace(
+  "function tIA(C,A){return A?`${mt.pipeline.r2.mapTowerAtlases}${C}/atlas.png`:`${pT}models/towers/${C}/atlas.png`}",
+  "function tIA(C,A){return`${pT}models/towers/${C}/atlas.png`}",
+);
+js = js.replace("cdnReachable:!0,bootedAt:0", "cdnReachable:!1,bootedAt:0");
+js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v4"');
+
+// Route map: title → warcamp → play (+ multiplayer). /warcamp aliases /lobby.
+const LOBBY_ROUTE =
+  'd.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
+const LOBBY_ROUTE_PATCHED =
+  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
+if (js.includes(LOBBY_ROUTE)) {
+  js = js.replace(LOBBY_ROUTE, LOBBY_ROUTE_PATCHED);
+} else {
+  console.warn("[patch] warcamp route alias missing");
+}
+
 writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "17";
+const BUNDLE_BUST = "18";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,

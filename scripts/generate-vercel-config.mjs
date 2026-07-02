@@ -72,6 +72,15 @@ const ASSET_CDN = "https://client.grudge-studio.com";
 
 const rewrites = [
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
+  // Fixed tower GLBs ship from this deploy — CDN copies are Assimp/non-standard and crash GLTFLoader.
+  {
+    source: "/api/assets/models/maps/:theme/:file",
+    destination: "/models/towers/:theme/:file",
+  },
+  {
+    source: "/api/assets/grudge-nexus/models/maps/:theme/:file",
+    destination: "/models/towers/:theme/:file",
+  },
   { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
   {
     source: "/api/objectstore/:path*",

@@ -2,6 +2,12 @@ import fs from "fs";
 import path from "path";
 import { spawnSync } from "child_process";
 
+spawnSync("node", ["scripts/fix-glb-header.mjs", "models/towers"], {
+  cwd: path.join(import.meta.dirname, ".."),
+  stdio: "inherit",
+  shell: true,
+});
+
 const root = path.join(import.meta.dirname, "..", "models", "towers");
 const MODELS = {
   medieval: ["tower_02_1", "tower_03_1_full"],

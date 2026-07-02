@@ -47,6 +47,14 @@
       "destination": "https://warlord-genesis-api-production.up.railway.app/api/grudge/:path*"
     },
     {
+      "source": "/api/assets/models/maps/:theme/:file",
+      "destination": "/models/towers/:theme/:file"
+    },
+    {
+      "source": "/api/assets/grudge-nexus/models/maps/:theme/:file",
+      "destination": "/models/towers/:theme/:file"
+    },
+    {
       "source": "/api/assets/:path*",
       "destination": "https://client.grudge-studio.com/:path*"
     },
