@@ -53,6 +53,16 @@ js = js.replace(
   'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"})',
 );
 
+// Persist JWT from auth adapter (Vercel rewrite does not forward Railway Set-Cookie).
+js = js.replace(
+  'async function nO(C,A){const I=await fetch(`${GN}${C}`,{method:"POST",headers:{"Content-Type":"application/json","X-Grudge-Client":"web"},body:A?JSON.stringify(A):"{}",credentials:"same-origin"}),g=await I.json();if(!I.ok)throw new Error(g.error||`Request failed (${I.status})`);return g}',
+  'async function nO(C,A){const I=await fetch(`${GN}${C}`,{method:"POST",headers:{"Content-Type":"application/json","X-Grudge-Client":"web"},body:A?JSON.stringify(A):"{}",credentials:"same-origin"}),g=await I.json();if(!I.ok)throw new Error(g.error||`Request failed (${I.status})`);return g?.token&&cq(g.token),g}',
+);
+js = js.replace(
+  "async function cO(){const C=await fetch(`${GN}/me`,{credentials:\"same-origin\"});return C.ok?await C.json():null}",
+  'async function cO(){const C=SO(),A=C?{Authorization:`Bearer ${C}`}:{},I=await fetch(`${GN}/me`,{credentials:"same-origin",headers:A});return I.ok?await I.json():null}',
+);
+
 for (const [from, to] of replacements) {
   if (!js.includes(from)) {
     console.warn("[patch] missing pattern:", from.slice(0, 80));
@@ -101,17 +111,47 @@ js = js.replace(
   'onClick:()=>A("about"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.cup,alt:"",draggable:!1}),"ABOUT STUDIO"]}),d.jsxs("button",{className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>A("codex"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chest',
 );
 
-// Cloud save + canonical character bridge.
-// Name must NOT be a short minified id (e.g. gO is already NavLink in the bundle).
-const CLOUD_SYNC = `async function WgFleetSync(C){try{const A=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(C.grudgeId),{credentials:"same-origin"});if(A.ok){const I=await A.json(),g=I?.save;if(g&&Object.keys(g).length){const i=zC.getState(),e={onboardingDone:g.onboardingDone??i.onboardingDone,starterPrefabId:g.starterPrefabId??i.starterPrefabId,gbux:g.gbux??i.gbux,cards:g.cards??i.cards,lastDailyClaim:g.lastDailyClaim??i.lastDailyClaim,lastMatchReward:g.lastMatchReward??i.lastMatchReward};JSON.stringify(i)!==JSON.stringify(e)&&zC.setState(e)}}const t=await fetch("/api/grudge/characters/active",{credentials:"same-origin"});if(t.ok){const Q=await t.json();Q?.character?.raceId&&XI.getState().setGrudgeHandoff(Q.character)}}catch{}}`;
+// Puter login + cloud save bridge. Avoid short minified ids (gO is NavLink).
+const CLOUD_SYNC = `async function WgPuterSignIn(){const w=typeof window<"u"?window.puter:null;if(!w?.auth)throw new Error("Puter SDK is still loading — wait a moment and retry.");try{if(!w.auth.isSignedIn?.())await w.auth.signIn()}catch(e){const m=e instanceof Error?e.message:String(e);throw new Error(/cancel|closed/i.test(m)?"Sign-in cancelled.":"Puter sign-in failed. Allow popups for warlord-genesis.vercel.app and retry.")}const u=await w.auth.getUser();if(!u?.uuid)throw new Error("Sign-in cancelled.");const R=await nO("/puter",{puterId:u.uuid,displayName:u.username||u.name||"Puter"});return R?.token&&cq(R.token),R}async function WgFleetSync(C){try{const A=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(C.grudgeId),{credentials:"same-origin"});if(A.ok){const I=await A.json(),g=I?.save;if(g?.onboardingDone){const i=zC.getState(),e={onboardingDone:!0,starterPrefabId:g.starterPrefabId??i.starterPrefabId,gbux:typeof g.gbux==="number"?g.gbux:i.gbux,cards:Array.isArray(g.cards)?g.cards:i.cards,lastDailyClaim:g.lastDailyClaim??i.lastDailyClaim,lastMatchReward:g.lastMatchReward??i.lastMatchReward};(e.onboardingDone!==i.onboardingDone||e.starterPrefabId!==i.starterPrefabId||e.gbux!==i.gbux)&&zC.setState(e)}}const t=await fetch("/api/grudge/characters/active",{credentials:"same-origin"});if(t.ok){const Q=await t.json();Q?.character?.raceId&&XI.getState().setGrudgeHandoff(Q.character)}}catch{}}`;
 
 if (!js.includes("async function WgFleetSync(")) {
   js = js.replace("const Rh=ca(C=>({", `${CLOUD_SYNC}const Rh=ca(C=>({`);
 }
 
+const RESTORE_ORIG =
+  "restore:async()=>{C({loading:!0});try{const A=await kO();if(A){C({user:A,loading:!1});return}const I=await cO();C({user:I,loading:!1})}catch{C({user:null,loading:!1})}}";
+const RESTORE_PATCHED =
+  "restore:async()=>{C({loading:!0});try{const A=await kO();if(A){C({user:A,loading:!1}),await WgFleetSync(A);return}const I=await cO();if(I){C({user:I,loading:!1}),await WgFleetSync(I);return}const g=await lO();C({user:g,loading:!1}),await WgFleetSync(g)}catch{C({user:null,loading:!1})}}";
+if (js.includes(RESTORE_ORIG)) {
+  js = js.replace(RESTORE_ORIG, RESTORE_PATCHED);
+} else {
+  js = js.replace(
+    "restore:async()=>{C({loading:!0});try{const A=await kO();if(A){C({user:A,loading:!1}),await WgFleetSync(A);return}const I=await cO();C({user:I,loading:!1}),I&&await WgFleetSync(I)}catch{C({user:null,loading:!1})}}",
+    RESTORE_PATCHED,
+  );
+}
+
 js = js.replace(
-  "restore:async()=>{C({loading:!0});try{const A=await kO();if(A){C({user:A,loading:!1});return}const I=await cO();C({user:I,loading:!1})}catch{C({user:null,loading:!1})}}",
-  "restore:async()=>{C({loading:!0});try{const A=await kO();if(A){C({user:A,loading:!1}),await WgFleetSync(A);return}const I=await cO();C({user:I,loading:!1}),I&&await WgFleetSync(I)}catch{C({user:null,loading:!1})}}",
+  "signInWithStudio:()=>xR(C,fO),signOut:",
+  "signInWithStudio:()=>xR(C,fO),signInWithPuter:()=>xR(C,WgPuterSignIn),signOut:",
+);
+
+js = js.replace(
+  'guest:g,signInWithStudio:i,signOut:e}=Rh()',
+  "guest:g,signInWithPuter:i,signOut:e}=Rh()",
+);
+js = js.replace(
+  "Sign in with Grudge Studio to claim your Grudge ID. Your account and progress are scoped to your Grudge Studio identity.",
+  "Sign in with Puter to claim your Grudge ID. Progress syncs to Grudge Studio Railway and follows you across devices.",
+);
+js = js.replace(
+  'children:A?"WORKING...":"SIGN IN WITH GRUDGE STUDIO"',
+  'children:A?"WORKING...":"SIGN IN WITH PUTER"',
+);
+
+js = js.replace(
+  "gbuxRef.current!==v&&(gbuxRef.current=v,F(v))},[Q?.gbuxBalance,F])",
+  "gbuxRef.current!==v&&(gbuxRef.current=v,zC.getState().syncGbuxFromAccount(v))},[Q?.gbuxBalance])",
 );
 
 if (!js.includes("let WgSaveTimer=null")) {
@@ -131,7 +171,7 @@ writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "7";
+const BUNDLE_BUST = "8";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,

@@ -1,3 +1,5 @@
+import crypto from "node:crypto";
+
 const GRUDGE_API =
   process.env.GRUDGE_API_URL?.replace(/\/$/, "") ||
   "https://grudge-api-production-0d46.up.railway.app";
@@ -16,15 +18,40 @@ function authHeaders(req, token) {
   return headers;
 }
 
-export async function canonicalGuest(req) {
-  const res = await fetch(`${GRUDGE_API}/api/auth/guest`, {
+export async function canonicalGuest(req, deviceId) {
+  const guestPuterId = deviceId
+    ? `guest_${String(deviceId).replace(/[^a-zA-Z0-9_-]/g, "").slice(0, 48)}`
+    : `guest_${crypto.randomUUID().replace(/-/g, "").slice(0, 16)}`;
+
+  const res = await fetch(`${GRUDGE_API}/api/auth/puter`, {
     method: "POST",
     headers: authHeaders(req),
-    body: "{}",
+    body: JSON.stringify({
+      puterId: guestPuterId,
+      displayName: "Guest",
+    }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) {
-    throw new Error(data.error || `Canonical guest failed (${res.status})`);
+    throw new Error(data.error || data.message || `Canonical guest failed (${res.status})`);
+  }
+  return data;
+}
+
+export async function canonicalPuterLogin(req, { puterId, displayName, email }) {
+  const res = await fetch(`${GRUDGE_API}/api/auth/puter`, {
+    method: "POST",
+    headers: authHeaders(req),
+    body: JSON.stringify({
+      puterId,
+      puterUuid: puterId,
+      displayName,
+      email,
+    }),
+  });
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || data.message || `Puter login failed (${res.status})`);
   }
   return data;
 }
@@ -58,6 +85,11 @@ export function mapBundleUser(payload, role = "player") {
     payload.user?.grudgeId ||
     payload.user?.grudge_id ||
     "";
+  const isGuest =
+    role === "guest" ||
+    payload.role === "guest" ||
+    String(payload.username || "").startsWith("guest_") ||
+    String(payload.displayName || "").toLowerCase() === "guest";
   const username =
     payload.username ||
     payload.displayName ||
@@ -87,7 +119,8 @@ export function mapBundleUser(payload, role = "player") {
     displayName,
     avatarUrl: payload.avatarUrl || payload.user?.avatarUrl || null,
     gbuxBalance: String(gbux),
-    role: role === "guest" ? "guest" : role,
+    role: isGuest ? "guest" : role,
+    token: payload.token || payload.sessionToken || null,
   };
 }
 

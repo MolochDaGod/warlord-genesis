@@ -4,6 +4,7 @@ import {
   canonicalActiveCharacter,
   canonicalGuest,
   canonicalMe,
+  canonicalPuterLogin,
   mapActiveCharacter,
   mapBundleUser,
 } from "./canonical.js";
@@ -63,11 +64,12 @@ app.get("/api/health", (_req, res) => {
 app.post("/api/grudge/auth/guest", async (req, res) => {
   try {
     const deviceId = req.body?.deviceId || null;
-    const canonical = await canonicalGuest(req);
+    const canonical = await canonicalGuest(req, deviceId);
     const token = canonical.token || canonical.sessionToken;
     if (token) setAuthCookie(res, token);
 
     const user = mapBundleUser(canonical, "guest");
+    if (token) user.token = token;
     if (deviceId) {
       await upsertPlayerSave({
         grudgeId: user.grudgeId,
@@ -80,6 +82,26 @@ app.post("/api/grudge/auth/guest", async (req, res) => {
     res.json(user);
   } catch (err) {
     res.status(500).json({ error: err.message || "Guest auth failed" });
+  }
+});
+
+app.post("/api/grudge/auth/puter", async (req, res) => {
+  try {
+    const puterId = req.body?.puterId || req.body?.puterUuid;
+    const displayName = req.body?.displayName || req.body?.puterUsername;
+    const email = req.body?.email;
+    if (!puterId) {
+      return res.status(400).json({ error: "puterId required" });
+    }
+
+    const canonical = await canonicalPuterLogin(req, { puterId, displayName, email });
+    const token = canonical.token || canonical.sessionToken;
+    if (token) setAuthCookie(res, token);
+
+    const user = mapBundleUser(canonical, "player");
+    res.json({ ...user, token });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Puter auth failed" });
   }
 });
 
