@@ -2,7 +2,8 @@
 /**
  * Stage static assets expected by the production bundle.
  */
-import { copyFileSync, existsSync, mkdirSync } from "node:fs";
+import { copyFileSync, existsSync, mkdirSync, readdirSync } from "node:fs";
+import { spawnSync } from "node:child_process";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -22,6 +23,32 @@ const ICON_SRC = join(
 
 const PORTRAIT_SRC = join(ROOT, "..", "1111111", "ObjectStore", "heroes", "portraits");
 
+const UNITFRAME_SRC = join(
+  ROOT,
+  "..",
+  "..",
+  "vfc-build",
+  "attached_assets",
+  "ui",
+  "rpg",
+  "part_1",
+  "unitframes",
+);
+
+const UNITFRAME_FALLBACK = join(
+  ROOT,
+  "..",
+  "..",
+  ".grok",
+  "worktrees",
+  "github-grudanode",
+  "grudge-ui-editor",
+  "assets",
+  "rpg",
+  "part_1",
+  "unitframes",
+);
+
 const KAYKIT = join(
   ROOT,
   "..",
@@ -36,6 +63,20 @@ const KAYKIT = join(
   "gltf",
 );
 
+/** Vite hashed names referenced by index-warlord-fix3.js */
+const unitFrames = [
+  ["uf_frame.png", "uf_frame_1782526063043-DJb8nLKx.png"],
+  ["uf2_frame.png", "uf2_frame_1782526063042-BuxhAA3q.png"],
+  ["uf3_frame.png", "uf3_frame_1782526063042-Dm4QCduH.png"],
+  ["uf_avatar_overlay.png", "uf_avatar_overlay_1782526063042-BCr1Uj8h.png"],
+  ["uf2_avatar_overlay.png", "uf2_avatar_overlay_1782526063042-DrNyJPfT.png"],
+  ["uf_level_frame.png", "uf_level_frame_1782526063043-Ch6VmpOe.png"],
+  ["uf_fill_green.png", "uf_fill_green_1782526063043-BFRN-LId.png"],
+  ["uf_fill_orange.png", "uf_fill_orange_1782526063043-DRAjEP_L.png"],
+  ["uf3_fill_red.png", "uf3_fill_red_1782526063042-D3wTAswl.png"],
+  ["uf2_fill_blue.png", "uf2_fill_blue_1782526063042-BbEdnJZv.png"],
+];
+
 const headerIcons = [
   ["header_icon_lab-C6zKQekY.png", "header_icon_lab_1782526441783-C6zKQekY.png"],
   ["header_icon_settings-cQ5nZMWa.png", "header_icon_settings_1782526441784-cQ5nZMWa.png"],
@@ -46,6 +87,20 @@ const headerIcons = [
   ["header_icon_fist-B6X1s2Va.png", "header_icon_fist_1782526441787-B6X1s2Va.png"],
   ["header_icon_hammer-uwDO1Qnw.png", "header_icon_hammer_1782526441788-uwDO1Qnw.png"],
 ];
+
+function resolveUnitFrameSrc(baseName) {
+  const stem = baseName.replace(/\.png$/, "");
+  for (const dir of [ICON_SRC, UNITFRAME_SRC, UNITFRAME_FALLBACK]) {
+    if (!existsSync(dir)) continue;
+    const exact = join(dir, baseName);
+    if (existsSync(exact)) return exact;
+    const hit = readdirSync(dir).find(
+      (f) => f.startsWith(`${stem}-`) || f.startsWith(`${stem}_`) || f === baseName,
+    );
+    if (hit) return join(dir, hit);
+  }
+  return null;
+}
 
 function ensureCopy(src, dest) {
   if (!existsSync(src)) {
@@ -63,6 +118,11 @@ let copied = 0;
 const assetsDir = join(ROOT, "assets");
 for (const [shortName, longName] of headerIcons) {
   if (ensureCopy(join(ICON_SRC, shortName), join(assetsDir, longName))) copied++;
+}
+
+for (const [srcName, destName] of unitFrames) {
+  const src = resolveUnitFrameSrc(srcName);
+  if (src && ensureCopy(src, join(assetsDir, destName))) copied++;
 }
 
 const buildingsDir = join(ROOT, "models", "buildings");
@@ -86,6 +146,14 @@ if (existsSync(PORTRAIT_SRC)) {
   }
 } else {
   console.warn("[stage] portrait source missing:", PORTRAIT_SRC);
+}
+
+const ground = spawnSync("node", ["scripts/generate-ground-textures.mjs"], {
+  cwd: ROOT,
+  stdio: "inherit",
+});
+if (ground.status !== 0) {
+  process.exit(ground.status ?? 1);
 }
 
 console.log(`[stage] copied ${copied} files`);
