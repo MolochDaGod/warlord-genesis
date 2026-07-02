@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 19,
+  "bundleVersion": 20,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -131,9 +131,21 @@
     {
       "id": "baked-null-guard",
       "needle": "[warlord] baked clip missing"
+    },
+    {
+      "id": "pack-card-art",
+      "needle": "gw-pack-card-art"
+    },
+    {
+      "id": "chest-btn-stack",
+      "needle": "gw-chest-btn-title"
+    },
+    {
+      "id": "lane-card-icon",
+      "needle": "gw-lane-card-icon"
     }
   ],
-  "lastBuilt": "2026-07-02T23:53:37.961Z",
-  "bundleBytes": 4057246,
-  "bundleSha256": "92f08f81432d0dce"
+  "lastBuilt": "2026-07-02T23:57:37.767Z",
+  "bundleBytes": 4058294,
+  "bundleSha256": "150971bffef24a11"
 }

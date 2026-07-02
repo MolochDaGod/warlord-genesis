@@ -333,6 +333,40 @@ if (js.includes(LOBBY_ROUTE)) {
   mustPatch("routes", js.includes('path:"/warcamp"') && js.includes('path:"/battle"'));
 }
 
+// Pack reveal — portrait cards + effect copy (not text-only pills).
+const PACK_CARDS_ORIG =
+  'd.jsx("div",{className:"gw-pack-cards",children:i.shardGrants.map((Q,o)=>d.jsxs("div",{className:"gw-pack-card",style:{animationDelay:`${o*.12}s`},children:[d.jsx("span",{className:"gw-pack-card-kind",children:Q.kind==="character"?"Warlord":"Lane Guard"}),d.jsx("span",{className:"gw-pack-card-name",children:Q.label}),d.jsx("span",{className:"gw-pack-card-shard",children:"+1 shard"})]},`${Q.id}-${o}`))})';
+const PACK_CARDS_PATCHED =
+  'd.jsx("div",{className:"gw-pack-cards",children:i.shardGrants.map((Q,o)=>{const s=Q.kind==="character"?jK(Q.id)||YH(Q.id):"",l=Q.kind==="character"?"Unlock or tier-up warlord":"Upgrade lane creep tier";return d.jsxs("div",{className:"gw-pack-card",style:{animationDelay:`${o*.12}s`},children:[s?d.jsx("img",{className:"gw-pack-card-art",src:s,alt:"",loading:"lazy"}):d.jsxs("div",{className:"gw-pack-card-art gw-pack-card-art--lane",children:[d.jsx("img",{src:Ji.hammer,alt:"",draggable:!1})]}),d.jsx("span",{className:"gw-pack-card-kind",children:Q.kind==="character"?"Warlord":"Lane Guard"}),d.jsx("span",{className:"gw-pack-card-name",children:Q.label}),d.jsx("span",{className:"gw-pack-card-effect",children:l}),d.jsx("span",{className:"gw-pack-card-shard",children:"+1 shard"})]},`${Q.id}-${o}`)})})';
+if (js.includes(PACK_CARDS_ORIG)) {
+  js = js.replace(PACK_CARDS_ORIG, PACK_CARDS_PATCHED);
+  mustPatch("pack-cards", true);
+} else {
+  mustPatch("pack-cards", js.includes("gw-pack-card-art"));
+}
+
+// War Chest — stack button labels so long copy stays inside buttons.
+js = js.replace(
+  'children:w?`DAILY PACK (+${QS.gbux} GBUX · ${QS.shards} shards)`:"DAILY PACK CLAIMED"',
+  'children:w?d.jsxs(d.Fragment,{children:[d.jsx("span",{className:"gw-chest-btn-title",children:"Daily Pack"}),d.jsxs("span",{className:"gw-chest-btn-meta",children:["+",QS.gbux," GBUX · ",QS.shards," shards"]})]}):"Daily pack claimed"',
+);
+js = js.replace(
+  'children:["UPGRADE PACK (",oS," GBUX · 3 shards)"]',
+  'children:d.jsxs(d.Fragment,{children:[d.jsx("span",{className:"gw-chest-btn-title",children:"Upgrade Pack"}),d.jsxs("span",{className:"gw-chest-btn-meta",children:[oS," GBUX · 3 shards"]})]})',
+);
+
+// Victory reward pills — mini portrait when warlord shard.
+js = js.replace(
+  'children:c.shardGrants.map((h,w)=>d.jsxs("span",{className:"gw-reward-shard-pill",children:["+1 ",h.label]},`${h.id}-${w}`))',
+  'children:c.shardGrants.map((h,w)=>{const u=h.kind==="character"?jK(h.id)||YH(h.id):"";return d.jsxs("span",{className:"gw-reward-shard-pill",children:[u&&d.jsx("img",{className:"gw-reward-shard-art",src:u,alt:"",loading:"lazy"}),d.jsxs("span",{children:["+1 ",h.label]})]},`${h.id}-${w}`)})',
+);
+
+// Lane guard cards — icon header so they are not text-only.
+js = js.replace(
+  'children:[d.jsx("span",{className:"gw-char-card-name",children:A}),o&&d.jsxs("span",{className:"gw-char-card-lvl",children:["T",Q]}),d.jsx("div",{className:"gw-char-card-shards",children:d.jsx("span",{className:"gw-char-card-shard-text",children:o?`${e}/${t} upgrade`:`${e}/${s} unlock`})})]})}const a7=',
+  'children:[d.jsx("img",{className:"gw-lane-card-icon",src:Ji.hammer,alt:"",draggable:!1}),d.jsx("span",{className:"gw-char-card-name",children:A}),o&&d.jsxs("span",{className:"gw-char-card-lvl",children:["T",Q]}),d.jsx("span",{className:"gw-lane-card-effect",children:o?"Gear tier upgrade":"Unlock lane creep"}),d.jsx("div",{className:"gw-char-card-shards",children:d.jsx("span",{className:"gw-char-card-shard-text",children:o?`${e}/${t} → T${Math.min(8,Q+1)}`:`${e}/${s} to unlock`})})]})}const a7=',
+);
+
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
   mustPatch(id, js.includes(needle));
@@ -395,6 +429,43 @@ body{background:#080c14}
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended title-v3 layout styles");
+}
+if (!css.includes(".gw-pack-card-art")) {
+  css += `
+.gw-pack-reveal{display:flex;flex-direction:column;align-items:center;gap:1rem;max-width:min(920px,94vw);padding:1rem}
+.gw-pack-cards{display:flex;flex-wrap:wrap;gap:.75rem;justify-content:center;max-width:100%}
+.gw-pack-card{display:flex;flex-direction:column;align-items:center;gap:.3rem;width:132px;padding:.5rem .55rem .65rem;border-radius:10px;border:1px solid rgba(201,162,39,.45);background:linear-gradient(165deg,#1a2234e6,#0a0f18f2);overflow:hidden;text-align:center;box-sizing:border-box}
+.gw-pack-card-art{width:100%;height:96px;object-fit:cover;object-position:top center;border-radius:6px;background:#0b1018}
+.gw-pack-card-art--lane{display:grid;place-items:center;height:96px;width:100%;border-radius:6px;background:#121a28}
+.gw-pack-card-art--lane img{width:40px;height:40px;opacity:.85}
+.gw-pack-card-kind{font-size:.58rem;letter-spacing:.14em;text-transform:uppercase;color:#8fa3c4}
+.gw-pack-card-name{font-size:.78rem;font-weight:700;line-height:1.2;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gw-pack-card-effect{font-size:.62rem;color:#9dffd8;line-height:1.25;padding:0 .15rem}
+.gw-pack-card-shard{font-size:.65rem;color:#fbbf24;font-weight:700}
+.gw-pack-gbux{font-size:1.35rem;color:#fbbf24;font-weight:800;margin-bottom:.25rem}
+.gw-collection-actions .gw-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;min-width:148px;max-width:220px;padding:10px 14px;font-size:11px;letter-spacing:.06em;line-height:1.2;white-space:normal;text-align:center;box-sizing:border-box}
+.gw-chest-btn-title{font-family:Inter,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em}
+.gw-chest-btn-meta{font-family:Inter,sans-serif;font-size:10px;font-weight:500;opacity:.85}
+.gw-char-card{overflow:hidden;min-width:0}
+.gw-char-card-main{overflow:hidden;min-width:0}
+.gw-char-card-name,.gw-char-card-title,.gw-char-card-meta,.gw-char-card-gear{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gw-char-card-kit{display:flex;flex-direction:column;gap:.1rem;width:100%;font-size:.62rem;opacity:.8}
+.gw-char-card-kit span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gw-lane-card{align-items:flex-start;text-align:left;gap:.25rem}
+.gw-lane-card-icon{width:28px;height:28px;opacity:.9;margin-bottom:.15rem}
+.gw-lane-card-effect{font-size:.6rem;color:#9dffd8;line-height:1.2}
+.gw-lobby-v2{overflow-x:hidden;overflow-y:auto}
+.gw-lobby-top-actions{display:flex;flex-wrap:wrap;gap:8px;justify-content:flex-end;max-width:min(520px,48vw)}
+.gw-lobby-main{min-width:0;overflow:hidden}
+.gw-lobby-deploy{position:sticky;top:72px;min-width:0}
+.gw-deploy-panel{overflow:hidden;max-width:100%}
+.gw-mapsize-toggle{display:flex;flex-wrap:wrap;gap:6px}
+.gw-mapsize-toggle .gw-btn-mini{flex:1 1 72px;min-width:0;max-width:100%;padding:6px 8px;font-size:9px;letter-spacing:.04em;white-space:normal;line-height:1.15;text-align:center;box-sizing:border-box}
+.gw-reward-shard-pill{display:inline-flex;align-items:center;gap:.35rem;max-width:100%}
+.gw-reward-shard-art{width:22px;height:22px;border-radius:4px;object-fit:cover;flex-shrink:0}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended pack/card/lobby UI containment styles");
 }
 if (!css.includes(".gw-about-panel")) {
   css += `
