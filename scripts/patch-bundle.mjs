@@ -44,6 +44,12 @@ js = js.replace(
   'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"})',
 );
 
+// Baked anim loader — warn + null instead of uncaught throw (battle can still boot)
+js = js.replace(
+  'async function zc(C){const A=R6(C),I=await fetch(A);if(!I.ok)throw new Error(`Baked clip ${A} HTTP ${I.status}`);const g=await I.json();return b6(oa.parse(g))}',
+  'async function zc(C){const A=R6(C),I=await fetch(A);if(!I.ok){console.warn(`[warlord] baked clip missing ${A} (${I.status})`);return null}try{const g=await I.json();return b6(oa.parse(g))}catch(e){console.warn(`[warlord] baked clip parse failed ${A}`,e);return null}}',
+);
+
 // Standard Grudge fleet auth — /api/auth/* rewrites to grudge-api (JWT in body, not cookies).
 js = js.replace('GN="/api/grudge/auth"', 'GN="/api/auth"');
 js = js.replace(
@@ -228,7 +234,7 @@ writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "13";
+const BUNDLE_BUST = "14";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,

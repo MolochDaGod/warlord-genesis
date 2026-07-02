@@ -67,9 +67,12 @@ const OBJECTSTORE_MODEL_PREFIXES = [
   "rts",
 ];
 
+/** client.grudge-studio.com mirrors R2 and hosts baked anims + grudge-nexus assets assets.grudge-studio.com lacks. */
+const ASSET_CDN = "https://client.grudge-studio.com";
+
 const rewrites = [
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
-  { source: "/api/assets/:path*", destination: "https://assets.grudge-studio.com/:path*" },
+  { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
   {
     source: "/api/objectstore/:path*",
     destination: `${OBJECTSTORE}/api/:path*`,

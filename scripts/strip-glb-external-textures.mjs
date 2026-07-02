@@ -6,13 +6,19 @@
 import fs from "fs";
 import path from "path";
 
+function normalizeGlbBuffer(buf) {
+  if (buf.length >= 8 && buf.toString("utf8", 0, 4) !== "glTF" && buf.toString("utf8", 4, 8) === "glTF") {
+    return buf.subarray(4);
+  }
+  return buf;
+}
+
 function stripGlb(filePath) {
-  const buf = fs.readFileSync(filePath);
+  const buf = normalizeGlbBuffer(fs.readFileSync(filePath));
   const magic = buf.toString("utf8", 0, 4);
   if (magic !== "glTF") {
     throw new Error(`Not a GLB: ${filePath}`);
   }
-
   const jsonLen = buf.readUInt32LE(12);
   const jsonStart = 20;
   const jsonEnd = jsonStart + jsonLen;
@@ -54,9 +60,9 @@ function stripGlb(filePath) {
   const binChunk = buf.slice(jsonEnd);
   const totalLen = 12 + 8 + paddedLen + binChunk.length;
   const out = Buffer.alloc(totalLen);
-  out.writeUInt32LE(totalLen, 0);
-  out.write("glTF", 4);
-  out.writeUInt32LE(2, 8);
+  out.write("glTF", 0);
+  out.writeUInt32LE(2, 4);
+  out.writeUInt32LE(totalLen, 8);
   out.writeUInt32LE(paddedLen, 12);
   out.write("JSON", 16);
   padded.copy(out, 20);
