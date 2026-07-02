@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "version": "0.1.0",
-  "private": true,
+  "private": false,
   "description": "Grudge Warlords warcamp client — https://warlord-genesis.vercel.app",
   "type": "module",
   "scripts": {
