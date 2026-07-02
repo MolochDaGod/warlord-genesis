@@ -1,0 +1,16 @@
+{
+  "name": "warlord-genesis",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Grudge Warlords warcamp client — https://warlord-genesis.vercel.app",
+  "type": "module",
+  "scripts": {
+    "deploy": "vercel deploy --prod --yes",
+    "assets:strip": "node scripts/strip-glb-external-textures.mjs models/towers",
+    "assets:download": "node scripts/download-towers.mjs",
+    "assets:upload-r2": "node scripts/upload-r2.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
