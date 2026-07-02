@@ -23,6 +23,9 @@ const checks = [
   ["Title v3 layout", "gw-screen gw-title-v3"],
   ["Visible Puter auth", "Sign in with Puter"],
   ["Title play CTA", "Enter the Warcamp"],
+  ["Shard selector fix", 'F.cards.find(e=>e.kind==="character"&&e.id===C.id)?.level'],
+  ["401 clears token", "I.status===401&&NN()"],
+  ["Local snap guard", "WgLocalSnap"],
 ];
 
 for (const [label, needle] of checks) {
