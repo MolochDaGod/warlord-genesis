@@ -117,7 +117,7 @@ rewrites.push(
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
   { source: "/api/:path*", destination: "https://api.grudge-studio.com/api/:path*" },
   {
-    source: "/((?!assets/|models/|media/|textures/|api/|favicon\\.svg).*)",
+    source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
     destination: "/index.html",
   },
 );
@@ -138,6 +138,10 @@ const config = {
     },
     {
       source: "/textures/(.*)",
+      headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
+    },
+    {
+      source: "/anims/(.*)",
       headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
   ],

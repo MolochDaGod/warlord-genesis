@@ -30,6 +30,15 @@
           "value": "public, max-age=86400, immutable"
         }
       ]
+    },
+    {
+      "source": "/anims/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, immutable"
+        }
+      ]
     }
   ],
   "rewrites": [
@@ -318,7 +327,7 @@
       "destination": "https://api.grudge-studio.com/api/:path*"
     },
     {
-      "source": "/((?!assets/|models/|media/|textures/|api/|favicon\\.svg).*)",
+      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
       "destination": "/index.html"
     }
   ]

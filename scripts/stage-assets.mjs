@@ -156,4 +156,12 @@ if (ground.status !== 0) {
   process.exit(ground.status ?? 1);
 }
 
+const baked = spawnSync("node", ["scripts/stage-baked-anims.mjs"], {
+  cwd: ROOT,
+  stdio: "inherit",
+});
+if (baked.status !== 0) {
+  process.exit(baked.status ?? 1);
+}
+
 console.log(`[stage] copied ${copied} files`);

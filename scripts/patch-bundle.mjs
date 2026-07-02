@@ -38,11 +38,18 @@ const replacements = [
   ],
 ];
 
-// CDN reachability probe — same-origin after PQ patch; drop cors mode
+// CDN reachability probe — reject SPA HTML masquerading as assets (client.grudge-studio.com)
 js = js.replace(
   'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD",mode:"cors"})',
   'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"})',
 );
+js = js.replace(
+  "try{A=(await fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:\"HEAD\"})).ok}catch{A=!1}",
+  'try{const r=await fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"});A=r.ok&&/image\\//i.test(r.headers.get("content-type")||"")}catch{A=!1}',
+);
+
+// Baked clips ship from this deploy (/anims/baked), not the broken CDN proxy.
+js = js.replaceAll("${PQ}/anims/baked/", "/anims/baked/");
 
 // Baked anim loader — warn + null instead of uncaught throw (battle can still boot)
 js = js.replace(
@@ -52,8 +59,14 @@ js = js.replace(
 
 // Animation pack binder — skip null clips instead of clipAction(null) crash
 js = js.replace(
-  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),o={idle:g,walk:i,run:e,sprint:t};return{director:new G6(C,o),attackClip:Q,actions:{idle:C.clipAction(g),walk:C.clipAction(i),run:C.clipAction(e),attack:C.clipAction(Q)}}}',
   'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),o={idle:g,walk:i,run:e,sprint:t},f=g||i||e||t||Q,s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}',
+  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),f=g||i||e||t||Q,o={idle:g||f,walk:i||f,run:e||f,sprint:t||f},s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}',
+);
+
+// AnimationDirector — tolerate missing individual locomotion clips
+js = js.replace(
+  "constructor(A,I){this.mixer=A;const g=i=>{const e=A.clipAction(i);return e.setLoop(cr,1/0),e.enabled=!0,e.setEffectiveWeight(0),e.play(),e};this.loco={idle:g(I.idle),walk:g(I.walk),run:g(I.run),sprint:g(I.sprint)},this.loco.idle.setEffectiveWeight(1)",
+  "constructor(A,I){this.mixer=A;const g=i=>{if(!i)return null;const e=A.clipAction(i);return e.setLoop(cr,1/0),e.enabled=!0,e.setEffectiveWeight(0),e.play(),e},f=I.idle||I.walk||I.run||I.sprint;this.loco={idle:g(I.idle||f),walk:g(I.walk||f),run:g(I.run||f),sprint:g(I.sprint||f)},this.loco.idle?.setEffectiveWeight(1)",
 );
 
 // Standard Grudge fleet auth — /api/auth/* rewrites to grudge-api (JWT in body, not cookies).
@@ -240,7 +253,7 @@ writeFileSync(OUT, js);
 console.log("[patch] wrote", OUT, `(${js.length} bytes)`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = "15";
+const BUNDLE_BUST = "16";
 html = html.replace(
   /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
   `index-warlord-fix3.js?v=${BUNDLE_BUST}`,
