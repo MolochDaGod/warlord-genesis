@@ -131,9 +131,12 @@ rewrites.push(
   },
 );
 
+/** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
+const CI_BUILD =
+  "node scripts/fix-glb-header.mjs models/towers && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/verify-deploy.mjs";
+
 const config = {
-  buildCommand:
-    "node scripts/stage-assets.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/strip-glb-external-textures.mjs models/towers && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs",
+  buildCommand: CI_BUILD,
   installCommand: "",
   outputDirectory: ".",
   framework: null,

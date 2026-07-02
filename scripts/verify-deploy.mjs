@@ -116,8 +116,11 @@ if (!spaFallback?.source?.includes("models/")) {
 } else {
   ok("SPA fallback excludes static asset dirs");
 }
-if (!vercel.buildCommand?.includes("predeploy") && !vercel.buildCommand?.includes("verify")) {
-  warn(`Vercel buildCommand may not run full pipeline: ${vercel.buildCommand}`);
+const ciBuild = vercel.buildCommand?.includes("patch-bundle") && vercel.buildCommand?.includes("verify-deploy");
+if (!ciBuild) {
+  fail(`Vercel buildCommand must patch bundle + verify: ${vercel.buildCommand}`);
+} else {
+  ok(`Vercel CI build: ${vercel.buildCommand}`);
 }
 
 // ── Live smoke (optional) ────────────────────────────────────────────────────
