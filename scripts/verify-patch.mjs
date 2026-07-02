@@ -20,6 +20,9 @@ const checks = [
   ["Bearer /me", "Authorization:`Bearer ${C}`"],
   ["Fleet kO", "const I=await cO()"],
   ["Sync Bearer", "WgFleetSync(C){try{const tok=SO()"],
+  ["Title v3 layout", "gw-screen gw-title-v3"],
+  ["Visible Puter auth", "Sign in with Puter"],
+  ["Title play CTA", "Enter the Warcamp"],
 ];
 
 for (const [label, needle] of checks) {
