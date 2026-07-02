@@ -9,13 +9,17 @@ const j = readFileSync(
 
 const checks = [
   ["PQ proxy", 'PQ="/api/assets"'],
+  ["Fleet auth base", 'GN="/api/auth"'],
+  ["Guest via puter", 'nO("/puter",{puterId:p,displayName:"Guest"})'],
   ["Puter sign-in", "async function WgPuterSignIn"],
   ["Auto guest restore", "const g=await lO()"],
   ["signInWithPuter", "signInWithPuter:()=>xR(C,WgPuterSignIn)"],
   ["Puter button", "SIGN IN WITH PUTER"],
   ["Gbux effect fix", "zC.getState().syncGbuxFromAccount(v)"],
-  ["Token persist", "g?.token&&cq(g.token)"],
+  ["Token persist", "g.token||g.sessionToken"],
   ["Bearer /me", "Authorization:`Bearer ${C}`"],
+  ["Fleet kO", "const I=await cO()"],
+  ["Sync Bearer", "WgFleetSync(C){try{const tok=SO()"],
 ];
 
 for (const [label, needle] of checks) {
