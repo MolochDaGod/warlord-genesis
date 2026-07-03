@@ -81,7 +81,7 @@ body{background:#080c14}
 .gw-play-gate-error{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:rgba(180,40,40,.18);border:1px solid rgba(248,113,113,.35);color:#fecaca;font-size:.85rem}
 .gw-play-gate-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px}
 .gw-play-gate-deploy{padding:14px 20px;font-size:1rem;letter-spacing:.06em}
-.gw-canvas-wrap--play{position:relative}
+.gw-canvas-wrap--play{position:absolute;inset:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;isolation:isolate;background:#1a120c}
 .gw-engage-v2{position:absolute;inset:0;z-index:12;display:grid;place-items:center;background:radial-gradient(ellipse 70% 55% at 50% 45%,rgba(8,12,20,.35),rgba(8,12,20,.82));cursor:pointer}
 .gw-engage-v2 .gw-engage-inner{max-width:min(520px,92vw);padding:28px 24px;border-radius:14px;border:1px solid rgba(224,178,82,.45);background:rgba(8,12,20,.88);text-align:center;pointer-events:auto}
 .gw-engage-v2 .gw-engage-sub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9dffd8}
@@ -94,3 +94,9 @@ body{background:#080c14}
 .gw-title-quick{width:100%;padding:10px 20px;font-size:.9rem;border-color:rgba(224,178,82,.35);color:#e0c878}
 .gw-mode-combat .gw-crosshair{opacity:1}
 .gw-hud.gw-mode-combat .gw-mode-badge{background:rgba(224,178,82,.15);border-color:rgba(224,178,82,.45)}
+
+.gw-game-viewport{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:hidden}
+.gw-game-viewport>div,.gw-game-viewport canvas,.gw-canvas-wrap--play canvas,.gw-game-canvas{width:100%!important;height:100%!important;display:block;border-radius:0!important;touch-action:none;outline:none}
+.gw-canvas-wrap--play .gw-hud{z-index:10}
+.gw-canvas-wrap--play .gw-engage-v2{z-index:12;background:radial-gradient(ellipse 85% 75% at 50% 50%,rgba(8,12,20,.12),rgba(8,12,20,.5))}
+.gw-canvas-wrap--play .gw-engage-inner{box-shadow:0 16px 48px rgba(0,0,0,.45)}

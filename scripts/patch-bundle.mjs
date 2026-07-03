@@ -383,6 +383,18 @@ js = js.replace(
   "const PI=_$(g,ZE,er,hA.current?.root??null,.32,A)",
 );
 
+// R3F canvas — full-viewport wrapper + resize-friendly Canvas props (Three.js best practice).
+const SGA_CANVAS_ORIG =
+  'C.ok?d.jsx(HX,{map:R$,children:d.jsx(ogA,{children:d.jsxs(TK,{shadows:{type:fr},camera:{fov:72,near:.22,far:420,position:[0,13,44]},gl:{antialias:!0,powerPreference:"high-performance",failIfMajorPerformanceCaveat:!1,preserveDrawingBuffer:!1},dpr:[1,1.5],onCreated:g,children:[d.jsx("color",{attach:"background",args:["#6e5240"]}),d.jsx(v9,{pixelated:!0}),d.jsx(T.Suspense,{fallback:null,children:d.jsx(agA,{})})]})})}):d.jsx(YT,{reason:C.reason})}';
+const SGA_CANVAS_PATCHED =
+  'C.ok?d.jsx("div",{className:"gw-game-viewport",children:d.jsx(HX,{map:R$,children:d.jsx(ogA,{children:d.jsxs(TK,{className:"gw-game-canvas",style:{width:"100%",height:"100%",display:"block",touchAction:"none"},resize:{scroll:!1,offsetSize:!0},shadows:{type:fr},camera:{fov:72,near:.22,far:420,position:[0,13,44]},gl:{antialias:!0,powerPreference:"high-performance",failIfMajorPerformanceCaveat:!1,preserveDrawingBuffer:!1,alpha:!1},dpr:[1,1.5],onCreated:g,children:[d.jsx("color",{attach:"background",args:["#6e5240"]}),d.jsx(v9,{pixelated:!0}),d.jsx(T.Suspense,{fallback:null,children:d.jsx(agA,{})})]})})})}):d.jsx(YT,{reason:C.reason})}';
+if (js.includes(SGA_CANVAS_ORIG)) {
+  js = js.replace(SGA_CANVAS_ORIG, SGA_CANVAS_PATCHED);
+  mustPatch("game-viewport", true);
+} else {
+  mustPatch("game-viewport", js.includes("gw-game-viewport"));
+}
+
 // Tower GLBs — always serve from this deploy (/models/towers). CDN Assimp exports crash GLTFLoader.
 js = js.replace(
   "function fT(C,A,I){const g=CIA[C][A];return I?`${mt.pipeline.r2.mapTowers}${C}/${g}.glb`:`${pT}models/towers/${C}/${g}.glb`}",
@@ -570,6 +582,24 @@ if (!css.includes(".gw-play-gate")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended play/combat UX styles");
+}
+// Fix v22 regression: position:relative collapsed the play canvas to zero height.
+if (css.includes(".gw-canvas-wrap--play{position:relative}")) {
+  css = css.replace(
+    ".gw-canvas-wrap--play{position:relative}",
+    ".gw-canvas-wrap--play{position:absolute;inset:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;isolation:isolate;background:#1a120c}",
+  );
+}
+if (!css.includes(".gw-game-viewport")) {
+  css += `
+.gw-game-viewport{position:absolute;inset:0;width:100%;height:100%;z-index:0;overflow:hidden}
+.gw-game-viewport>div,.gw-game-viewport canvas,.gw-canvas-wrap--play canvas,.gw-game-canvas{width:100%!important;height:100%!important;display:block;border-radius:0!important;touch-action:none;outline:none}
+.gw-canvas-wrap--play .gw-hud{z-index:10}
+.gw-canvas-wrap--play .gw-engage-v2{z-index:12;background:radial-gradient(ellipse 85% 75% at 50% 50%,rgba(8,12,20,.12),rgba(8,12,20,.5))}
+.gw-canvas-wrap--play .gw-engage-inner{box-shadow:0 16px 48px rgba(0,0,0,.45)}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended game viewport / canvas styles");
 }
 if (!css.includes(".gw-about-panel")) {
   css += `
