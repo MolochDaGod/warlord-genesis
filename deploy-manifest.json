@@ -138,8 +138,16 @@
       "needle": "cdnReachable:!1,bootedAt:0"
     },
     {
-      "id": "boot-cache-v4",
-      "needle": "gw_engine_boot_v4"
+      "id": "boot-cache-v5",
+      "needle": "gw_engine_boot_v5"
+    },
+    {
+      "id": "local-units",
+      "needle": "units:\"/models/units/\""
+    },
+    {
+      "id": "local-unit-raa",
+      "needle": "function RAA(C){return`/models/units/${C}.glb`}"
     },
     {
       "id": "match-persist",
@@ -239,15 +247,19 @@
     },
     {
       "id": "kaykit-unit-footman",
-      "needle": "models\\/units\\//.test(e.footman)?d.jsx(tU"
+      "needle": "e.footman?.includes(\".glb\")?e.footman:\"/models/units/footman.glb\""
     },
     {
       "id": "kaykit-unit-archer",
-      "needle": "models\\/units\\//.test(e.archer)?d.jsx(tU"
+      "needle": "e.archer?.includes(\".glb\")?e.archer:\"/models/units/archer.glb\""
     },
     {
       "id": "kaykit-unit-knight",
-      "needle": "models\\/units\\//.test(e.knight)?d.jsx(tU"
+      "needle": "e.knight?.includes(\".glb\")?e.knight:\"/models/units/knight.glb\""
+    },
+    {
+      "id": "cdn-boot-off",
+      "needle": "cdnReachable:!1,bootedAt:Date.now()"
     },
     {
       "id": "ui-kit-hud",
@@ -334,7 +346,7 @@
       "needle": "A>20&&Z.addEmber(xo.clone()"
     }
   ],
-  "lastBuilt": "2026-07-03T09:31:49.424Z",
-  "bundleBytes": 4068479,
-  "bundleSha256": "b434ba335ed2e8f4"
+  "lastBuilt": "2026-07-03T09:39:56.255Z",
+  "bundleBytes": 4068347,
+  "bundleSha256": "cde76d727ffe9713"
 }

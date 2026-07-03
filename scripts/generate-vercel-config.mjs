@@ -85,6 +85,10 @@ const rewrites = [
     source: "/api/assets/grudge-nexus/textures/Color_Palette.png",
     destination: "/models/units/Color_Palette.png",
   },
+  {
+    source: "/api/assets/grudge-nexus/models/rts/units/:file",
+    destination: "/models/units/:file",
+  },
   /** GRUDGE6 race atlases — local /textures/grudge6 fallback proxies to canonical R2 CDN. */
   {
     source: "/textures/grudge6/:race/:file",

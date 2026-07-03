@@ -200,13 +200,22 @@ const XAA_KNIGHT =
   'case"knight":case"ogre":return d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
 const XAA_KNIGHT_PATCHED =
   'case"knight":case"ogre":return d.jsx(tU,{url:e.knight?.includes(".glb")?e.knight:"/models/units/knight.glb",unitId:I,scale:C.scale,tint:i});';
-for (const [from, to, id] of [
-  [XAA_FOOTMAN, XAA_FOOTMAN_PATCHED, "kaykit-unit-footman"],
-  [XAA_ARCHER, XAA_ARCHER_PATCHED, "kaykit-unit-archer"],
-  [XAA_KNIGHT, XAA_KNIGHT_PATCHED, "kaykit-unit-knight"],
+const XAA_FOOTMAN_LEGACY =
+  'case"footman":case"grunt":return/\\/models\\/units\\//.test(e.footman)?d.jsx(tU,{url:e.footman,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
+const XAA_ARCHER_LEGACY =
+  'case"archer":case"raider":return/\\/models\\/units\\//.test(e.archer)?d.jsx(tU,{url:e.archer,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
+const XAA_KNIGHT_LEGACY =
+  'case"knight":case"ogre":return/\\/models\\/units\\//.test(e.knight)?d.jsx(tU,{url:e.knight,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
+for (const [from, to, legacy, id] of [
+  [XAA_FOOTMAN, XAA_FOOTMAN_PATCHED, XAA_FOOTMAN_LEGACY, "kaykit-unit-footman"],
+  [XAA_ARCHER, XAA_ARCHER_PATCHED, XAA_ARCHER_LEGACY, "kaykit-unit-archer"],
+  [XAA_KNIGHT, XAA_KNIGHT_PATCHED, XAA_KNIGHT_LEGACY, "kaykit-unit-knight"],
 ]) {
   if (js.includes(from)) {
     js = js.replace(from, to);
+    mustPatch(id, true);
+  } else if (js.includes(legacy)) {
+    js = js.replace(legacy, to);
     mustPatch(id, true);
   } else if (js.includes(to)) {
     mustPatch(id, true);
@@ -215,6 +224,7 @@ for (const [from, to, id] of [
     mustPatch(id, false);
   }
 }
+// local-units / boot-cache-v5 verified via deploy-manifest after full patch pass.
 
 // About panel component (lobby tab)
 const ABOUT_COMPONENT = `function WCA(){return d.jsxs("div",{className:"gw-about-panel gw-deploy-panel",children:[d.jsx("span",{className:"gw-deploy-head",children:"About Grudge Studio"}),d.jsxs("p",{className:"gw-about-lead",children:["Warlord Genesis is the ",d.jsx("strong",{children:"Grudge Nexus warcamp"})," — lane-defense RTS on the Grudge Engine with GRUDGE6 viewer heroes, KayKit lane creeps, and canonical player data."]}),d.jsxs("ul",{className:"gw-pipeline-list gw-about-list",children:[d.jsxs("li",{children:[d.jsx("strong",{children:"Live"})," — ",d.jsx("a",{href:"https://warlord-genesis.vercel.app",target:"_blank",rel:"noreferrer",children:"warlord-genesis.vercel.app"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Characters"})," — active hero from ",d.jsx("code",{children:"/api/characters"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Saves"})," — ",d.jsx("code",{children:"warlord_genesis_players"})," on Railway Postgres"]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Assets"})," — ",d.jsx("code",{children:"assets.grudge-studio.com"})]}),d.jsxs("li",{children:[d.jsx("strong",{children:"Source"})," — ",d.jsx("a",{href:"https://github.com/MolochDaGod/warlord-genesis",target:"_blank",rel:"noreferrer",children:"github.com/MolochDaGod/warlord-genesis"})]})]}),d.jsx("p",{className:"gw-about-muted",children:"Built by MolochDaGod / Grudge Studio — dark-fantasy browser games on Three.js, Vercel, Cloudflare, and Railway."})]})}`;

@@ -59,6 +59,10 @@
       "destination": "/models/units/Color_Palette.png"
     },
     {
+      "source": "/api/assets/grudge-nexus/models/rts/units/:file",
+      "destination": "/models/units/:file"
+    },
+    {
       "source": "/textures/grudge6/:race/:file",
       "destination": "https://assets.grudge-studio.com/assets/:race/textures/:file"
     },
