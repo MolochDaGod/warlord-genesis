@@ -57,6 +57,16 @@ const replacements = [
   ],
 ];
 
+// KayKit lane creeps — local GLBs (CDN /api/assets/grudge-nexus/models/rts/units/ returns HTML).
+js = js.replace(
+  "units:`${PQ}/grudge-nexus/models/rts/units/`",
+  'units:"/models/units/"',
+);
+js = js.replace(
+  'function RAA(C){return`${mt.pipeline.r2.units}${C}.glb`}',
+  'function RAA(C){return`/models/units/${C}.glb`}',
+);
+
 // Unit palette + CDN probe — local file (CDN /api/assets returns 403/HTML).
 js = js.replace(
   'unitPalette:`${PQ}/grudge-nexus/textures/Color_Palette.png`',
@@ -70,6 +80,11 @@ js = js.replace(
   "try{A=(await fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:\"HEAD\"})).ok}catch{A=!1}",
   'try{const r=await fetch("/models/units/Color_Palette.png",{method:"HEAD"});A=r.ok&&/image\\//i.test(r.headers.get("content-type")||"")}catch{A=!1}',
 );
+// Palette HEAD ok must not flip unit URLs back to broken /api/assets/rts/ paths.
+js = js.replace(
+  "return Zc={ready:!0,manifest:mt,cdnReachable:A,bootedAt:Date.now()}",
+  "return Zc={ready:!0,manifest:mt,cdnReachable:!1,bootedAt:Date.now()}",
+);
 
 // Baked clips ship from this deploy (/anims/baked), not the broken CDN proxy.
 js = js.replaceAll("${PQ}/anims/baked/", "/anims/baked/");
@@ -81,10 +96,19 @@ js = js.replace(
 );
 
 // Animation pack binder — skip null clips instead of clipAction(null) crash
-js = js.replace(
-  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),o={idle:g,walk:i,run:e,sprint:t},f=g||i||e||t||Q,s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}',
-  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),f=g||i||e||t||Q,o={idle:g||f,walk:i||f,run:e||f,sprint:t||f},s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}',
-);
+const PY_ORIG =
+  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),o={idle:g,walk:i,run:e,sprint:t};return{director:new G6(C,o),attackClip:Q,actions:{idle:C.clipAction(g),walk:C.clipAction(i),run:C.clipAction(e),attack:C.clipAction(Q)}}}';
+const PY_PATCHED =
+  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),f=g||i||e||t||Q,o={idle:g||f,walk:i||f,run:e||f,sprint:t||f},s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}';
+if (js.includes(PY_ORIG)) {
+  js = js.replace(PY_ORIG, PY_PATCHED);
+  mustPatch("anim-pack-binder", true);
+} else if (js.includes(PY_PATCHED)) {
+  mustPatch("anim-pack-binder", true);
+} else {
+  console.warn("[patch] pY anim binder missing");
+  mustPatch("anim-pack-binder", false);
+}
 
 // AnimationDirector — tolerate missing individual locomotion clips
 js = js.replace(
@@ -154,7 +178,7 @@ for (const [from, to] of replacements) {
 
 // FBX models reference race PSD atlases beside the .FBX — remap to GRUDGE6 webp (CDN + local fallback).
 const PSD_REMAP_HOOK =
-  'const Jb=new rK;const WgRaceTex={barbarians:"BRB_StandardUnits_texture.webp",dwarves:"DWF_Standard_Units.webp",elves:"ELF_HighElves_Texture.webp",orcs:"ORC_StandardUnits.webp",undead:"UD_Standard_Units.webp","western-kingdoms":"WK_Standard_Units.webp"};Jb.setURLModifier(u=>{if(!/StandardUnits?_Textures?\\.psd/i.test(u))return u;const m=u.match(/\\/(barbarians|dwarves|elves|orcs|undead|western-kingdoms)\\//i),folder=m?m[1]:"western-kingdoms",tex=WgRaceTex[folder]||WgRaceTex["western-kingdoms"];return`https://assets.grudge-studio.com/assets/${folder}/textures/${tex}`});';
+  'const Jb=new rK;const WgRaceTex={barbarians:"BRB_StandardUnits_texture.webp",dwarves:"DWF_Standard_Units.webp",elves:"ELF_HighElves_Texture.webp",orcs:"ORC_StandardUnits.webp",undead:"UD_Standard_Units.webp","western-kingdoms":"WK_Standard_Units.webp"};Jb.setURLModifier(u=>{if(!/StandardUnits?_Textures?\\.(psd|tga|png|webp)/i.test(u))return u;const m=u.match(/\\/(barbarians|dwarves|elves|orcs|undead|western-kingdoms)\\//i),folder=m?m[1].toLowerCase():"western-kingdoms",tex=WgRaceTex[folder]||WgRaceTex["western-kingdoms"];return`/textures/grudge6/${folder}/${tex}`});';
 if (js.includes("const Jb=new rK;")) {
   js = js.replace("const Jb=new rK;", PSD_REMAP_HOOK);
   mustPatch("psd-race-remap", js.includes("WgRaceTex"));
@@ -167,15 +191,15 @@ if (js.includes("const Jb=new rK;")) {
 const XAA_FOOTMAN =
   'case"footman":case"grunt":return d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
 const XAA_FOOTMAN_PATCHED =
-  'case"footman":case"grunt":return/\\/models\\/units\\//.test(e.footman)?d.jsx(tU,{url:e.footman,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
+  'case"footman":case"grunt":return d.jsx(tU,{url:e.footman?.includes(".glb")?e.footman:"/models/units/footman.glb",unitId:I,scale:C.scale,tint:i});';
 const XAA_ARCHER =
   'case"archer":case"raider":return d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
 const XAA_ARCHER_PATCHED =
-  'case"archer":case"raider":return/\\/models\\/units\\//.test(e.archer)?d.jsx(tU,{url:e.archer,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
+  'case"archer":case"raider":return d.jsx(tU,{url:e.archer?.includes(".glb")?e.archer:"/models/units/archer.glb",unitId:I,scale:C.scale,tint:i});';
 const XAA_KNIGHT =
   'case"knight":case"ogre":return d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
 const XAA_KNIGHT_PATCHED =
-  'case"knight":case"ogre":return/\\/models\\/units\\//.test(e.knight)?d.jsx(tU,{url:e.knight,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
+  'case"knight":case"ogre":return d.jsx(tU,{url:e.knight?.includes(".glb")?e.knight:"/models/units/knight.glb",unitId:I,scale:C.scale,tint:i});';
 for (const [from, to, id] of [
   [XAA_FOOTMAN, XAA_FOOTMAN_PATCHED, "kaykit-unit-footman"],
   [XAA_ARCHER, XAA_ARCHER_PATCHED, "kaykit-unit-archer"],
@@ -313,8 +337,51 @@ js = js.replace(
 );
 js = js.replace(
   "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`${PQ}/assets/${A.folder}/textures/${A.textureFile}`}",
-  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`https://assets.grudge-studio.com/assets/${A.folder}/textures/${A.textureFile}`}",
+  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`/textures/grudge6/${A.folder}/${A.textureFile}`}",
 );
+js = js.replace(
+  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`https://assets.grudge-studio.com/assets/${A.folder}/textures/${A.textureFile}`}",
+  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`/textures/grudge6/${A.folder}/${A.textureFile}`}",
+);
+
+// Weapon-aware locomotion packs (sword_shield strafe/run, not generic venom/locomotion).
+const SX_PACK_FIXES = [
+  [
+    'sword_shield:{idle:Wg("idle_shield","sword_shield/sword and shield idle"),walk:Wg("walk","locomotion/walking"),run:Wg("run","locomotion/running"),sprint:Wg("sprint","uploads_2026_06/locomotion/running")}',
+    'sword_shield:{idle:Wg("idle_shield","sword_shield/sword and shield idle"),walk:Wg("walk","sword_shield/sword and shield strafe"),run:Wg("run","sword_shield/sword and shield run"),sprint:Wg("sprint","sword_shield/sword and shield run")}',
+  ],
+  [
+    'longbow:{idle:Wg("bow_idle","longbow/standing idle 01"),walk:Wg("walk","locomotion/walking"),run:Wg("bow_run","longbow/standing run forward"),sprint:Wg("sprint","uploads_2026_06/locomotion/running")}',
+    'longbow:{idle:Wg("bow_idle","longbow/standing idle 01"),walk:Wg("bow_walk","longbow/standing walk forward"),run:Wg("bow_run","longbow/standing run forward"),sprint:Wg("bow_run","longbow/standing run forward")}',
+  ],
+  [
+    'magic:{idle:Wg("magic_idle","magic/standing idle"),walk:Wg("walk","locomotion/walking"),run:Wg("magic_run","magic/Standing Run Forward"),sprint:Wg("sprint","uploads_2026_06/locomotion/running")}',
+    'magic:{idle:Wg("magic_idle","magic/standing idle"),walk:Wg("magic_walk","magic/Standing Walk Forward"),run:Wg("magic_run","magic/Standing Run Forward"),sprint:Wg("magic_run","magic/Standing Run Forward")}',
+  ],
+];
+for (const [from, to] of SX_PACK_FIXES) {
+  if (js.includes(from)) {
+    js = js.replace(from, to);
+    mustPatch("sx-pack", true);
+  } else if (js.includes(to)) {
+    mustPatch("sx-pack", true);
+  }
+}
+
+// Lobby 3D preview — correct anim pack + weapon meshes for selected warlord.
+const _6_ORIG =
+  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A);return T.useEffect(()=>{let t=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I}).then(Q=>{if(t){Q.mixer.stopAllAction();return}g.current=Q;const o=i.current;o&&(o.clear(),o.add(Q.root)),Q.actions.idle?.reset().fadeIn(.2).play()}),()=>{t=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I]),VC((t,Q)=>{g.current?.mixer.update(Q)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
+const _6_PATCHED =
+  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>qh(C,A),[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I,animPack:t?.animPack}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t?.animPack,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
+if (js.includes(_6_ORIG)) {
+  js = js.replace(_6_ORIG, _6_PATCHED);
+  mustPatch("lobby-hero-preview", true);
+} else if (js.includes("MK(l)?.weapon")) {
+  mustPatch("lobby-hero-preview", true);
+} else {
+  console.warn("[patch] lobby _6 preview hook missing");
+  mustPatch("lobby-hero-preview", false);
+}
 
 // Battle units — GRUDGE6 FBX + baked anims for heroes/lane guards (never TAA capsule placeholders).
 const HAA_ORIG =
@@ -620,7 +687,8 @@ js = js.replace(
   "function tIA(C,A){return`${pT}models/towers/${C}/atlas.png`}",
 );
 js = js.replace("cdnReachable:!0,bootedAt:0", "cdnReachable:!1,bootedAt:0");
-js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v4"');
+js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v5"');
+js = js.replace('Dq="gw_engine_boot_v4"', 'Dq="gw_engine_boot_v5"');
 
 // Citadel destruction — end match immediately; show castle GLB + HP bar.
 js = js.replace(
@@ -714,7 +782,11 @@ if (js.includes("function L6(C,A){")) {
 
 js = js.replace(
   "function q6(C,A){const I=new mk({map:A,color:16777215});",
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
+);
+js = js.replace(
   "function q6(C,A){A&&(A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0);const I=new mk({map:A,color:16777215});",
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
 );
 
 const SWAP_ANIM_ORIG =
