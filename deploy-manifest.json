@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 39,
+  "bundleVersion": 40,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -269,7 +269,11 @@
     },
     {
       "id": "deploy-screen",
-      "needle": "function WgDeployScreen"
+      "needle": "gk-deploy-v2"
+    },
+    {
+      "id": "deploy-lane-cards",
+      "needle": "gk-lane-card"
     },
     {
       "id": "citadel-endgame",
@@ -424,7 +428,7 @@
       "needle": "gw-auth-brand-icon"
     }
   ],
-  "lastBuilt": "2026-07-03T10:25:18.865Z",
-  "bundleBytes": 4074410,
-  "bundleSha256": "d57dffb2e1a9ca8c"
+  "lastBuilt": "2026-07-03T22:56:50.560Z",
+  "bundleBytes": 4076325,
+  "bundleSha256": "423a00ad3a5a27d2"
 }

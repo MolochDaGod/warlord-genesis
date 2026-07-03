@@ -4,7 +4,7 @@
  */
 import { execSync } from "node:child_process";
 import { createHash } from "node:crypto";
-import { copyFileSync, readFileSync, writeFileSync } from "node:fs";
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -495,18 +495,27 @@ if (js.includes(CAST_SKILL_ORIG)) {
 
 // Pre-game deploy + REST sync + champion lane + /play boot.
 const PLAY_HELPERS = `const WgChampionLaneKey="wg-champion-lane",WgDeployDoneKey="wg-deploy-done";function WgReadChampionLane(){try{const v=sessionStorage.getItem(WgChampionLaneKey),n=Number(v);return n===0||n===1||n===2?n:1}catch{}return 1}function WgSaveChampionLane(l){try{sessionStorage.setItem(WgChampionLaneKey,String(l))}catch{}}function WgMarkDeployDone(){try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}async function WgFetchBattleReady(){const tok=SO(),hdr=tok?{Authorization:\`Bearer \${tok}\`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok)out.auth=await r.json()}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=j?.character||j?.active||j}}catch{out.errors.push("characters")}try{const gid=out.auth?.user?.grudgeId||out.auth?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}function WgApplyChampionLane(){const lane=WgReadChampionLane(),lanes=Z.map?.lanes;if(!lanes?.[lane]?.pts?.length)return;const pts=lanes[lane].pts,idx=Math.max(0,Math.min(pts.length-1,Math.floor(pts.length*.14))),p=pts[idx];Z.playerPos.set(p.x,1.7,p.z)}function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
-const DEPLOY_SCREEN = `function WgDeployScreen(){const nav=Fh(),openHub=MN(x=>x.openHub),user=Rh(x=>x.user),gbux=zC(x=>x.gbux),lock=XI(x=>x.lockLoadout),faction=XI(x=>x.factionId),deploy=BI(x=>x.laneDeployment),setPick=BI(x=>x.setLanePick),resetLanes=BI(x=>x.resetLaneDeployment),startGame=BI(x=>x.startGame),[lane,setLane]=T.useState(WgReadChampionLane()),[phase,setPhase]=T.useState("load"),[loadMsg,setLoadMsg]=T.useState("Syncing Railway + Grudge API…"),[loadErr,setLoadErr]=T.useState(""),meleeOpts=T.useMemo(()=>vk(faction),[faction]),rangedOpts=T.useMemo(()=>_k(faction),[faction]);T.useEffect(()=>{let ok=!0;return(async()=>{setPhase("load");const r=await WgFetchBattleReady();if(!ok)return;r.errors.length&&setLoadErr("Partial sync — local defaults apply."),setLoadMsg(r.character?"Hero ready · "+(r.character.name||r.character.raceId||"canonical"):"Session ready — deploy your lanes"),WgEnsureReady(),setTimeout(()=>ok&&setPhase("deploy"),500)})(),()=>{ok=!1}},[]);const assault=()=>{WgEnsureReady(),WgSaveChampionLane(lane),WgMarkDeployDone(),lock(),startGame(),nav("/play")};if(phase==="load")return d.jsx("div",{className:"gw-screen gw-deploy-screen gw-deploy-loading gk-root gk-deploy-shell",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:loadMsg}),loadErr&&d.jsx("p",{className:"gw-deploy-load-warn",children:loadErr})]})});return d.jsxs("div",{className:"gw-screen gw-deploy-screen gk-root gk-deploy-shell",children:[d.jsx(S7,{}),d.jsx(bH,{}),d.jsx(WgKitResourceBar,{gbux,user,onAccount:()=>openHub("account")}),d.jsxs("div",{className:"gk-deploy-layout",children:[d.jsx(WgKitQuestRail,{activeStep:"deploy"}),d.jsxs("div",{className:"gk-deploy-main",children:[d.jsxs("header",{className:"gw-deploy-screen-head",children:[d.jsx("button",{type:"button",className:"gw-back",onClick:()=>nav("/lobby"),children:"‹ WARCAMP"}),d.jsxs("div",{children:[d.jsx("h1",{className:"gw-deploy-screen-title",children:"Battle Deployment"}),d.jsx("p",{className:"gw-deploy-screen-lead",children:"Choose your champion lane and lane wave creeps. Breach a lane, then raze the enemy citadel to win."})]})]}),d.jsxs(WgKitWindow,{title:"Champion Path",className:"gk-deploy-window",children:[d.jsx("p",{className:"gw-deploy-champion-hint",children:"Your GRUDGE6 warlord spawns on this lane at match start."}),d.jsx("div",{className:"gw-champion-lane-row",children:[0,1,2].map(u=>d.jsx("button",{type:"button",className:"gw-btn gw-btn-mini gw-lane-pick"+(lane===u?" gw-active":""),onClick:()=>setLane(u),children:dz[u]},u))})]}),d.jsxs(WgKitWindow,{title:"Lane Wave Deployment",className:"gk-deploy-window gk-deploy-lanes",children:[d.jsx("div",{className:"gw-lane-grid",children:[0,1,2].map(u=>d.jsx(lgA,{lane:u,pick:deploy.lanes[u],meleeOpts,rangedOpts,onPick:(G,p)=>setPick(u,G,p)},u))})]}),d.jsxs("div",{className:"gw-deploy-screen-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>resetLanes(),children:"Optimal Deploy"}),d.jsx("button",{type:"button",className:"gw-btn gw-deploy-assault",onClick:assault,children:"Begin Assault"})]})]})]})]})}`;
+const DEPLOY_SCREEN_PATH = join(ROOT, "scripts", "deploy-screen-v2.min.txt");
+const DEPLOY_SCREEN = existsSync(DEPLOY_SCREEN_PATH)
+  ? readFileSync(DEPLOY_SCREEN_PATH, "utf8").trim()
+  : `function WgDeployScreen(){const nav=Fh(),openHub=MN(x=>x.openHub),user=Rh(x=>x.user),gbux=zC(x=>x.gbux),lock=XI(x=>x.lockLoadout),faction=XI(x=>x.factionId),deploy=BI(x=>x.laneDeployment),setPick=BI(x=>x.setLanePick),resetLanes=BI(x=>x.resetLaneDeployment),startGame=BI(x=>x.startGame),[lane,setLane]=T.useState(WgReadChampionLane()),[phase,setPhase]=T.useState("load"),[loadMsg,setLoadMsg]=T.useState("Syncing Railway + Grudge API…"),[loadErr,setLoadErr]=T.useState(""),meleeOpts=T.useMemo(()=>vk(faction),[faction]),rangedOpts=T.useMemo(()=>_k(faction),[faction]);T.useEffect(()=>{let ok=!0;return(async()=>{setPhase("load");const r=await WgFetchBattleReady();if(!ok)return;r.errors.length&&setLoadErr("Partial sync — local defaults apply."),setLoadMsg(r.character?"Hero ready · "+(r.character.name||r.character.raceId||"canonical"):"Session ready — deploy your lanes"),WgEnsureReady(),setTimeout(()=>ok&&setPhase("deploy"),500)})(),()=>{ok=!1}},[]);const assault=()=>{WgEnsureReady(),WgSaveChampionLane(lane),WgMarkDeployDone(),lock(),startGame(),nav("/play")};if(phase==="load")return d.jsx("div",{className:"gw-screen gw-deploy-screen gw-deploy-loading gk-root gk-deploy-shell",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:loadMsg}),loadErr&&d.jsx("p",{className:"gw-deploy-load-warn",children:loadErr})]})});return d.jsxs("div",{className:"gw-screen gw-deploy-screen gk-root gk-deploy-shell",children:[d.jsx(S7,{}),d.jsx(bH,{}),d.jsx(WgKitResourceBar,{gbux,user,onAccount:()=>openHub("account")}),d.jsxs("div",{className:"gk-deploy-layout",children:[d.jsx(WgKitQuestRail,{activeStep:"deploy"}),d.jsxs("div",{className:"gk-deploy-main",children:[d.jsxs("header",{className:"gw-deploy-screen-head",children:[d.jsx("button",{type:"button",className:"gw-back",onClick:()=>nav("/lobby"),children:"‹ WARCAMP"}),d.jsxs("div",{children:[d.jsx("h1",{className:"gw-deploy-screen-title",children:"Battle Deployment"}),d.jsx("p",{className:"gw-deploy-screen-lead",children:"Choose your champion lane and lane wave creeps. Breach a lane, then raze the enemy citadel to win."})]})]}),d.jsxs(WgKitWindow,{title:"Champion Path",className:"gk-deploy-window",children:[d.jsx("p",{className:"gw-deploy-champion-hint",children:"Your GRUDGE6 warlord spawns on this lane at match start."}),d.jsx("div",{className:"gw-champion-lane-row",children:[0,1,2].map(u=>d.jsx("button",{type:"button",className:"gw-btn gw-btn-mini gw-lane-pick"+(lane===u?" gw-active":""),onClick:()=>setLane(u),children:dz[u]},u))})]}),d.jsxs(WgKitWindow,{title:"Lane Wave Deployment",className:"gk-deploy-window gk-deploy-lanes",children:[d.jsx("div",{className:"gw-lane-grid",children:[0,1,2].map(u=>d.jsx(lgA,{lane:u,pick:deploy.lanes[u],meleeOpts,rangedOpts,onPick:(G,p)=>setPick(u,G,p)},u))})]}),d.jsxs("div",{className:"gw-deploy-screen-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>resetLanes(),children:"Optimal Deploy"}),d.jsx("button",{type:"button",className:"gw-btn gw-deploy-assault",onClick:assault,children:"Begin Assault"})]})]})]})]})}`;
 
 const DEPLOY_SCREEN_ORIG = sliceFunction(js, "WgDeployScreen");
 if (DEPLOY_SCREEN_ORIG && js.includes(DEPLOY_SCREEN_ORIG)) {
   js = js.replace(DEPLOY_SCREEN_ORIG, DEPLOY_SCREEN);
-  mustPatch("deploy-screen", js.includes("gk-deploy-shell"));
+  mustPatch("deploy-screen", js.includes("gk-deploy-v2"));
 } else if (!js.includes("function WgDeployScreen()")) {
   js = js.replace("function u7(){", `${DEPLOY_SCREEN}function u7(){`);
   mustPatch("deploy-screen", true);
 } else {
-  mustPatch("deploy-screen", js.includes("gk-deploy-shell"));
+  mustPatch("deploy-screen", js.includes("gk-deploy-v2"));
 }
+
+js = js.replace(
+  'className:"gw-lane-card",children:[d.jsxs("div",{className:"gw-lane-card-head"',
+  'className:"gw-lane-card gk-lane-card",children:[d.jsxs("div",{className:"gw-lane-card-head"',
+);
+mustPatch("deploy-lane-cards", js.includes("gk-lane-card"));
 
 if (!js.includes("function WgAutoOnboard")) {
   const hG_ANCHOR2 = 'const hG={phase:"menu",credits:dp.startCredits';
@@ -1342,6 +1351,47 @@ if (!css.includes(".gk-warcamp-shell")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended warcamp/deploy UI kit shell styles");
+}
+if (!css.includes(".gk-deploy-v2")) {
+  css += `
+.gk-deploy-v2{--gk-line:rgba(120,150,200,.22);--gk-muted:#8fa3c4}
+.gk-deploy-v2 .gk-deploy-main{container-type:inline-size;container-name:deploy;overflow-y:auto;max-height:calc(100dvh - 118px);padding-bottom:10px;gap:16px}
+.gk-deploy-head{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:clamp(10px,2vw,18px);align-items:start;padding:clamp(8px,1.5vw,14px) 0 10px;border-bottom:1px solid var(--gk-line)}
+.gk-deploy-kicker{margin:0 0 4px;font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#9dffd8}
+.gk-deploy-chips{display:flex;flex-direction:column;gap:6px;align-items:flex-end}
+.gk-deploy-chip{font-size:10px;letter-spacing:.08em;padding:5px 10px;border-radius:999px;border:1px solid var(--gk-line);color:var(--gk-ink-dim);background:rgba(8,12,20,.65);white-space:nowrap}
+.gk-deploy-chip.is-ok{border-color:rgba(110,231,183,.4);color:#9dffd8}
+.gk-deploy-hero-strip{display:flex;align-items:center;gap:14px;padding:14px 16px;border-radius:12px;border:1px solid rgba(224,178,82,.28);background:linear-gradient(135deg,rgba(14,18,28,.92),rgba(8,12,20,.88));box-shadow:0 8px 28px rgba(0,0,0,.25)}
+.gk-deploy-hero-icon{width:48px;height:48px;object-fit:contain;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5));flex-shrink:0}
+.gk-deploy-hero-copy{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gk-deploy-hero-name{font-family:Cinzel Decorative,serif;font-size:1.05rem;color:#f0e6d0}
+.gk-deploy-hero-meta{font-size:.82rem;color:#a8b8d0}
+.gk-deploy-hero-stats{display:flex;flex-direction:column;gap:4px;font-size:.72rem;color:#9dffd8;letter-spacing:.04em;text-align:right;flex-shrink:0}
+.gk-deploy-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@container deploy (min-width:780px){.gk-deploy-grid{grid-template-columns:minmax(260px,.95fr) minmax(0,1.35fr);align-items:start}}
+.gk-deploy-v2 .gk-deploy-window{background-image:url(/assets/ui-kit/craftpix/Window/Window_Background.png)}
+.gk-lane-path-grid{display:grid;gap:10px;grid-template-columns:1fr}
+@container deploy (min-width:520px){.gk-lane-path-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.gk-lane-path-tile{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px;border-radius:10px;border:1px solid var(--gk-line);background:rgba(8,12,20,.72);cursor:pointer;font-family:inherit;transition:border-color .15s ease,box-shadow .15s ease,transform .12s ease}
+.gk-lane-path-tile:hover{border-color:rgba(224,178,82,.45);transform:translateY(-1px)}
+.gk-lane-path-tile.is-active{border-color:rgba(224,178,82,.75);box-shadow:0 0 0 1px rgba(224,178,82,.4),0 8px 20px rgba(0,0,0,.35);background:rgba(224,178,82,.08)}
+.gk-lane-path-icon{width:40px;height:40px;object-fit:contain}
+.gk-lane-path-name{font-size:12px;font-weight:700;letter-spacing:.06em;color:#e8eef8}
+.gk-lane-path-hint{font-size:9px;line-height:1.35;text-align:center;color:var(--gk-ink-dim);max-width:18ch}
+.gk-deploy-lanes-lead{margin:0 0 10px;font-size:.82rem;color:#a8b8d0;line-height:1.45}
+.gk-deploy-v2 .gk-lane-grid{display:grid;gap:12px;grid-template-columns:1fr}
+@container deploy (min-width:900px){.gk-deploy-v2 .gk-lane-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+.gk-deploy-lanes .gk-lane-card,.gk-deploy-lanes .gw-lane-card{position:relative;padding:14px 12px;border-radius:10px;border:1px solid rgba(120,150,200,.25);background:rgba(6,9,14,.82);box-shadow:inset 0 0 0 1px rgba(255,255,255,.03)}
+.gk-deploy-lanes .gw-lane-select{width:100%;max-width:100%}
+.gk-deploy-footer{position:sticky;bottom:0;z-index:4;display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:center;padding:14px 0 8px;margin-top:4px;border-top:1px solid var(--gk-line);background:linear-gradient(180deg,transparent,rgba(8,12,20,.94) 28%)}
+.gk-deploy-assault{padding:14px 28px;font-size:1rem;letter-spacing:.08em;box-shadow:0 4px 18px rgba(224,178,82,.22)}
+.gk-deploy-load-wrap{display:grid;place-items:center;min-height:calc(100dvh - 80px);padding:24px}
+.gk-deploy-load-card{max-width:min(420px,92vw);text-align:center}
+.gk-deploy-load-card .gw-play-boot-spinner{margin:0 auto 12px}
+@media(max-width:720px){.gk-deploy-head{grid-template-columns:1fr}.gk-deploy-chips{flex-direction:row;flex-wrap:wrap;align-items:center}.gk-deploy-hero-strip{flex-wrap:wrap}.gk-deploy-hero-stats{flex-direction:row;gap:10px;text-align:left;width:100%}}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended deploy v2 container-query layout");
 }
 if (!css.includes(".gw-about-panel")) {
   css += `
