@@ -729,7 +729,7 @@ if (js.includes(PLAY_ROUTE_ORIG)) {
 const ENGAGE_ORIG =
   'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"The host awaits your command"}),d.jsx("h2",{className:"gw-engage-title",children:"TAKE THE FIELD"}),d.jsx("span",{className:"gw-hint",children:"Click to lock the mouse · press ` to switch to command"})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
 const ENGAGE_PATCHED =
-  'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap gw-canvas-wrap--play",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage gw-engage-v2",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"Third-person warrior mode"}),d.jsx("h2",{className:"gw-engage-title",children:"ENGAGE COMBAT"}),d.jsx("p",{className:"gw-engage-copy",children:"WASD move · mouse aim · LMB attack · RMB block. Press ` for warlord command view."}),d.jsx("button",{type:"button",className:"gw-btn gw-engage-btn",children:"Take the Field"}),d.jsxs("div",{className:"gw-engage-tips",children:[d.jsxs("span",{children:[d.jsx("kbd",{children:"`"})," Command lanes"]}),d.jsxs("span",{children:[d.jsx("kbd",{children:"R"})," Reload · ",d.jsx("kbd",{children:"Q"})," Swap weapon"]})]})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
+  'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap gw-canvas-wrap--play",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage gw-engage-v2",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"Third-person warrior mode"}),d.jsx("h2",{className:"gw-engage-title",children:"ENGAGE COMBAT"}),d.jsx("p",{className:"gw-engage-copy",children:"LMB select · RMB focus lock · Tab cycle targets · F block (melee). Digit1–6 weapon skills."}),d.jsx("button",{type:"button",className:"gw-btn gw-engage-btn",children:"Take the Field"}),d.jsxs("div",{className:"gw-engage-tips",children:[d.jsxs("span",{children:[d.jsx("kbd",{children:"Tab"})," Target · ",d.jsx("kbd",{children:"RMB"})," Focus"]}),d.jsxs("span",{children:[d.jsx("kbd",{children:"`"})," Command · ",d.jsx("kbd",{children:"Q"})," Swap weapon"]})]})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
 if (js.includes(ENGAGE_ORIG)) {
   js = js.replace(ENGAGE_ORIG, ENGAGE_PATCHED);
   mustPatch("engage-v2", true);
@@ -909,7 +909,7 @@ js = js.replace(
   "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
   "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!0,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
 );
-js = js.replace("s.colorSpace=zg,s.flipY=!1,", "s.colorSpace=zg,s.flipY=!0,");
+js = js.replace("s.colorSpace=zg,s.flipY=!1,", "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,");
 mustPatch("atlas-flipy", js.includes("A.flipY=!0") && js.includes("s.flipY=!0"));
 
 const SWAP_ANIM_ORIG =
@@ -1058,6 +1058,110 @@ js = js.replace(
   'Z.addFireBurst(xo,C.faction==="enemy"?"#ffae42":"#ff6a3c",5,.62),Z.addSpark(xo.clone(),C.faction==="enemy"?"#ffd080":"#ff9070"),A>20&&Z.addEmber(xo.clone(),C.faction==="enemy"?"#ff7733":"#ffb366")',
 );
 mustPatch("combat-vfx-ls", js.includes("A>20&&Z.addEmber(xo.clone()"));
+
+// ── v41 Combat targeting (Danger Room parity) + projectile trails + texture fix ──
+const WG_COMBAT_TARGETING =
+  'const WgCombatTargets=new Map();const WgAimRay=new bk,WgAimMouse=new CI,WgAimTmp=new O,WgAimOut=new O;const WgAim={focusEnabled:!1,rmb:!1,token:0};let WgAttackCd=0;const WgSoftLock={active:!1,targetId:null};function WgCombatRegisterUnit(u){if(!u?.alive)return;const h=u.faction==="enemy"||u.faction==="neutral";WgCombatTargets.set(u.id,{id:u.id,hostile:h,alive:()=>u.alive,getPos:()=>u.pos,scale:u.def?.scale??1})}function WgCombatUnregisterUnit(id){WgCombatTargets.delete(id);if(WgSoftLock.targetId===id){WgSoftLock.active=!1;WgSoftLock.targetId=null;WgAim.token++}}function WgCombatSyncUnits(){WgCombatTargets.clear();for(const u of Z.units)WgCombatRegisterUnit(u)}function WgGetAimDir(cam,out){if(WgSoftLock.active&&WgSoftLock.targetId!=null){const t=WgCombatTargets.get(WgSoftLock.targetId);if(t&&t.alive()){const p=t.getPos();return out.set(p.x,Z.playerPos.y+1.1*t.scale,p.z).sub(Z.playerPos).setY(0),out.lengthSq()>1e-6?out.normalize():out.set(0,0,-1)}}return cam.getWorldDirection(out),out.y=0,out.lengthSq()>1e-6?out.normalize():out.set(0,0,-1)}function WgResolveAimPoint(cam,out){if(WgSoftLock.active&&WgSoftLock.targetId!=null){const t=WgCombatTargets.get(WgSoftLock.targetId);if(t&&t.alive()){const p=t.getPos();return out.set(p.x,p.y+1.1*t.scale,p.z)}}return WgGetAimDir(cam,WgAimTmp),out.copy(Z.playerPos).addScaledVector(WgAimTmp,3.2).setY(Z.playerPos.y+1.2)}function WgPickTargetFromRay(cam,mx,my,w,h){WgAimMouse.set(mx/w*2-1,-(my/h)*2+1),WgAimRay.setFromCamera(WgAimMouse,cam);let best=null,bestAlong=1e9;for(const t of WgCombatTargets.values()){if(!t.hostile||!t.alive())continue;const p=t.getPos();WgAimTmp.set(p.x,p.y+1.1*t.scale,p.z);const ox=WgAimTmp.x-WgAimRay.origin.x,oy=WgAimTmp.y-WgAimRay.origin.y,oz=WgAimTmp.z-WgAimRay.origin.z,along=ox*WgAimRay.direction.x+oy*WgAimRay.direction.y+oz*WgAimRay.direction.z;if(along<0||along>24)continue;const hx=WgAimRay.origin.x+WgAimRay.direction.x*along,hy=WgAimRay.origin.y+WgAimRay.direction.y*along,hz=WgAimRay.origin.z+WgAimRay.direction.z*along,dist=Math.hypot(WgAimTmp.x-hx,WgAimTmp.y-hy,WgAimTmp.z-hz);if(dist<1.2*t.scale+.9&&along<bestAlong){bestAlong=along;best=t.id}}WgSoftLock.active=!!best,WgSoftLock.targetId=best,WgAim.token++}function WgCycleSoftLock(cam){cam.getWorldDirection(WgAimTmp),WgAimTmp.y=0,WgAimTmp.lengthSq()<1e-6?WgAimTmp.set(0,0,-1):WgAimTmp.normalize();const fx=WgAimTmp.x,fz=WgAimTmp.z,cone=Math.cos(55*Math.PI/180),cands=[];for(const t of WgCombatTargets.values()){if(!t.hostile||!t.alive())continue;const p=t.getPos(),dx=p.x-Z.playerPos.x,dz=p.z-Z.playerPos.z,dist=Math.hypot(dx,dz);if(dist>22||dist<.4)continue;const dot=(dx*fx+dz*fz)/(dist||1);dot>=cone&&cands.push({id:t.id,dist,dot})}if(cands.sort((a,b)=>b.dot-a.dot||a.dist-b.dist),!cands.length){WgSoftLock.active=!1,WgSoftLock.targetId=null,WgAim.token++;return}if(!WgSoftLock.active){WgSoftLock.active=!0,WgSoftLock.targetId=cands[0].id,WgAim.token++;return}const idx=cands.findIndex(c=>c.id===WgSoftLock.targetId),next=idx<0||idx>=cands.length-1?0:idx+1;WgSoftLock.targetId=cands[next].id,WgAim.token++}function WgCombatAiMult(C){const st=BI.getState(),lvl=Math.max(1,st.heroLevel||1),bon=st.heroBonuses?.damageMult??1;return C.faction==="ally"?(1+(lvl-1)*.04)*bon:C.faction==="enemy"?1+(st.difficulty==="hard"?.15:st.difficulty==="medium"?.08:0):1}function WgCombatHud(){const md=_g(e=>e.mode),ph=BI(e=>e.phase),[,tick]=T.useState(0);T.useEffect(()=>{const id=setInterval(()=>tick(t=>t+1),80);return()=>clearInterval(id)},[]);if(ph!=="battle"||md!=="combat")return null;const tgt=WgSoftLock.active?WgCombatTargets.get(WgSoftLock.targetId):null,hasTgt=!!(tgt&&tgt.alive());return d.jsxs(d.Fragment,{children:[d.jsx("div",{className:"wg-reticle-focus"+(WgAim.focusEnabled?" is-on":"")+(hasTgt?" has-lock":""),"aria-hidden":!0}),hasTgt&&d.jsx("div",{className:"wg-target-lock-chip",children:d.jsxs("span",{children:["Soft lock",WgAim.focusEnabled?" · Focus ON":""]})}),WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})})]})}';
+if (js.includes("function hAA(){") && !js.includes("function WgCombatHud")) {
+  js = js.replace("function hAA(){", `${WG_COMBAT_TARGETING}function hAA(){`);
+  mustPatch("combat-targeting", true);
+} else {
+  mustPatch("combat-targeting", js.includes("function WgCombatHud"));
+}
+
+js = js.replace(
+  "const OA=rA=>{s.current=rA,Z.heroBlocking=rA,hA.current?.block(rA)},j=rA=>{rA.button===0?Q.current=!0:rA.button===2&&o.current&&c.current.block&&OA(!0)},b=rA=>{rA.button===0?Q.current=!1:rA.button===2&&OA(!1)}",
+  'const WgBlock=rA=>{s.current=rA,Z.heroBlocking=rA,hA.current?.block(rA)},j=rA=>{if(rA.button===0){if(WgAim.focusEnabled)Q.current=!0;else{const rect=I.domElement.getBoundingClientRect();WgPickTargetFromRay(A,rA.clientX-rect.left,rA.clientY-rect.top,rect.width,rect.height)}}else if(rA.button===2){rA.repeat||(WgAim.focusEnabled=!WgAim.focusEnabled,WgAim.token++);WgAim.rmb=!0}},b=rA=>{rA.button===0?Q.current=!1:rA.button===2&&(WgAim.rmb=!1)}',
+);
+mustPatch("combat-input-rmb", js.includes("WgPickTargetFromRay"));
+
+js = js.replace(
+  'b.code==="KeyR"&&qA(),b.code==="KeyQ"&&TA(),b.code==="KeyC"&&uI()',
+  'b.code==="KeyR"&&qA(),b.code==="KeyQ"&&TA(),b.code==="Tab"&&_g.getState().mode==="combat"&&!b.repeat&&(WgCycleSoftLock(A),b.preventDefault()),b.code==="KeyF"&&_g.getState().mode==="combat"&&!b.repeat&&o.current&&c.current.block&&(WgBlock(!s.current),b.preventDefault()),b.code==="KeyC"&&uI()',
+);
+mustPatch("combat-input-tab", js.includes("WgCycleSoftLock"));
+
+js = js.replace(
+  "document.pointerLockElement===I.domElement)_g.getState().setMode(\"combat\");else{if(BI.getState().phase!==\"battle\")return;_g.getState().setMode(\"command\"),Q.current=!1}",
+  'document.pointerLockElement===I.domElement)_g.getState().setMode("combat");else{if(BI.getState().phase!=="battle")return;_g.getState().setMode("command"),Q.current=!1,WgAim.rmb=!1}',
+);
+
+js = js.replace(
+  "eI&&!y.current&&SA===\"combat\"&&Q.current&&e.current<=0",
+  "eI&&!y.current&&SA===\"combat\"&&Q.current&&e.current<=0&&(WgAim.focusEnabled||WgSoftLock.active)",
+);
+mustPatch("combat-attack-gate", js.includes("WgSoftLock.active"));
+
+js = js.replace(
+  "if(A.getWorldDirection(ue),ue.y=0,ue.lengthSq()<1e-6)return;ue.normalize();",
+  "if(WgGetAimDir(A,ue),ue.lengthSq()<1e-6)return;",
+);
+js = js.replace(
+  "A.getWorldDirection(pB),pB.normalize(),bo.copy(A.position);",
+  "WgGetAimDir(A,pB),bo.copy(A.position);",
+);
+js = js.replace(
+  "A.getWorldDirection(pB),pB.normalize(),IAA(j,A.position,pB,cT(RA,AI,h.current),b.damageMult)",
+  "WgGetAimDir(A,pB),WgResolveAimPoint(A,WgAimOut),IAA(j,WgAimOut,pB,cT(RA,AI,h.current),b.damageMult)",
+);
+mustPatch("combat-aim-dir", js.includes("WgGetAimDir(A,ue)"));
+
+js = js.replace(
+  "return this.units.push(c),c}",
+  "return this.units.push(c),WgCombatRegisterUnit(c),c}",
+);
+mustPatch("combat-unit-register", js.includes("WgCombatRegisterUnit(c)"));
+
+js = js.replace(
+  "if(C.hp>0)return;const i=BI.getState();",
+  "if(C.hp>0)return;Ye(C)&&WgCombatUnregisterUnit(C.id);const i=BI.getState();",
+);
+
+js = js.replace(
+  'let i=C.def.damage*C.dmgMult*Z.factionDmgMult(C.faction);if((A.target&&Ye(A.target)||!A.hero&&A.target)&&(i=dL(C,i,A.target)),A.hero){',
+  'let i=C.def.damage*C.dmgMult*Z.factionDmgMult(C.faction)*WgCombatAiMult(C);if((A.target&&Ye(A.target)||!A.hero&&A.target)&&(i=dL(C,i,A.target)),A.hero){',
+);
+mustPatch("combat-ai-scale", js.includes("WgCombatAiMult(C)"));
+
+js = js.replace(
+  "this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0})",
+  'const tint=nr[A]?.tint??"#ffd0a6";this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0,tint})',
+);
+mustPatch("combat-proj-tint", js.includes("tint=nr[A]"));
+
+js = js.replace(
+  'if(Math.random()<c){const h=l.tint??(l.splash?"#ffd0a6":"#d4b890");Z.addEmber(s.pos.clone(),h)}',
+  'if(Math.random()<.5){const h=s.tint??l.tint??(l.splash?"#ffd0a6":"#d4b890");Z.addEmber(s.pos.clone(),h);s.traveled>.35&&Math.random()<.35&&Z.addTracer(s.pos.clone().addScaledVector(s.dir,-.25),s.pos.clone(),h)}',
+);
+mustPatch("combat-proj-trail", js.includes("s.traveled>.35"));
+
+js = js.replace(
+  "spawnShock:!1,shockRadius:0,shockDamage:0,shockDuration:0});for(let YA=0;YA<5;YA++)Z.addEmber(Ce.clone(),OA.color)}",
+  "spawnShock:!1,shockRadius:0,shockDamage:0,shockDuration:0});Z.addTracer(Ce.clone(),Ce.clone().addScaledVector(ue,OA.reach*.85),OA.color);for(let YA=0;YA<8;YA++)Z.addEmber(Ce.clone().addScaledVector(ue,Math.random()*OA.reach*.6),OA.color)}",
+);
+mustPatch("combat-melee-trail", js.includes("addScaledVector(ue,OA.reach"));
+
+js = js.replace(
+  "s.colorSpace=zg,s.flipY=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
+  "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
+);
+js = js.replace(
+  "s.colorSpace=zg,s.flipY=!1,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
+  "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
+);
+mustPatch("grudge6-flipy", js.includes("s.flipY=!0,s.needsUpdate=!0,o.traverse"));
+
+js = js.replace(
+  "d.jsx(WgMinimap,{}),d.jsx(qgA,{}),d.jsx(JgA,{}),",
+  "d.jsx(WgCombatHud,{}),d.jsx(WgMinimap,{}),d.jsx(qgA,{}),d.jsx(JgA,{}),",
+);
+mustPatch("combat-hud-overlay", js.includes("d.jsx(WgCombatHud,{}"));
+
+js = js.replace(
+  "const dA=YA.translation();Z.playerPos.set(dA.x,dA.y,dA.z),",
+  "const dA=YA.translation();Z.playerPos.set(dA.x,dA.y,dA.z),WgCombatSyncUnits(),WgAttackCd=e.current,",
+);
+mustPatch("combat-sync-units", js.includes("WgCombatSyncUnits()"));
 
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
@@ -1392,6 +1496,23 @@ if (!css.includes(".gk-deploy-v2")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended deploy v2 container-query layout");
+}
+if (!css.includes(".wg-reticle-focus")) {
+  css += `
+.wg-reticle-focus{position:fixed;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;pointer-events:none;z-index:18;border:2px solid rgba(224,178,82,.35);border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.35);opacity:.55;transition:border-color .15s,opacity .15s,transform .15s}
+.wg-reticle-focus::before,.wg-reticle-focus::after{content:"";position:absolute;background:rgba(224,178,82,.45)}
+.wg-reticle-focus::before{left:50%;top:3px;bottom:3px;width:2px;margin-left:-1px}
+.wg-reticle-focus::after{top:50%;left:3px;right:3px;height:2px;margin-top:-1px}
+.wg-reticle-focus.is-on{opacity:1;border-color:rgba(255,120,90,.85);transform:scale(1.08)}
+.wg-reticle-focus.is-on::before,.wg-reticle-focus.is-on::after{background:rgba(255,120,90,.75)}
+.wg-reticle-focus.has-lock{border-color:rgba(255,90,90,.9);box-shadow:0 0 12px rgba(255,90,90,.35)}
+.wg-target-lock-chip{position:fixed;left:50%;top:calc(50% - 56px);transform:translateX(-50%);z-index:18;pointer-events:none;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,120,90,.45);background:rgba(12,8,8,.78);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#ffb4a8}
+.wg-atk-cd-ring{position:fixed;left:50%;top:calc(50% + 42px);transform:translateX(-50%);z-index:18;pointer-events:none;width:36px;height:36px;border-radius:50%;border:2px solid rgba(224,178,82,.35);display:grid;place-items:center;background:rgba(8,12,20,.65);font-size:11px;font-weight:700;color:#e0c878}
+.gw-mode-combat .gw-crosshair{opacity:.35}
+.gw-mode-combat .wg-reticle-focus.is-on~.gw-crosshair,.gw-hud:has(.wg-reticle-focus.is-on) .gw-crosshair{opacity:.15}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended combat targeting reticle styles");
 }
 if (!css.includes(".gw-about-panel")) {
   css += `

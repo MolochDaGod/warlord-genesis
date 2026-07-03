@@ -231,3 +231,15 @@ body{background:#080c14}
 .gk-deploy-load-card{max-width:min(420px,92vw);text-align:center}
 .gk-deploy-load-card .gw-play-boot-spinner{margin:0 auto 12px}
 @media(max-width:720px){.gk-deploy-head{grid-template-columns:1fr}.gk-deploy-chips{flex-direction:row;flex-wrap:wrap;align-items:center}.gk-deploy-hero-strip{flex-wrap:wrap}.gk-deploy-hero-stats{flex-direction:row;gap:10px;text-align:left;width:100%}}
+
+.wg-reticle-focus{position:fixed;left:50%;top:50%;width:28px;height:28px;margin:-14px 0 0 -14px;pointer-events:none;z-index:18;border:2px solid rgba(224,178,82,.35);border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.35);opacity:.55;transition:border-color .15s,opacity .15s,transform .15s}
+.wg-reticle-focus::before,.wg-reticle-focus::after{content:"";position:absolute;background:rgba(224,178,82,.45)}
+.wg-reticle-focus::before{left:50%;top:3px;bottom:3px;width:2px;margin-left:-1px}
+.wg-reticle-focus::after{top:50%;left:3px;right:3px;height:2px;margin-top:-1px}
+.wg-reticle-focus.is-on{opacity:1;border-color:rgba(255,120,90,.85);transform:scale(1.08)}
+.wg-reticle-focus.is-on::before,.wg-reticle-focus.is-on::after{background:rgba(255,120,90,.75)}
+.wg-reticle-focus.has-lock{border-color:rgba(255,90,90,.9);box-shadow:0 0 12px rgba(255,90,90,.35)}
+.wg-target-lock-chip{position:fixed;left:50%;top:calc(50% - 56px);transform:translateX(-50%);z-index:18;pointer-events:none;padding:4px 10px;border-radius:999px;border:1px solid rgba(255,120,90,.45);background:rgba(12,8,8,.78);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:#ffb4a8}
+.wg-atk-cd-ring{position:fixed;left:50%;top:calc(50% + 42px);transform:translateX(-50%);z-index:18;pointer-events:none;width:36px;height:36px;border-radius:50%;border:2px solid rgba(224,178,82,.35);display:grid;place-items:center;background:rgba(8,12,20,.65);font-size:11px;font-weight:700;color:#e0c878}
+.gw-mode-combat .gw-crosshair{opacity:.35}
+.gw-mode-combat .wg-reticle-focus.is-on~.gw-crosshair,.gw-hud:has(.wg-reticle-focus.is-on) .gw-crosshair{opacity:.15}

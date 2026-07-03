@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 40,
+  "bundleVersion": 41,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -426,9 +426,61 @@
     {
       "id": "brand-logo",
       "needle": "gw-auth-brand-icon"
+    },
+    {
+      "id": "combat-targeting",
+      "needle": "function WgCombatHud"
+    },
+    {
+      "id": "combat-input-rmb",
+      "needle": "WgPickTargetFromRay"
+    },
+    {
+      "id": "combat-input-tab",
+      "needle": "WgCycleSoftLock"
+    },
+    {
+      "id": "combat-attack-gate",
+      "needle": "WgSoftLock.active"
+    },
+    {
+      "id": "combat-aim-dir",
+      "needle": "WgGetAimDir(A,ue)"
+    },
+    {
+      "id": "combat-unit-register",
+      "needle": "WgCombatRegisterUnit(c)"
+    },
+    {
+      "id": "combat-ai-scale",
+      "needle": "WgCombatAiMult(C)"
+    },
+    {
+      "id": "combat-proj-tint",
+      "needle": "tint=nr[A]"
+    },
+    {
+      "id": "combat-proj-trail",
+      "needle": "s.traveled>.35"
+    },
+    {
+      "id": "combat-melee-trail",
+      "needle": "addScaledVector(ue,OA.reach"
+    },
+    {
+      "id": "grudge6-flipy",
+      "needle": "s.flipY=!0,s.needsUpdate=!0,o.traverse"
+    },
+    {
+      "id": "combat-hud-overlay",
+      "needle": "d.jsx(WgCombatHud,{}"
+    },
+    {
+      "id": "combat-sync-units",
+      "needle": "WgCombatSyncUnits()"
     }
   ],
-  "lastBuilt": "2026-07-03T22:56:50.560Z",
-  "bundleBytes": 4076325,
-  "bundleSha256": "423a00ad3a5a27d2"
+  "lastBuilt": "2026-07-03T23:56:39.126Z",
+  "bundleBytes": 4081282,
+  "bundleSha256": "cebffe3a9449c33d"
 }
