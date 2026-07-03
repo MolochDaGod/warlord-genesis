@@ -262,7 +262,30 @@ for (const [from, to] of SHARD_FIXES) {
   else js = js.replace(from, to);
 }
 
-// /play boot — persist active match + avoid lobby redirect flicker on refresh/direct URL.
+// GRUDGE6 hero meshes — fleet CDN (/api/assets proxy returns SPA HTML).
+js = js.replace(
+  "function K6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`${PQ}/assets/${A.folder}/models/characters/${A.modelFile}`}",
+  "function K6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`https://assets.grudge-studio.com/assets/${A.folder}/models/characters/${A.modelFile}`}",
+);
+js = js.replace(
+  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`${PQ}/assets/${A.folder}/textures/${A.textureFile}`}",
+  "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`https://assets.grudge-studio.com/assets/${A.folder}/textures/${A.textureFile}`}",
+);
+
+// /play boot — persist active match + auto-onboard + one-click deploy.
+const PLAY_HELPERS = `function WgAutoOnboard(){const s=zC.getState();if(s.onboardingDone)return!0;const p=s.starterPrefabId||"sir-aldric-valorheart";if(!Da[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;s.completeStarterPick(p),XI.getState().setFaction(c.faction),XI.getState().setPrefab(p),Yz(p,XI.getState().setMelee,XI.getState().setRanged,XI.getState().setGearTier),zC.getState().seedDefaultLaneGuards(c.faction);return!0}function WgDeployAndPlay(){WgAutoOnboard();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
+if (!js.includes("function WgAutoOnboard")) {
+  const hG_ANCHOR2 = 'const hG={phase:"menu",credits:dp.startCredits';
+  if (js.includes(hG_ANCHOR2)) {
+    js = js.replace(hG_ANCHOR2, `${PLAY_HELPERS}${hG_ANCHOR2}`);
+    mustPatch("play-helpers", true);
+  } else {
+    mustPatch("play-helpers", false);
+  }
+} else {
+  mustPatch("play-helpers", true);
+}
+
 const MATCH_PERSIST = `const WgMatchKey="wg-active-match";function WgSaveMatch(){try{sessionStorage.setItem(WgMatchKey,JSON.stringify({phase:"battle",at:Date.now()}))}catch{}}function WgClearMatch(){try{sessionStorage.removeItem(WgMatchKey)}catch{}}function WgRestoreMatch(){try{const r=sessionStorage.getItem(WgMatchKey);if(!r)return!1;const p=JSON.parse(r);if(p?.phase==="battle"&&Date.now()-(p.at||0)<18e5)return BI.getState().setPhase("battle"),!0}catch{}return!1}`;
 if (!js.includes("function WgRestoreMatch")) {
   const hG_ANCHOR = 'const hG={phase:"menu",credits:dp.startCredits';
@@ -305,13 +328,46 @@ js = js.replace(
 const PLAY_ROUTE_ORIG =
   'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1);if(T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),C==="menu")return d.jsx(aq,{to:"/lobby",replace:!0});';
 const PLAY_ROUTE_PATCHED =
-  'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null);T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(!zC.getState().onboardingDone){o(!1);return}if(C!=="menu"){o(!0);return}if(WgRestoreMatch()){o(!0);return}const e=XI.getState();if(e.loadoutLocked){BI.getState().startGame();o(!0);return}o(!1)},[C]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsx("span",{className:"gw-hint",children:"Preparing the field…"})});if(!boot)return d.jsx(aq,{to:"/lobby",replace:!0});';
+  'function PgA(){const nav=Fh(),C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null),[gateErr,s]=T.useState("");T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(!WgAutoOnboard()){o(!1);s("Pick a champion in the warcamp first.");return}s("");if(C!=="menu"){o(!0);return}if(WgRestoreMatch()){o(!0);return}WgDeployAndPlay(),o(!0)},[C]);const deploy=()=>{WgAutoOnboard()?(WgDeployAndPlay(),o(!0),s("")):s("Could not ready your warlord — visit the warcamp.")};if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Preparing the battlefield…"})]})});if(!boot)return d.jsx("div",{className:"gw-screen gw-play-gate",children:d.jsxs("div",{className:"gw-play-gate-panel",children:[d.jsx("span",{className:"gw-play-gate-kicker",children:"Warlord Genesis"}),d.jsx("h1",{className:"gw-play-gate-title",children:"Deploy to the Field"}),d.jsx("p",{className:"gw-play-gate-lead",children:"Lock your loadout in the warcamp, then fight in third-person combat behind your GRUDGE6 champion."}),s&&d.jsx("p",{className:"gw-play-gate-error",children:s}),d.jsxs("div",{className:"gw-play-gate-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-play-gate-deploy",onClick:deploy,children:"Deploy Now"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>nav("/lobby"),children:"Open Warcamp"})]})]})});';
 if (js.includes(PLAY_ROUTE_ORIG)) {
   js = js.replace(PLAY_ROUTE_ORIG, PLAY_ROUTE_PATCHED);
   mustPatch("play-boot", true);
 } else {
-  mustPatch("play-boot", js.includes("gw-play-boot"));
+  mustPatch("play-boot", js.includes("gw-play-gate") || js.includes("gw-play-boot"));
 }
+
+const ENGAGE_ORIG =
+  'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"The host awaits your command"}),d.jsx("h2",{className:"gw-engage-title",children:"TAKE THE FIELD"}),d.jsx("span",{className:"gw-hint",children:"Click to lock the mouse · press ` to switch to command"})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
+const ENGAGE_PATCHED =
+  'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap gw-canvas-wrap--play",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage gw-engage-v2",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"Third-person warrior mode"}),d.jsx("h2",{className:"gw-engage-title",children:"ENGAGE COMBAT"}),d.jsx("p",{className:"gw-engage-copy",children:"WASD move · mouse aim · LMB attack · RMB block. Press ` for warlord command view."}),d.jsx("button",{type:"button",className:"gw-btn gw-engage-btn",children:"Take the Field"}),d.jsxs("div",{className:"gw-engage-tips",children:[d.jsxs("span",{children:[d.jsx("kbd",{children:"`"})," Command lanes"]}),d.jsxs("span",{children:[d.jsx("kbd",{children:"R"})," Reload · ",d.jsx("kbd",{children:"Q"})," Swap weapon"]})]})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
+if (js.includes(ENGAGE_ORIG)) {
+  js = js.replace(ENGAGE_ORIG, ENGAGE_PATCHED);
+  mustPatch("engage-v2", true);
+} else {
+  mustPatch("engage-v2", js.includes("gw-engage-v2"));
+}
+
+// Pointer lock — whole engage overlay + touch; force combat mode on battle start.
+js = js.replace(
+  'const OA=j=>{j.target?.closest?.("#lock-target")&&I.domElement.requestPointerLock()};return document.addEventListener("mousedown",OA),()=>document.removeEventListener("mousedown",OA)},[I]',
+  'const OA=j=>{j.target?.closest?.("#lock-target, .gw-engage, .gw-engage-btn")&&I.domElement.requestPointerLock()},jA=j=>{j.preventDefault(),I.domElement.requestPointerLock()};return document.addEventListener("mousedown",OA),document.addEventListener("touchstart",jA,{passive:!1}),()=>{document.removeEventListener("mousedown",OA),document.removeEventListener("touchstart",jA)}},[I]',
+);
+js = js.replace(
+  'A().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL","good"),A().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)","info"),WgSaveMatch()},reset:',
+  'A().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL","good"),A().pushMessage("CLICK TAKE THE FIELD FOR THIRD-PERSON COMBAT · ` FOR LANE COMMAND","info"),_g.getState().setMode("combat"),WgSaveMatch()},reset:',
+);
+
+// Lobby deploy CTA — clearer path into TPS battle.
+js = js.replace(
+  'children:"MARCH TO WAR"}),!m&&d.jsx("span",{className:"gw-deploy-hint",children:N(h)?"Canonical weapons apply automatically — check loadout.":"Recruit this warlord with 10 shards in the War Chest."})',
+  'children:"MARCH TO WAR — TPS COMBAT"}),d.jsx("span",{className:"gw-deploy-hint gw-deploy-hint--ok",children:"Third-person champion · ` toggles lane command"}),!m&&d.jsx("span",{className:"gw-deploy-hint",children:N(h)?"Canonical weapons apply automatically — check loadout.":"Recruit this warlord with 10 shards in the War Chest."})',
+);
+
+// Title — quick path to /play for returning players.
+js = js.replace(
+  'd.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})',
+  'd.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-quick",onClick:()=>C("/play"),children:"Quick Battle"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})',
+);
 
 // Tower GLBs — always serve from this deploy (/models/towers). CDN Assimp exports crash GLTFLoader.
 js = js.replace(
@@ -470,6 +526,36 @@ if (!css.includes(".gw-pack-card-art")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended pack/card/lobby UI containment styles");
+}
+if (!css.includes(".gw-play-gate")) {
+  css += `
+.gw-play-boot-inner{display:flex;flex-direction:column;align-items:center;gap:14px;padding:24px}
+.gw-play-boot-spinner{width:36px;height:36px;border-radius:50%;border:3px solid rgba(120,150,200,.25);border-top-color:#e0b852;animation:gw-spin .9s linear infinite}
+@keyframes gw-spin{to{transform:rotate(360deg)}}
+.gw-play-gate{display:grid;place-items:center;padding:24px;background:radial-gradient(ellipse 80% 60% at 50% 0%,rgba(224,178,82,.12),transparent 55%),#080c14}
+.gw-play-gate-panel{max-width:min(480px,92vw);padding:28px 24px;border-radius:14px;border:1px solid rgba(120,150,200,.28);background:rgba(10,14,22,.92);text-align:center;box-shadow:0 12px 40px rgba(0,0,0,.45)}
+.gw-play-gate-kicker{font-size:10px;letter-spacing:.24em;text-transform:uppercase;color:#7f93b4}
+.gw-play-gate-title{margin:10px 0 8px;font-family:Cinzel Decorative,serif;font-size:1.6rem;color:#f0e6d0}
+.gw-play-gate-lead{margin:0 0 16px;color:#a8b8d0;line-height:1.55;font-size:.95rem}
+.gw-play-gate-error{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:rgba(180,40,40,.18);border:1px solid rgba(248,113,113,.35);color:#fecaca;font-size:.85rem}
+.gw-play-gate-actions{display:flex;flex-direction:column;gap:10px;margin-top:8px}
+.gw-play-gate-deploy{padding:14px 20px;font-size:1rem;letter-spacing:.06em}
+.gw-canvas-wrap--play{position:relative}
+.gw-engage-v2{position:absolute;inset:0;z-index:12;display:grid;place-items:center;background:radial-gradient(ellipse 70% 55% at 50% 45%,rgba(8,12,20,.35),rgba(8,12,20,.82));cursor:pointer}
+.gw-engage-v2 .gw-engage-inner{max-width:min(520px,92vw);padding:28px 24px;border-radius:14px;border:1px solid rgba(224,178,82,.45);background:rgba(8,12,20,.88);text-align:center;pointer-events:auto}
+.gw-engage-v2 .gw-engage-sub{font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9dffd8}
+.gw-engage-v2 .gw-engage-title{margin:8px 0;font-family:Cinzel Decorative,serif;font-size:clamp(1.5rem,5vw,2.2rem);color:#f0e6d0}
+.gw-engage-v2 .gw-engage-copy{margin:0 0 16px;color:#b8c4d8;line-height:1.5;font-size:.9rem}
+.gw-engage-btn{width:100%;padding:14px 18px;font-size:1rem;letter-spacing:.08em;margin-bottom:12px}
+.gw-engage-tips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;font-size:.72rem;color:#8fa3c4}
+.gw-engage-tips kbd{font-family:inherit;padding:2px 6px;border-radius:4px;border:1px solid rgba(120,150,200,.35);background:rgba(14,20,32,.8);color:#dce6f4}
+.gw-deploy-hint--ok{color:#9dffd8;font-size:.72rem;margin-top:6px;display:block}
+.gw-title-quick{width:100%;padding:10px 20px;font-size:.9rem;border-color:rgba(224,178,82,.35);color:#e0c878}
+.gw-mode-combat .gw-crosshair{opacity:1}
+.gw-hud.gw-mode-combat .gw-mode-badge{background:rgba(224,178,82,.15);border-color:rgba(224,178,82,.45)}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended play/combat UX styles");
 }
 if (!css.includes(".gw-about-panel")) {
   css += `

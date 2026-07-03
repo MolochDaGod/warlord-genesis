@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 21,
+  "bundleVersion": 22,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -126,7 +126,19 @@
     },
     {
       "id": "play-boot",
-      "needle": "gw-play-boot"
+      "needle": "gw-play-gate"
+    },
+    {
+      "id": "play-helpers",
+      "needle": "function WgAutoOnboard"
+    },
+    {
+      "id": "hero-cdn",
+      "needle": "https://assets.grudge-studio.com/assets/"
+    },
+    {
+      "id": "engage-v2",
+      "needle": "gw-engage-v2"
     },
     {
       "id": "warcamp-route",
@@ -165,7 +177,7 @@
       "needle": "gw-lane-card-icon"
     }
   ],
-  "lastBuilt": "2026-07-03T00:41:24.743Z",
-  "bundleBytes": 4058193,
-  "bundleSha256": "93acd4a9efce7dde"
+  "lastBuilt": "2026-07-03T00:52:11.378Z",
+  "bundleBytes": 4060656,
+  "bundleSha256": "a110e133fd1d0af7"
 }
