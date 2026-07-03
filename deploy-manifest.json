@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 36,
+  "bundleVersion": 37,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -220,6 +220,10 @@
       "needle": "function WgAuthCallbackScreen"
     },
     {
+      "id": "atlas-flipy",
+      "needle": "A.flipY=!0"
+    },
+    {
       "id": "baked-anims-local",
       "needle": "/anims/baked/"
     },
@@ -364,7 +368,7 @@
       "needle": "A>20&&Z.addEmber(xo.clone()"
     }
   ],
-  "lastBuilt": "2026-07-03T09:48:06.739Z",
+  "lastBuilt": "2026-07-03T10:02:41.313Z",
   "bundleBytes": 4070095,
-  "bundleSha256": "dafd48c5ac687df4"
+  "bundleSha256": "dd2744c5a260bf8a"
 }

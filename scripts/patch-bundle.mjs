@@ -813,14 +813,21 @@ if (js.includes("function L6(C,A){")) {
   mustPatch("weapon-mesh-sync", js.includes("WgSyncWeaponMeshes"));
 }
 
+// GRUDGE6 race atlases (WebP from TGA) require flipY=true — matches character-viewer textureLoader.ts.
 js = js.replace(
   "function q6(C,A){const I=new mk({map:A,color:16777215});",
-  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!0,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
 );
 js = js.replace(
   "function q6(C,A){A&&(A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0);const I=new mk({map:A,color:16777215});",
-  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!0,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
 );
+js = js.replace(
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!1,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
+  "function q6(C,A){if(!A)return;A.colorSpace=zg,A.flipY=!0,A.needsUpdate=!0;const I=new mk({map:A,color:16777215});",
+);
+js = js.replace("s.colorSpace=zg,s.flipY=!1,", "s.colorSpace=zg,s.flipY=!0,");
+mustPatch("atlas-flipy", js.includes("A.flipY=!0") && js.includes("s.flipY=!0"));
 
 const SWAP_ANIM_ORIG =
   "swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}}";
