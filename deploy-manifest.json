@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 31,
+  "bundleVersion": 32,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -312,9 +312,29 @@
     {
       "id": "moba-hud-class",
       "needle": "gw-moba-battle"
+    },
+    {
+      "id": "strip-ocean",
+      "needle": "function QgA(){return null}"
+    },
+    {
+      "id": "strip-grass-trees",
+      "needle": "function UAA(){return null}"
+    },
+    {
+      "id": "board-scene",
+      "needle": "args:[\"#10141c\"]"
+    },
+    {
+      "id": "combat-vfx-aia",
+      "needle": "Z.addSlashWave({origin:g.clone()"
+    },
+    {
+      "id": "combat-vfx-ls",
+      "needle": "A>20&&Z.addEmber(xo.clone()"
     }
   ],
-  "lastBuilt": "2026-07-03T04:09:03.265Z",
-  "bundleBytes": 4072517,
-  "bundleSha256": "bb86152d4ba86ab7"
+  "lastBuilt": "2026-07-03T04:12:32.728Z",
+  "bundleBytes": 4068103,
+  "bundleSha256": "dec4b9ee8dde7210"
 }

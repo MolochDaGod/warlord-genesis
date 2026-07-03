@@ -756,6 +756,99 @@ if (js.includes(HUD_MOBA_OLD)) {
   mustPatch("moba-hud-class", js.includes("gw-moba-battle"));
 }
 
+// Board focus — drop ocean plane, wind grass, trees, sky dome, and distance fog.
+const AG_A_ORIG =
+  'function agA(){return d.jsxs(d.Fragment,{children:[d.jsx(T9,{sunPosition:[-30,14,-40],turbidity:8,rayleigh:.8,mieCoefficient:.004,distance:45e4}),d.jsx("fog",{attach:"fog",args:["#6e5240",50,130]}),d.jsx(QgA,{}),d.jsx("hemisphereLight",{args:["#ffd9a8","#2a1c14",.6]}),d.jsx("directionalLight",{position:[-20,36,-10],intensity:1.7,color:"#ffd9a8",castShadow:!0,"shadow-mapSize":[2048,2048],"shadow-camera-left":-50,"shadow-camera-right":50,"shadow-camera-top":55,"shadow-camera-bottom":-55,"shadow-camera-far":140}),d.jsx("ambientLight",{intensity:.4}),d.jsxs(s$,{gravity:[0,-20,0],children:[d.jsx(Y$,{}),d.jsx(hAA,{}),d.jsx(yAA,{})]}),d.jsx(UAA,{}),d.jsx(rIA,{}),d.jsx(hIA,{}),d.jsx(wIA,{}),d.jsx(yIA,{}),d.jsx(IIA,{}),d.jsx(gIA,{}),d.jsx(RIA,{}),d.jsx(LIA,{}),d.jsx(TIA,{}),d.jsx(HIA,{}),d.jsx(vIA,{})]})}';
+const AG_A_PATCHED =
+  'function agA(){return d.jsxs(d.Fragment,{children:[d.jsx("hemisphereLight",{args:["#d8ccb8","#141820",.5]}),d.jsx("directionalLight",{position:[-16,44,-10],intensity:2.1,color:"#fff0d0",castShadow:!0,"shadow-mapSize":[2048,2048],"shadow-camera-left":-50,"shadow-camera-right":50,"shadow-camera-top":55,"shadow-camera-bottom":-55,"shadow-camera-far":140}),d.jsx("ambientLight",{intensity:.32}),d.jsxs(s$,{gravity:[0,-20,0],children:[d.jsx(Y$,{}),d.jsx(hAA,{})]}),d.jsx(rIA,{}),d.jsx(hIA,{}),d.jsx(wIA,{}),d.jsx(yIA,{}),d.jsx(IIA,{}),d.jsx(gIA,{}),d.jsx(RIA,{}),d.jsx(LIA,{}),d.jsx(TIA,{}),d.jsx(HIA,{}),d.jsx(vIA,{})]})}';
+if (js.includes(AG_A_ORIG)) {
+  js = js.replace(AG_A_ORIG, AG_A_PATCHED);
+  mustPatch("board-scene", true);
+} else {
+  mustPatch("board-scene", !js.includes("d.jsx(QgA,{})") && !js.includes("d.jsx(yAA,{})"));
+}
+
+js = js.replace(
+  'd.jsx("color",{attach:"background",args:["#6e5240"]})',
+  'd.jsx("color",{attach:"background",args:["#10141c"]})',
+);
+mustPatch("board-scene", js.includes('args:["#10141c"]'));
+
+const QGA_ORIG =
+  'function QgA(){const C=BI(t=>t.mapVersion),A=Z.map,I=28,{width:g,length:i}=T.useMemo(()=>{const t=A.width+I,Q=A.length+I;return{width:t,length:Q}},[C,A.width,A.length]),e=T.useMemo(()=>new te({color:tgA,transparent:!0,opacity:BgA,roughness:.18,metalness:.05,side:mi,depthWrite:!1}),[]);return d.jsx("mesh",{rotation:[-Math.PI/2,0,0],position:[0,egA,0],material:e,receiveShadow:!0,renderOrder:-2,children:d.jsx("planeGeometry",{args:[g,i]})},C)}';
+if (js.includes(QGA_ORIG)) {
+  js = js.replace(QGA_ORIG, "function QgA(){return null}");
+  mustPatch("strip-ocean", true);
+} else {
+  mustPatch("strip-ocean", js.includes("function QgA(){return null}"));
+}
+
+const UAA_HEAD = "function UAA(){const C=T.useRef(null)";
+const uaaIdx = js.indexOf(UAA_HEAD);
+if (uaaIdx >= 0) {
+  let braces = 0;
+  let started = false;
+  let end = uaaIdx;
+  for (let i = uaaIdx; i < js.length; i++) {
+    if (js[i] === "{") {
+      braces++;
+      started = true;
+    }
+    if (js[i] === "}") {
+      braces--;
+      if (started && braces === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+  }
+  js = js.slice(0, uaaIdx) + "function UAA(){return null}" + js.slice(end);
+  mustPatch("strip-grass-trees", true);
+} else {
+  mustPatch("strip-grass-trees", js.includes("function UAA(){return null}"));
+}
+
+const YAA_HEAD = "function yAA(){const C=T.useRef(null)";
+const yaaIdx = js.indexOf(YAA_HEAD);
+if (yaaIdx >= 0) {
+  let braces = 0;
+  let started = false;
+  let end = yaaIdx;
+  for (let i = yaaIdx; i < js.length; i++) {
+    if (js[i] === "{") {
+      braces++;
+      started = true;
+    }
+    if (js[i] === "}") {
+      braces--;
+      if (started && braces === 0) {
+        end = i + 1;
+        break;
+      }
+    }
+  }
+  js = js.slice(0, yaaIdx) + "function yAA(){return null}" + js.slice(end);
+  mustPatch("strip-grass-trees", js.includes("function yAA(){return null}"));
+}
+
+// Richer combat VFX — slash waves on hero melee, bursts/sparks/embers on hits.
+const AIA_ORIG =
+  'function AIA(C,A,I){const g=C.pos.clone().setY(C.pos.y+1.1*C.def.scale);let i=C.def.damage*C.dmgMult*Z.factionDmgMult(C.faction);if((A.target&&Ye(A.target)||!A.hero&&A.target)&&(i=dL(C,i,A.target)),A.hero){const Q=Z.playerPos.clone();C.def.ranged&&Z.addProjectile(UL(C),g,Q),Z.addSpark(Q.clone().setY(1.2),"#ff6b6b"),I.damagePlayer(i);return}const e=A.target;if(!e)return;const t=e.pos.clone().setY(Ye(e)?1*e.def.scale:1.4);if(C.def.ranged){const Q=UL(C),o=!!nr[Q].splash;Z.addProjectile(Q,g,t,o?{faction:C.faction,splashDamage:i}:{}),Z.addSpark(t,"#ffffff"),o||Ls(e,i)}else Z.addSpark(t,"#ffd27f"),Ls(e,i)}';
+const AIA_PATCHED =
+  'function AIA(C,A,I){const g=C.pos.clone().setY(C.pos.y+1.1*C.def.scale);let i=C.def.damage*C.dmgMult*Z.factionDmgMult(C.faction);if((A.target&&Ye(A.target)||!A.hero&&A.target)&&(i=dL(C,i,A.target)),A.hero){const Q=Z.playerPos.clone();C.def.ranged&&Z.addProjectile(UL(C),g,Q),Z.addSpark(Q.clone().setY(1.2),"#ff6b6b"),Z.addFireBurst(Q.clone().setY(1.1),"#ff4a3a",5,.5),I.damagePlayer(i);return}const e=A.target;if(!e)return;const t=e.pos.clone().setY(Ye(e)?1*e.def.scale:1.4);if(C.def.ranged){const Q=UL(C),o=!!nr[Q].splash;Z.addProjectile(Q,g,t,o?{faction:C.faction,splashDamage:i}:{}),Z.addMuzzleFlash(g),Z.addSpark(t,"#ffffff"),o||Ls(e,i)}else{const Q=C.faction==="ally"?"#8fd8ff":"#ff8a52",o=new O(e.pos.x-C.pos.x,0,e.pos.z-C.pos.z);o.lengthSq()>.001&&o.normalize();Z.addSpark(t,"#ffd27f"),Z.addFireBurst(t,Q,5,.48),C.isHero&&o.lengthSq()>.001&&Z.addSlashWave({origin:g.clone(),dir:o,range:3,speed:36,width:1.3,damage:0,color:Q,faction:C.faction,spawnShock:!1,shockRadius:0,shockDamage:0,shockDuration:0}),Ls(e,i)}}';
+if (js.includes(AIA_ORIG)) {
+  js = js.replace(AIA_ORIG, AIA_PATCHED);
+  mustPatch("combat-vfx-aia", true);
+} else {
+  mustPatch("combat-vfx-aia", js.includes("Z.addSlashWave({origin:g.clone()"));
+}
+
+js = js.replace(
+  'Z.addFireBurst(xo,C.faction==="enemy"?"#ffae42":"#ff6a3c",3,.5)',
+  'Z.addFireBurst(xo,C.faction==="enemy"?"#ffae42":"#ff6a3c",5,.62),Z.addSpark(xo.clone(),C.faction==="enemy"?"#ffd080":"#ff9070"),A>20&&Z.addEmber(xo.clone(),C.faction==="enemy"?"#ff7733":"#ffb366")',
+);
+mustPatch("combat-vfx-ls", js.includes("A>20&&Z.addEmber(xo.clone()"));
+
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
   mustPatch(id, js.includes(needle));
@@ -766,11 +859,21 @@ if (patchFailures.length) {
   process.exit(1);
 }
 
+// WgKitResourceBar shellInject typo — `})]})` must be `})})]})` (esbuild catches this; node --check does not).
+js = js.replaceAll('children:"Sign in"})]})]})', 'children:"Sign in"})})]})');
+
 writeFileSync(OUT, js);
 try {
   execSync(`node --check "${OUT}"`, { stdio: "pipe" });
 } catch (e) {
-  console.error("[patch] bundle syntax check FAILED");
+  console.error("[patch] bundle syntax check FAILED (node --check)");
+  console.error(String(e.stderr || e.stdout || e.message));
+  process.exit(1);
+}
+try {
+  execSync(`npx --yes esbuild "${OUT}" --bundle --outfile=NUL`, { stdio: "pipe", shell: true });
+} catch (e) {
+  console.error("[patch] bundle syntax check FAILED (esbuild)");
   console.error(String(e.stderr || e.stdout || e.message));
   process.exit(1);
 }
@@ -897,7 +1000,7 @@ if (!css.includes(".gw-play-gate")) {
 if (css.includes(".gw-canvas-wrap--play{position:relative}")) {
   css = css.replace(
     ".gw-canvas-wrap--play{position:relative}",
-    ".gw-canvas-wrap--play{position:absolute;inset:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;isolation:isolate;background:#1a120c}",
+    ".gw-canvas-wrap--play{position:absolute;inset:0;width:100%;height:100%;min-height:100dvh;overflow:hidden;isolation:isolate;background:#10141c}",
   );
 }
 if (!css.includes(".gw-game-viewport")) {
