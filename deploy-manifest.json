@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 24,
+  "bundleVersion": 30,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -17,6 +17,12 @@
       "id": "warcamp",
       "screen": "Warcamp / loadout",
       "component": "u7"
+    },
+    {
+      "path": "/deploy",
+      "id": "deploy",
+      "screen": "Pre-game deploy + REST load",
+      "component": "WgDeployScreen"
     },
     {
       "path": "/warcamp",
@@ -82,7 +88,22 @@
     "models/units/footman.glb",
     "models/units/archer.glb",
     "models/units/knight.glb",
-    "models/units/Color_Palette.png"
+    "models/units/Color_Palette.png",
+    "textures/grudge6/barbarians/BRB_StandardUnits_texture.webp",
+    "textures/grudge6/dwarves/DWF_Standard_Units.webp",
+    "textures/grudge6/elves/ELF_HighElves_Texture.webp",
+    "textures/grudge6/orcs/ORC_StandardUnits.webp",
+    "textures/grudge6/undead/UD_Standard_Units.webp",
+    "textures/grudge6/western-kingdoms/WK_Standard_Units.webp",
+    "textures/WK_Standard_Units.webp",
+    "assets/ui-kit/craftpix/Action Bar/ActionBar_Main_Background.png",
+    "assets/ui-kit/craftpix/Action Bar/Slots/ActionBar_Slot_Background.png",
+    "assets/ui-kit/craftpix/Minimap/Minimap_Background.png",
+    "assets/ui-kit/craftpix/Window/Window_Background.png",
+    "assets/ui-kit/craftpix/Quest Tracker/QuestTracker_Background.png",
+    "assets/ui-kit/craftpix/Inventory/Coins/Coin_Gold.png",
+    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Normal.png",
+    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Active.png"
   ],
   "vercelRewritesRequired": [
     "/api/grudge/:path*",
@@ -183,9 +204,109 @@
     {
       "id": "lane-card-icon",
       "needle": "gw-lane-card-icon"
+    },
+    {
+      "id": "deploy-screen",
+      "needle": "function WgDeployScreen"
+    },
+    {
+      "id": "citadel-endgame",
+      "needle": "C.faction===\"enemy\"?wg.win():wg.lose()"
+    },
+    {
+      "id": "castle-glb",
+      "needle": "e.kind===\"core\"?1.42:1"
+    },
+    {
+      "id": "champion-lane",
+      "needle": "WgApplyChampionLane"
+    },
+    {
+      "id": "deploy-route",
+      "needle": "path:\"/deploy\""
+    },
+    {
+      "id": "psd-race-remap",
+      "needle": "WgRaceTex"
+    },
+    {
+      "id": "kaykit-unit-footman",
+      "needle": "models\\/units\\//.test(e.footman)?d.jsx(tU"
+    },
+    {
+      "id": "kaykit-unit-archer",
+      "needle": "models\\/units\\//.test(e.archer)?d.jsx(tU"
+    },
+    {
+      "id": "kaykit-unit-knight",
+      "needle": "models\\/units\\//.test(e.knight)?d.jsx(tU"
+    },
+    {
+      "id": "ui-kit-hud",
+      "needle": "function WgMinimap"
+    },
+    {
+      "id": "ui-kit-actionbar",
+      "needle": "function WgKitActionBar"
+    },
+    {
+      "id": "ui-kit-hud-class",
+      "needle": "gk-combat-hud"
+    },
+    {
+      "id": "ui-kit-shell",
+      "needle": "function WgKitQuestRail"
+    },
+    {
+      "id": "ui-kit-lobby-shell",
+      "needle": "gk-warcamp-shell"
+    },
+    {
+      "id": "ui-kit-lobby-grid",
+      "needle": "gw-lobby-body"
+    },
+    {
+      "id": "ui-kit-lobby-wrap",
+      "needle": "WgKitQuestRail,{activeStep:\"recruit\"}"
+    },
+    {
+      "id": "ui-kit-deploy-shell",
+      "needle": "gk-deploy-shell"
+    },
+    {
+      "id": "hero-mesh-haa",
+      "needle": "e?.isHero?A===\"ally\""
+    },
+    {
+      "id": "hero-mesh-baa",
+      "needle": "isHero:g=!1"
+    },
+    {
+      "id": "hero-mesh-xaa",
+      "needle": "w?.grudge?d.jsx(bAA"
+    },
+    {
+      "id": "hero-skill-vfx",
+      "needle": "Z.addFireBurst(g,i"
+    },
+    {
+      "id": "weapon-mesh-sync",
+      "needle": "WgSyncWeaponMeshes"
+    },
+    {
+      "id": "moba-hide-lane-deploy",
+      "needle": "function cgA(){return null}"
+    },
+    {
+      "id": "moba-no-deploy-rounds",
+      "needle": "beginDeploymentRound:I=>{}"
+    },
+    {
+      "id": "moba-hud-class",
+      "needle": "gw-moba-battle"
     }
   ],
-  "lastBuilt": "2026-07-03T01:34:34.017Z",
-  "bundleBytes": 4060945,
-  "bundleSha256": "0303cf2e162678c9"
+  "lastBuilt": "2026-07-03T04:01:51.163Z",
+  "bundleBytes": 4072071,
+  "bundleSha256": "04f1a725ee03d42a"
 }
