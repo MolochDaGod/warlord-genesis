@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 30,
+  "bundleVersion": 31,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -152,6 +152,14 @@
     {
       "id": "play-helpers",
       "needle": "function WgAutoOnboard"
+    },
+    {
+      "id": "ensure-ready",
+      "needle": "function WgEnsureReady"
+    },
+    {
+      "id": "quick-battle",
+      "needle": "function WgQuickBattle"
     },
     {
       "id": "hero-cdn",
@@ -306,7 +314,7 @@
       "needle": "gw-moba-battle"
     }
   ],
-  "lastBuilt": "2026-07-03T04:01:51.163Z",
-  "bundleBytes": 4072071,
-  "bundleSha256": "04f1a725ee03d42a"
+  "lastBuilt": "2026-07-03T04:09:03.265Z",
+  "bundleBytes": 4072517,
+  "bundleSha256": "bb86152d4ba86ab7"
 }
