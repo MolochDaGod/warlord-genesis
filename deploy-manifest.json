@@ -66,7 +66,17 @@
     "models/towers/orc/tower_02.glb",
     "models/towers/orc/tower_3_full.glb",
     "models/towers/ruins/ruin_11.glb",
-    "models/towers/ruins/ruin_15.glb"
+    "models/towers/ruins/ruin_15.glb",
+    "models/kaykit/heroes/barbarian.glb",
+    "models/kaykit/heroes/rogue_hooded.glb",
+    "models/kaykit/heroes/knight.glb",
+    "models/kaykit/heroes/ranger.glb",
+    "models/kaykit/enemies/skeleton_warrior.glb",
+    "models/kaykit/enemies/skeleton_mage.glb",
+    "models/units/footman.glb",
+    "models/units/archer.glb",
+    "models/units/knight.glb",
+    "models/units/Color_Palette.png"
   ],
   "vercelRewritesRequired": [
     "/api/grudge/:path*",

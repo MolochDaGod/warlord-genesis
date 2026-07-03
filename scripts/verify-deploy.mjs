@@ -153,6 +153,24 @@ if (LIVE) {
     ok(`live tower GLB ${towerRes.status} ${towerCt}`);
   }
 
+  for (const unitPath of [
+    "/models/kaykit/heroes/barbarian.glb",
+    "/models/kaykit/enemies/skeleton_warrior.glb",
+    "/models/units/footman.glb",
+    "/models/units/Color_Palette.png",
+  ]) {
+    const res = await fetch(`${SITE}${unitPath}`, { method: "HEAD" });
+    const ct = res.headers.get("content-type") || "";
+    const badHtml = ct.includes("text/html");
+    const badGlb = unitPath.endsWith(".glb") && !ct.includes("gltf");
+    const badPng = unitPath.endsWith(".png") && !ct.includes("image");
+    if (!res.ok || badHtml || badGlb || badPng) {
+      fail(`live unit asset bad ${unitPath}: ${res.status} ${ct}`);
+    } else {
+      ok(`live unit ${unitPath} ${res.status}`);
+    }
+  }
+
   for (const route of ["/", "/lobby", "/warcamp", "/play", "/battle", "/mp"]) {
     const res = await fetch(`${SITE}${route}`, { redirect: "manual" });
     const ct = res.headers.get("content-type") || "";

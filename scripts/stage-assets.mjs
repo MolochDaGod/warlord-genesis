@@ -164,4 +164,12 @@ if (baked.status !== 0) {
   process.exit(baked.status ?? 1);
 }
 
+const kaykit = spawnSync("node", ["scripts/stage-kaykit.mjs"], {
+  cwd: ROOT,
+  stdio: "inherit",
+});
+if (kaykit.status !== 0) {
+  process.exit(kaykit.status ?? 1);
+}
+
 console.log(`[stage] copied ${copied} files`);
