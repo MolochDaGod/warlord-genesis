@@ -136,6 +136,29 @@ js = js.replace(
   'async function kO(){const C=SO();if(!C)return null;const I=await cO();if(!I)return NN(),null;return I}',
 );
 
+// Grudge ID — full-page SSO redirect (never leave user stuck on id.grudge-studio.com popup).
+const PO_ORIG =
+  'function pO(){return new Promise((C,A)=>{const I=window.location.origin,g=window.open(`${bR}/?origin=${encodeURIComponent(I)}`,"grudge-auth","width=480,height=720");if(!g){A(new Error("Popup blocked. Allow popups for this site and retry."));return}let i=!1;const e=()=>{window.removeEventListener("message",t),clearInterval(Q),clearTimeout(o)},t=s=>{if(s.origin!==bR)return;const l=s.data;if(!(!l||l.type!=="grudge-auth:success"||!l.token)){i=!0,e();try{g.close()}catch{}C(l.token)}};window.addEventListener("message",t);try{g.postMessage({type:"grudge-auth:init",origin:I},"*")}catch{}const Q=setInterval(()=>{g.closed&&!i&&(e(),A(new Error("Sign-in window was closed before completing.")))},500),o=setTimeout(()=>{if(!i){i=!0,e();try{g.close()}catch{}A(new Error("Sign-in timed out. Please try again."))}},wO)})}';
+const AUTH_SSO =
+  'const WgAuthReturnKey="wg-auth-return";function WgSafeReturnPath(p){return typeof p==="string"&&p.startsWith("/")&&!p.startsWith("//")?p:"/lobby"}function WgGrudgeIdLogin(p){try{const path=p||window.location.pathname+window.location.search+window.location.hash;sessionStorage.setItem(WgAuthReturnKey,WgSafeReturnPath(path))}catch{}const dest=window.location.origin+"/auth/callback";window.location.href=`${bR}/auth/sso-check?return=${encodeURIComponent(dest)}`}function WgAuthCallbackScreen(){const C=Fh(),[A,I]=T.useState("loading"),[g,i]=T.useState("");T.useEffect(()=>{let e=!1;return(async()=>{try{const t=new URLSearchParams(window.location.search),Q=t.get("grudge_token")||t.get("sso_token")||t.get("token");Q&&cq(Q);const o=["grudge_token","sso_token","token","grudge_id","grudgeId","username","grudge_username","provider"];try{const s=new URL(window.location.href);o.forEach(l=>s.searchParams.delete(l));const h=s.searchParams.toString();window.history.replaceState({},"",s.pathname+(h?"?"+h:"")+s.hash)}catch{}const u=SO();if(!u){if(!e){I("error");setTimeout(()=>C("/"),2e3)}return}const w=await hq(u);if(e)return;Rh.setState({user:w,loading:!1,error:null}),await WgFleetSync(w),i(w.displayName||w.username||"Commander"),I("success");let p="/lobby";try{const s=sessionStorage.getItem(WgAuthReturnKey);s&&(p=WgSafeReturnPath(s),sessionStorage.removeItem(WgAuthReturnKey))}catch{}const y=t.get("return")||t.get("redirect")||t.get("redirect_uri");y&&y.startsWith("/")&&!y.startsWith("//")&&(p=WgSafeReturnPath(y)),setTimeout(()=>C(p),600)}catch{if(!e){I("error");setTimeout(()=>C("/"),2e3)}}})(),()=>{e=!0}},[C]);return d.jsx("div",{className:"gw-screen gw-auth-callback",children:d.jsxs("div",{className:"gw-auth-callback-card",children:[A==="loading"&&d.jsxs(d.Fragment,{children:[d.jsx("span",{className:"gw-auth-callback-spin","aria-hidden":!0}),d.jsx("p",{children:"Completing Grudge ID sign-in…"})]}),A==="success"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-ok",children:"Welcome, "+g}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Returning to warcamp…"})]}),A==="error"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-err",children:"Sign-in failed"}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Redirecting…"})]})]})})}function pO(){WgGrudgeIdLogin();return new Promise(()=>{})}';
+if (js.includes(PO_ORIG)) {
+  js = js.replace(PO_ORIG, AUTH_SSO);
+  mustPatch("auth-sso-redirect", true);
+} else if (js.includes("WgGrudgeIdLogin")) {
+  mustPatch("auth-sso-redirect", true);
+} else {
+  console.warn("[patch] pO popup auth missing — SSO redirect skipped");
+  mustPatch("auth-sso-redirect", false);
+}
+js = js.replace(
+  'function uO(){if(!(typeof window>"u"))try{const C=new URLSearchParams(window.location.search),A=C.get("grudge_token")||C.get("sso_token");A&&(cq(A),window.history.replaceState({},"",window.location.pathname))}catch{}}uO();',
+  'function uO(){if(!(typeof window>"u"))try{if(window.location.pathname==="/auth/callback")return;const C=new URLSearchParams(window.location.search),A=C.get("grudge_token")||C.get("sso_token");A&&(cq(A),window.history.replaceState({},"",window.location.pathname))}catch{}}uO();',
+);
+js = js.replace(
+  'async function fO(){const C=await pO();cq(C);try{return await hq(C)}catch(A){throw NN(),A instanceof Error?A:new Error("Could not load your Grudge Studio profile.")}}',
+  'async function fO(){WgGrudgeIdLogin();return new Promise(()=>{})}',
+);
+
 // Title screen — compact viewport-fit landing with visible Puter/guest auth (before copy replacements)
 function sliceFunction(source, name) {
   const marker = `function ${name}()`;
@@ -157,7 +180,7 @@ function sliceFunction(source, name) {
 }
 const TITLE_XO_ORIG = sliceFunction(js, "xO");
 const TITLE_XO_NEW =
-  'function xO(){const C=Fh(),A=MN(o=>o.openHub),I=Rh(o=>o.user),g=Rh(o=>o.loading),i=Rh(o=>o.error),e=Rh(o=>o.guest),t=Rh(o=>o.signInWithPuter),[Q,o]=T.useState(!0),[s,l]=T.useState(!1);T.useEffect(()=>{WS().then(h=>{l(h.cdnReachable),o(!1)})},[]);return d.jsxs("div",{className:"gw-screen gw-title-v3",children:[d.jsx("div",{className:"gw-title-bg","aria-hidden":!0}),d.jsxs("header",{className:"gw-auth-bar",children:[d.jsx("span",{className:"gw-auth-brand",children:"Grudge Studio"}),d.jsxs("div",{className:"gw-auth-actions",children:[g&&d.jsx("span",{className:"gw-auth-pill is-loading",children:"Connecting session…"}),!g&&I&&d.jsxs("span",{className:"gw-auth-pill is-ok",title:I.grudgeId,children:[I.role==="guest"?"Guest":"Account"," · ",I.displayName||I.username]}),!g&&!I&&d.jsx("span",{className:"gw-auth-pill is-warn",children:"Not signed in"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn",onClick:e,children:"Continue as guest"}),d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:t,disabled:g,children:"Sign in with Puter"})]})]}),d.jsxs("main",{className:"gw-title-main",children:[d.jsx("p",{className:"gw-title-eyebrow",children:"Warlord Genesis · Three-lane RTS"}),d.jsxs("h1",{className:"gw-title-headline",children:["GRUDGE ",d.jsx("span",{children:"WARLORDS"})]}),d.jsx("p",{className:"gw-title-lead",children:"Pick your champion in the warcamp, deploy lane waves, and siege the enemy citadel."}),i&&d.jsx("p",{className:"gw-title-error",children:i}),d.jsxs("div",{className:"gw-title-ctas",children:[d.jsx("button",{type:"button",className:"gw-btn gw-title-play",onClick:()=>C("/lobby"),children:g?"Preparing…":"Enter the Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})]}),d.jsxs("div",{className:"gw-title-chips",children:[d.jsx("span",{className:"gw-title-chip",children:Q?"Booting engine…":"Engine v"+mt.version}),d.jsx("span",{className:"gw-title-chip",children:s?"CDN assets online":"Local assets"}),d.jsx("span",{className:"gw-title-chip",children:"Puter login · Railway saves"})]})]}),d.jsxs("footer",{className:"gw-title-footer",children:[d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"})]})]})}';
+  'function xO(){const C=Fh(),A=MN(o=>o.openHub),I=Rh(o=>o.user),g=Rh(o=>o.loading),i=Rh(o=>o.error),e=Rh(o=>o.guest),t=Rh(o=>o.signInWithStudio),n=Rh(o=>o.signInWithPuter),[Q,o]=T.useState(!0),[s,l]=T.useState(!1);T.useEffect(()=>{WS().then(h=>{l(h.cdnReachable),o(!1)})},[]);return d.jsxs("div",{className:"gw-screen gw-title-v3",children:[d.jsx("div",{className:"gw-title-bg","aria-hidden":!0}),d.jsxs("header",{className:"gw-auth-bar",children:[d.jsx("span",{className:"gw-auth-brand",children:"Grudge Studio"}),d.jsxs("div",{className:"gw-auth-actions",children:[g&&d.jsx("span",{className:"gw-auth-pill is-loading",children:"Connecting session…"}),!g&&I&&d.jsxs("span",{className:"gw-auth-pill is-ok",title:I.grudgeId,children:[I.role==="guest"?"Guest":"Account"," · ",I.displayName||I.username]}),!g&&!I&&d.jsx("span",{className:"gw-auth-pill is-warn",children:"Not signed in"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn",onClick:e,children:"Continue as guest"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-grudge",onClick:t,disabled:g,children:"Sign in with Grudge ID"}),d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:n,disabled:g,children:"Sign in with Puter"})]})]}),d.jsxs("main",{className:"gw-title-main",children:[d.jsx("p",{className:"gw-title-eyebrow",children:"Warlord Genesis · Three-lane RTS"}),d.jsxs("h1",{className:"gw-title-headline",children:["GRUDGE ",d.jsx("span",{children:"WARLORDS"})]}),d.jsx("p",{className:"gw-title-lead",children:"Pick your champion in the warcamp, deploy lane waves, and siege the enemy citadel."}),i&&d.jsx("p",{className:"gw-title-error",children:i}),d.jsxs("div",{className:"gw-title-ctas",children:[d.jsx("button",{type:"button",className:"gw-btn gw-title-play",onClick:()=>C("/lobby"),children:g?"Preparing…":"Enter the Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})]}),d.jsxs("div",{className:"gw-title-chips",children:[d.jsx("span",{className:"gw-title-chip",children:Q?"Booting engine…":"Engine v"+mt.version}),d.jsx("span",{className:"gw-title-chip",children:s?"CDN assets online":"Local assets"}),d.jsx("span",{className:"gw-title-chip",children:"Grudge ID · Puter · Railway saves"})]})]}),d.jsxs("footer",{className:"gw-title-footer",children:[d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"})]})]})}';
 if (TITLE_XO_ORIG && js.includes(TITLE_XO_ORIG)) {
   js = js.replace(TITLE_XO_ORIG, TITLE_XO_NEW);
   mustPatch("title-v3", true);
@@ -287,19 +310,19 @@ js = js.replace(
 
 js = js.replace(
   'guest:g,signInWithStudio:i,signOut:e}=Rh()',
-  "guest:g,signInWithPuter:i,signOut:e}=Rh()",
+  "guest:g,signInWithStudio:i,signInWithPuter:n,signOut:e}=Rh()",
 );
 js = js.replace(
   "Sign in with Grudge Studio to claim your Grudge ID. Your account and progress are scoped to your Grudge Studio identity.",
-  "Sign in with Puter to claim your Grudge ID. Progress syncs to Grudge Studio Railway and follows you across devices.",
+  "Sign in with Grudge ID to claim your account. Puter sign-in is also available for cloud saves.",
 );
 js = js.replace(
   'children:A?"WORKING...":"SIGN IN WITH GRUDGE STUDIO"',
-  'children:A?"WORKING...":"SIGN IN WITH PUTER"',
+  'children:A?"WORKING...":"SIGN IN WITH GRUDGE ID"',
 );
 js = js.replace(
   "You are playing as a guest. Sign in with Grudge Studio to keep your progress across devices.",
-  "Playing as guest. Sign in with Puter to keep progress across devices.",
+  "Playing as guest. Sign in with Grudge ID to keep progress across devices.",
 );
 
 js = js.replace(
@@ -738,12 +761,12 @@ js = js.replace(
 const LOBBY_ROUTE =
   'd.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
 const LOBBY_ROUTE_PATCHED =
-  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/deploy",element:d.jsx(WgDeployScreen,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})}),d.jsx(jc,{path:"/battle",element:d.jsx(aq,{to:"/play",replace:!0})})';
+  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/deploy",element:d.jsx(WgDeployScreen,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})}),d.jsx(jc,{path:"/battle",element:d.jsx(aq,{to:"/play",replace:!0})}),d.jsx(jc,{path:"/auth/callback",element:d.jsx(WgAuthCallbackScreen,{})})';
 if (js.includes(LOBBY_ROUTE)) {
   js = js.replace(LOBBY_ROUTE, LOBBY_ROUTE_PATCHED);
   mustPatch("routes", true);
 } else {
-  mustPatch("routes", js.includes('path:"/warcamp"') && js.includes('path:"/battle"'));
+  mustPatch("routes", js.includes('path:"/warcamp"') && js.includes('path:"/battle"') && js.includes('path:"/auth/callback"'));
 }
 
 // Pack reveal — portrait cards + effect copy (not text-only pills).
@@ -1007,6 +1030,14 @@ body{background:#080c14}
 .gw-auth-btn{font-size:11px;padding:6px 12px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(14,20,32,.9);color:#dce6f4;cursor:pointer;font-family:inherit}
 .gw-auth-btn:hover{border-color:rgba(224,178,82,.5)}
 .gw-auth-btn-puter{border-color:rgba(110,231,183,.45);color:#9dffd8}
+.gw-auth-btn-grudge{border-color:rgba(224,178,82,.5);color:#e0c878}
+.gw-auth-callback{display:flex;align-items:center;justify-content:center;min-height:100vh;background:#080c14}
+.gw-auth-callback-card{text-align:center;padding:32px 28px;border:1px solid rgba(120,150,200,.25);border-radius:12px;background:rgba(8,12,20,.9);max-width:360px}
+.gw-auth-callback-spin{display:inline-block;width:28px;height:28px;border:2px solid rgba(224,178,82,.25);border-top-color:#e0b252;border-radius:50%;animation:wg-spin .8s linear infinite;margin-bottom:12px}
+.gw-auth-callback-ok{color:#9dffd8;font-size:14px;letter-spacing:.06em}
+.gw-auth-callback-err{color:#f87171;font-size:14px}
+.gw-auth-callback-sub{color:#8fa3c4;font-size:12px;margin-top:8px}
+@keyframes wg-spin{to{transform:rotate(360deg)}}
 .gw-title-main{position:relative;z-index:1;flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:clamp(10px,2vh,18px);padding:clamp(16px,4vh,32px) clamp(20px,5vw,40px);max-width:640px;margin:0 auto;width:100%}
 .gw-title-eyebrow{margin:0;font-size:11px;letter-spacing:.28em;text-transform:uppercase;color:#7f93b4}
 .gw-title-headline{margin:0;font-family:Cinzel Decorative,serif;font-size:clamp(2rem,8vw,3.4rem);line-height:1.05;color:#f0e6d0;font-weight:900}

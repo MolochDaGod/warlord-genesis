@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 35,
+  "bundleVersion": 36,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -40,6 +40,12 @@
       "path": "/battle",
       "id": "battle-alias",
       "redirect": "/play"
+    },
+    {
+      "path": "/auth/callback",
+      "id": "auth-callback",
+      "screen": "Grudge ID SSO return",
+      "component": "WgAuthCallbackScreen"
     },
     {
       "path": "/mp",
@@ -202,6 +208,18 @@
       "needle": "signInWithPuter:()=>xR(C,WgPuterSignIn)"
     },
     {
+      "id": "auth-sso-redirect",
+      "needle": "WgGrudgeIdLogin"
+    },
+    {
+      "id": "auth-callback-route",
+      "needle": "path:\"/auth/callback\""
+    },
+    {
+      "id": "auth-callback-screen",
+      "needle": "function WgAuthCallbackScreen"
+    },
+    {
       "id": "baked-anims-local",
       "needle": "/anims/baked/"
     },
@@ -346,7 +364,7 @@
       "needle": "A>20&&Z.addEmber(xo.clone()"
     }
   ],
-  "lastBuilt": "2026-07-03T09:39:56.255Z",
-  "bundleBytes": 4068347,
-  "bundleSha256": "cde76d727ffe9713"
+  "lastBuilt": "2026-07-03T09:48:06.739Z",
+  "bundleBytes": 4070095,
+  "bundleSha256": "dafd48c5ac687df4"
 }
