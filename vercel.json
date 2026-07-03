@@ -55,6 +55,10 @@
       "destination": "/models/towers/:theme/:file"
     },
     {
+      "source": "/api/assets/grudge-nexus/textures/Color_Palette.png",
+      "destination": "/models/units/Color_Palette.png"
+    },
+    {
       "source": "/api/assets/:path*",
       "destination": "https://client.grudge-studio.com/:path*"
     },

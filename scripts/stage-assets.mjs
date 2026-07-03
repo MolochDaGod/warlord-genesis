@@ -156,6 +156,14 @@ if (ground.status !== 0) {
   process.exit(ground.status ?? 1);
 }
 
+const battleTex = spawnSync("node", ["scripts/generate-battle-textures.mjs"], {
+  cwd: ROOT,
+  stdio: "inherit",
+});
+if (battleTex.status !== 0) {
+  process.exit(battleTex.status ?? 1);
+}
+
 const baked = spawnSync("node", ["scripts/stage-baked-anims.mjs"], {
   cwd: ROOT,
   stdio: "inherit",

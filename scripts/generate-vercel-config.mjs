@@ -81,6 +81,10 @@ const rewrites = [
     source: "/api/assets/grudge-nexus/models/maps/:theme/:file",
     destination: "/models/towers/:theme/:file",
   },
+  {
+    source: "/api/assets/grudge-nexus/textures/Color_Palette.png",
+    destination: "/models/units/Color_Palette.png",
+  },
   { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
   {
     source: "/api/objectstore/:path*",

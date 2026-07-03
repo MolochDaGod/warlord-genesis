@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 20,
+  "bundleVersion": 21,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -55,9 +55,15 @@
     "assets/index-BNWYZMT1.css",
     "textures/ground_diff.jpg",
     "textures/ground_nor.jpg",
+    "textures/concrete_diff.jpg",
+    "textures/metal_diff.jpg",
+    "textures/metal_nor.jpg",
     "anims/baked/venom/idle.json",
     "anims/baked/venom/walk-forward.json",
     "anims/baked/venom/run-forward.json",
+    "anims/baked/rifle/firing 2.json",
+    "anims/baked/rifle/reloading.json",
+    "anims/baked/rifle/punch.json",
     "models/towers/medieval/tower_02_1.glb",
     "models/towers/medieval/tower_03_1_full.glb",
     "models/towers/medieval/atlas.png",
@@ -101,6 +107,10 @@
     {
       "id": "local-tower-atlas",
       "needle": "return`${pT}models/towers/${C}/atlas.png`"
+    },
+    {
+      "id": "local-palette",
+      "needle": "unitPalette:\"/models/units/Color_Palette.png\""
     },
     {
       "id": "cdn-default-off",
@@ -155,7 +165,7 @@
       "needle": "gw-lane-card-icon"
     }
   ],
-  "lastBuilt": "2026-07-02T23:57:37.767Z",
-  "bundleBytes": 4058294,
-  "bundleSha256": "150971bffef24a11"
+  "lastBuilt": "2026-07-03T00:41:24.743Z",
+  "bundleBytes": 4058193,
+  "bundleSha256": "93acd4a9efce7dde"
 }

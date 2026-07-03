@@ -46,14 +46,18 @@ const replacements = [
   ],
 ];
 
-// CDN reachability probe — reject SPA HTML masquerading as assets (client.grudge-studio.com)
+// Unit palette + CDN probe — local file (CDN /api/assets returns 403/HTML).
+js = js.replace(
+  'unitPalette:`${PQ}/grudge-nexus/textures/Color_Palette.png`',
+  'unitPalette:"/models/units/Color_Palette.png"',
+);
 js = js.replace(
   'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD",mode:"cors"})',
-  'fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"})',
+  'fetch("/models/units/Color_Palette.png",{method:"HEAD"})',
 );
 js = js.replace(
   "try{A=(await fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:\"HEAD\"})).ok}catch{A=!1}",
-  'try{const r=await fetch(`${mt.pipeline.cdn}/grudge-nexus/textures/Color_Palette.png`,{method:"HEAD"});A=r.ok&&/image\\//i.test(r.headers.get("content-type")||"")}catch{A=!1}',
+  'try{const r=await fetch("/models/units/Color_Palette.png",{method:"HEAD"});A=r.ok&&/image\\//i.test(r.headers.get("content-type")||"")}catch{A=!1}',
 );
 
 // Baked clips ship from this deploy (/anims/baked), not the broken CDN proxy.

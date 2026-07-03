@@ -158,13 +158,21 @@ if (LIVE) {
     "/models/kaykit/enemies/skeleton_warrior.glb",
     "/models/units/footman.glb",
     "/models/units/Color_Palette.png",
+    "/textures/concrete_diff.jpg",
+    "/textures/metal_diff.jpg",
+    "/textures/metal_nor.jpg",
+    "/anims/baked/rifle/firing%202.json",
+    "/anims/baked/rifle/reloading.json",
+    "/anims/baked/rifle/punch.json",
   ]) {
     const res = await fetch(`${SITE}${unitPath}`, { method: "HEAD" });
     const ct = res.headers.get("content-type") || "";
     const badHtml = ct.includes("text/html");
     const badGlb = unitPath.endsWith(".glb") && !ct.includes("gltf");
     const badPng = unitPath.endsWith(".png") && !ct.includes("image");
-    if (!res.ok || badHtml || badGlb || badPng) {
+    const badJpg = unitPath.endsWith(".jpg") && !ct.includes("image");
+    const badJson = unitPath.endsWith(".json") && !ct.includes("json");
+    if (!res.ok || badHtml || badGlb || badPng || badJpg || badJson) {
       fail(`live unit asset bad ${unitPath}: ${res.status} ${ct}`);
     } else {
       ok(`live unit ${unitPath} ${res.status}`);

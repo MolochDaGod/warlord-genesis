@@ -80,6 +80,9 @@ const aliases = [
   ["rifle/idle aiming.json", "rifle/firing.json"],
   ["pistol/pistol run.json", "pistol/gunplay.json"],
   ["longbow/standing idle 01.json", "longbow/standing aim recoil.json"],
+  ["rifle/firing.json", "rifle/firing 2.json"],
+  ["uploads/combat/reloading.json", "rifle/reloading.json"],
+  ["unarmed/punching.json", "rifle/punch.json"],
 ];
 
 let aliased = 0;
