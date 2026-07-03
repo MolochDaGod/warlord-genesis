@@ -369,6 +369,20 @@ js = js.replace(
   'd.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-quick",onClick:()=>C("/play"),children:"Quick Battle"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})',
 );
 
+// TPS camera occlusion raycast — set Raycaster.camera (sprites) + guard null matrixWorld.
+js = js.replace(
+  "function v$(C){let A=C;for(;A;){if(A.userData[ET])return!1;A=A.parent}return!0}",
+  "function v$(C){let A=C;for(;A;){if(A.userData[ET]||A.isSprite)return!1;A=A.parent}return!0}",
+);
+js = js.replace(
+  "function _$(C,A,I,g,i=.32){Fw.subVectors(I,A);const e=Fw.length();if(e<1e-4)return I;Fw.multiplyScalar(1/e),$y.set(A,Fw),$y.far=e,$y.near=.08;const t=$y.intersectObjects(C.children,!0);let Q=e;for(const s of t)v$(s.object)&&(T$(s.object,g)||s.distance<Q&&(Q=s.distance));const o=Math.max(i,Q-i);return iL.copy(A).addScaledVector(Fw,Math.min(e,o)),iL}",
+  'function _$(C,A,I,g,i=.32,cam){Fw.subVectors(I,A);const e=Fw.length();if(e<1e-4)return I;Fw.multiplyScalar(1/e),$y.set(A,Fw),$y.far=e,$y.near=.08,cam&&($y.camera=cam);let t=[];try{t=$y.intersectObjects(C.children,!0)}catch{return I}let Q=e;for(const s of t){const l=s.object;if(!l?.matrixWorld)continue;v$(l)&&(T$(l,g)||s.distance<Q&&(Q=s.distance))}const o=Math.max(i,Q-i);return iL.copy(A).addScaledVector(Fw,Math.min(e,o)),iL}',
+);
+js = js.replace(
+  "const PI=_$(g,ZE,er,hA.current?.root??null)",
+  "const PI=_$(g,ZE,er,hA.current?.root??null,.32,A)",
+);
+
 // Tower GLBs — always serve from this deploy (/models/towers). CDN Assimp exports crash GLTFLoader.
 js = js.replace(
   "function fT(C,A,I){const g=CIA[C][A];return I?`${mt.pipeline.r2.mapTowers}${C}/${g}.glb`:`${pT}models/towers/${C}/${g}.glb`}",
