@@ -151,7 +151,7 @@ rewrites.push(
 
 /** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
 const CI_BUILD =
-  "node scripts/stage-textures.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs";
+  "node scripts/stage-textures.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/fix-glb-header.mjs models/heroes && node scripts/fix-glb-header.mjs models/pets && node scripts/fix-glb-header.mjs models/anims && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs";
 
 const config = {
   buildCommand: CI_BUILD,

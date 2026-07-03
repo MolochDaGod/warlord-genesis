@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 37,
+  "bundleVersion": 38,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -89,6 +89,14 @@
     "models/kaykit/heroes/rogue_hooded.glb",
     "models/kaykit/heroes/knight.glb",
     "models/kaykit/heroes/ranger.glb",
+    "models/heroes/grudge6/western-kingdoms_warrior.glb",
+    "models/heroes/grudge6/barbarians_worge.glb",
+    "models/heroes/grudge6/dwarves_mage.glb",
+    "models/heroes/grudge6/high-elves_ranger.glb",
+    "models/heroes/grudge6/orcs_warrior.glb",
+    "models/heroes/grudge6/undead_worge.glb",
+    "models/anims/anim-bank.glb",
+    "models/pets/boar.glb",
     "models/kaykit/enemies/skeleton_warrior.glb",
     "models/kaykit/enemies/skeleton_mage.glb",
     "models/units/footman.glb",
@@ -366,9 +374,21 @@
     {
       "id": "combat-vfx-ls",
       "needle": "A>20&&Z.addEmber(xo.clone()"
+    },
+    {
+      "id": "hero-glb-helpers",
+      "needle": "WgHeroGlbUrl"
+    },
+    {
+      "id": "hero-glb-v6",
+      "needle": "WgHeroGlbUrl(g,i)"
+    },
+    {
+      "id": "hero-class-vfx",
+      "needle": "WgClassBurstColor"
     }
   ],
-  "lastBuilt": "2026-07-03T10:02:41.313Z",
-  "bundleBytes": 4070095,
-  "bundleSha256": "dd2744c5a260bf8a"
+  "lastBuilt": "2026-07-03T10:11:48.658Z",
+  "bundleBytes": 4071848,
+  "bundleSha256": "1d7c007b579db168"
 }

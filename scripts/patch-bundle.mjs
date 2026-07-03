@@ -377,6 +377,43 @@ js = js.replace(
   "function F6(C){const A=fH[C];if(!A)throw new Error(`Unknown race repo: ${C}`);return`/textures/grudge6/${A.folder}/${A.textureFile}`}",
 );
 
+// Faction hero GLBs — 6 races × 4 classes (worge → knight mesh), embedded Bip001 clips.
+const U6_ANCHOR = 'const U6=new _K,N6={unarmed:"unarmed/punching"';
+const HERO_GLB_HELPERS =
+  'const WgHeroGltf=new vK();typeof Wy<"u"&&Wy&&WgHeroGltf.setDRACOLoader(Wy);const WgHeroClassFile={warrior:"warrior",worge:"knight",mage:"mage",ranger:"ranger"},WgPetByRace={human:"black_grouse",barbarian:"boar",dwarf:"boar",elf:"canada_goose",orc:"bigfoot",undead:"american_aligator"},WgClassVfx={warrior:"#ff6a3c",worge:"#c8a84b",mage:"#8fd8ff",ranger:"#9dffd8"};function WgHeroGlbUrl(C,A){const I=UK[C]||C,g=WgHeroClassFile[A]||A;return`/models/heroes/grudge6/${I}_${g}.glb`}function WgPetGlbUrl(C){const A=WgPetByRace[C];return A?`/models/pets/${A}.glb`:null}function WgClassBurstColor(C){return WgClassVfx[C]||"#8fd8ff"};';
+if (js.includes(U6_ANCHOR) && !js.includes("WgHeroGlbUrl")) {
+  js = js.replace(U6_ANCHOR, `${HERO_GLB_HELPERS}${U6_ANCHOR}`);
+  mustPatch("hero-glb-helpers", true);
+} else {
+  mustPatch("hero-glb-helpers", js.includes("WgHeroGlbUrl"));
+}
+
+const V6_ORIG =
+  'async function v6(C,A){const I=wa(C);if(!I?.grudge)throw new Error(`Not a GRUDGE6 unit: ${C}`);const{raceId:g,classId:i,repoRaceId:e}=I.grudge,t=qh(g,i),Q=A.animPack,[o,s]=await Promise.all([U6.loadAsync(K6(e)),new Zs().loadAsync(F6(e))]);s.colorSpace=zg,s.flipY=!1,o.traverse(w=>{(w instanceof GB||w instanceof EC)&&(w.castShadow=!0,w.receiveShadow=!0)}),Y6(o,A.fitHeight),t?.visibleMeshes?.length&&L6(o,t.visibleMeshes),q6(o,s),A.tint&&A.tint!=="#ffffff"&&o.traverse(w=>{if(w instanceof EC||w instanceof GB){const u=w.material;u?.color&&u.color.multiply(new rI(A.tint))}});const l=new uK(o),c=await pY(l,Q),h={root:o,mixer:l,director:c.director,attackClip:c.attackClip,actions:c.actions,swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};return h}';
+const V6_PATCHED =
+  'async function v6(C,A){const I=wa(C);if(!I?.grudge)throw new Error(`Not a GRUDGE6 unit: ${C}`);const{raceId:g,classId:i,repoRaceId:e}=I.grudge,t=qh(g,i),Q=A.animPack,url=WgHeroGlbUrl(g,i);try{const gltf=await WgHeroGltf.loadAsync(url),o=gltf.scene;o.traverse(w=>{(w instanceof GB||w instanceof EC)&&(w.castShadow=!0,w.receiveShadow=!0)}),Y6(o,A.fitHeight),A.tint&&A.tint!=="#ffffff"&&o.traverse(w=>{if(w instanceof EC||w instanceof GB){const u=w.material;u?.color&&u.color.multiply(new rI(A.tint))}});const byName={};for(const a of gltf.animations||[])byName[a.name]=a;const pick=(...ns)=>{for(const n of ns)if(byName[n])return byName[n];return null},fb=gltf.animations?.[0]||null,clips={idle:pick("idle")||fb,walk:pick("walk","strafe_left_walk","strafe_right_walk")||fb,run:pick("run","sprint")||fb,sprint:pick("sprint","run")||fb},l=new uK(o),director=new G6(l,clips),attackClip=pick("attack")||fb,act=a=>a?l.clipAction(a):null,h={root:o,mixer:l,director,attackClip,actions:{idle:act(clips.idle),walk:act(clips.walk),run:act(clips.run),attack:act(attackClip)},swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};return h}catch(err){console.warn("[warlord] hero glb fallback",url,err);const[o,s]=await Promise.all([U6.loadAsync(K6(e)),new Zs().loadAsync(F6(e))]);s.colorSpace=zg,s.flipY=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)&&(w.castShadow=!0,w.receiveShadow=!0)}),Y6(o,A.fitHeight),t?.visibleMeshes?.length&&L6(o,t.visibleMeshes),q6(o,s),A.tint&&A.tint!=="#ffffff"&&o.traverse(w=>{if(w instanceof EC||w instanceof GB){const u=w.material;u?.color&&u.color.multiply(new rI(A.tint))}});const l=new uK(o),c=await pY(l,Q),h={root:o,mixer:l,director:c.director,attackClip:c.attackClip,actions:c.actions,swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};return h}}';
+if (js.includes(V6_ORIG)) {
+  js = js.replace(V6_ORIG, V6_PATCHED);
+  mustPatch("hero-glb-v6", true);
+} else {
+  mustPatch("hero-glb-v6", js.includes("WgHeroGlbUrl(g,i)"));
+}
+
+// Class-tinted skill VFX (vfx-sandbox palette).
+const CAST_SKILL_VFX_ORIG =
+  'castWeaponSkill(A){const I=this.skillClips.get(A.baked);if(!I)return!1;this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend});const g=new O;this.handBone?this.handBone.getWorldPosition(g):this.root.getWorldPosition(g),g.y+=1.2;const i=A.color||"#8fd8ff";return Z.addFireBurst(g,i,5,.55),Z.addImpact(g),Z.addShake(.08),!0}';
+const CAST_SKILL_VFX_PATCHED =
+  'castWeaponSkill(A){const I=this.skillClips.get(A.baked);if(!I)return!1;this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend});const g=new O;this.handBone?this.handBone.getWorldPosition(g):this.root.getWorldPosition(g),g.y+=1.2;const i=A.color||WgClassBurstColor(XI.getState().classId);return Z.addFireBurst(g,i,6,.62),Z.addSpark(g.clone(),i),Z.addImpact(g),Z.addShake(.1),!0}';
+if (js.includes(CAST_SKILL_VFX_ORIG)) {
+  js = js.replace(CAST_SKILL_VFX_ORIG, CAST_SKILL_VFX_PATCHED);
+} else if (!js.includes("WgClassBurstColor")) {
+  js = js.replace(
+    'const i=A.color||"#8fd8ff";return Z.addFireBurst(g,i,5,.55),Z.addImpact(g),Z.addShake(.08),!0}',
+    'const i=A.color||WgClassBurstColor(XI.getState().classId);return Z.addFireBurst(g,i,6,.62),Z.addSpark(g.clone(),i),Z.addImpact(g),Z.addShake(.1),!0}',
+  );
+}
+mustPatch("hero-class-vfx", js.includes("WgClassBurstColor"));
+
 // Weapon-aware locomotion packs (sword_shield strafe/run, not generic venom/locomotion).
 const SX_PACK_FIXES = [
   [
