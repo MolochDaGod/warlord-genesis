@@ -1,5 +1,5 @@
 {
-  "buildCommand": "node scripts/stage-textures.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/fix-glb-header.mjs models/heroes && node scripts/fix-glb-header.mjs models/pets && node scripts/fix-glb-header.mjs models/anims && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs",
+  "buildCommand": "node scripts/stage-textures.mjs && node scripts/stage-icons.mjs && node scripts/fix-glb-header.mjs models/towers && node scripts/fix-glb-header.mjs models/heroes && node scripts/fix-glb-header.mjs models/pets && node scripts/fix-glb-header.mjs models/anims && node scripts/validate-tower-glbs.mjs && node scripts/patch-bundle.mjs && node scripts/generate-vercel-config.mjs && node scripts/verify-deploy.mjs",
   "installCommand": "",
   "outputDirectory": ".",
   "framework": null,

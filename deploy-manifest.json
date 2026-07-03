@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 38,
+  "bundleVersion": 39,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -117,7 +117,23 @@
     "assets/ui-kit/craftpix/Quest Tracker/QuestTracker_Background.png",
     "assets/ui-kit/craftpix/Inventory/Coins/Coin_Gold.png",
     "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Normal.png",
-    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Active.png"
+    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Active.png",
+    "assets/icons/manifest.json",
+    "assets/icons/brand/living4characters.png",
+    "assets/icons/brand/bosslogo.png",
+    "assets/icons/factions/holy.png",
+    "assets/icons/factions/ice.png",
+    "assets/icons/factions/storm.png",
+    "assets/icons/weapons/sword.png",
+    "assets/icons/weapons/bow.png",
+    "assets/icons/weapons/staff.png",
+    "assets/icons/weapons/dagger.png",
+    "assets/icons/weapons/hammer.png",
+    "assets/icons/weapons/gun.png",
+    "assets/icons/skills/warrior-01.png",
+    "assets/icons/skills/warrior-02.png",
+    "assets/icons/vox/fire-rock.png",
+    "assets/icons/vox/spectral-dagger.png"
   ],
   "vercelRewritesRequired": [
     "/api/grudge/:path*",
@@ -386,9 +402,29 @@
     {
       "id": "hero-class-vfx",
       "needle": "WgClassBurstColor"
+    },
+    {
+      "id": "skill-icons",
+      "needle": "function WgSkillIcon"
+    },
+    {
+      "id": "actionbar-icons",
+      "needle": "gk-ab-icon"
+    },
+    {
+      "id": "faction-icons",
+      "needle": "gw-cs-faction-icon"
+    },
+    {
+      "id": "title-splash",
+      "needle": "gw-title-bg-art"
+    },
+    {
+      "id": "brand-logo",
+      "needle": "gw-auth-brand-icon"
     }
   ],
-  "lastBuilt": "2026-07-03T10:11:48.658Z",
-  "bundleBytes": 4071848,
-  "bundleSha256": "1d7c007b579db168"
+  "lastBuilt": "2026-07-03T10:25:18.865Z",
+  "bundleBytes": 4074410,
+  "bundleSha256": "d57dffb2e1a9ca8c"
 }
