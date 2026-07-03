@@ -59,6 +59,14 @@
       "destination": "/models/units/Color_Palette.png"
     },
     {
+      "source": "/textures/grudge6/:race/:file",
+      "destination": "https://assets.grudge-studio.com/assets/:race/textures/:file"
+    },
+    {
+      "source": "/textures/WK_Standard_Units.webp",
+      "destination": "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp"
+    },
+    {
       "source": "/api/assets/:path*",
       "destination": "https://client.grudge-studio.com/:path*"
     },
