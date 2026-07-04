@@ -250,3 +250,34 @@ body{background:#080c14}
 .wg-palette-swatch{width:32px;height:32px;border-radius:8px;border:2px solid rgba(120,150,200,.35);cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);transition:border-color .12s ease,transform .12s ease,box-shadow .12s ease}
 .wg-palette-swatch:hover{border-color:rgba(224,178,82,.55);transform:translateY(-1px)}
 .wg-palette-swatch.is-active{border-color:#e0b252;box-shadow:0 0 0 2px rgba(224,178,82,.35),inset 0 0 0 1px rgba(0,0,0,.25)}
+
+.gk-ui-fit-v43{--gk-frame:24;--gk-panel-pad:clamp(20px,2.4vw,32px);--gk-panel-inset:clamp(16px,2vw,24px)}
+.gk-root.gk-warcamp-shell,.gk-root.gk-deploy-shell,.gk-root.gk-combat-hud{--gk-panel-pad:clamp(20px,2.4vw,32px);--gk-panel-inset:clamp(16px,2vw,24px)}
+.gk-frame-window,.gk-window-panel,.gk-deploy-window,.gk-deploy-v2 .gk-deploy-window,.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel{background-image:none!important;background-color:rgba(8,12,20,.62);border-style:solid;border-color:transparent;border-width:28px;border-image-source:url(/assets/ui-kit/craftpix/Window/Window_Background.png);border-image-slice:32 fill;border-image-width:28px;border-image-repeat:stretch;padding:var(--gk-panel-pad);border-radius:0;box-sizing:border-box;min-width:0;width:100%;overflow:visible}
+.gk-frame-quest,.gk-quest-rail{background-image:none!important;background-color:rgba(8,12,20,.5);border-style:solid;border-color:transparent;border-width:22px 18px;border-image-source:url("/assets/ui-kit/craftpix/Quest Tracker/QuestTracker_Background.png");border-image-slice:48 72 48 72 fill;border-image-width:22px 18px;border-image-repeat:stretch;padding:var(--gk-panel-inset);min-width:min(240px,100%);min-height:max(200px,min-content);box-sizing:border-box;overflow:visible}
+.gk-frame-actionbar,.gk-actionbar{background-image:url("/assets/ui-kit/craftpix/Action Bar/ActionBar_Main_Background.png")!important;background-size:100% 100%;background-position:center bottom;background-repeat:no-repeat;min-width:min(640px,96vw);min-height:156px;padding:18px 24px 36px;align-items:center;gap:14px;box-sizing:border-box}
+.gk-actionbar-slots{align-items:flex-end;padding-bottom:2px;gap:8px}
+.gk-ab-slot{width:68px;height:68px;min-width:68px;min-height:68px;background-image:url("/assets/ui-kit/craftpix/Action Bar/Slots/ActionBar_Slot_Background.png");background-size:contain;background-position:center;background-repeat:no-repeat;margin-bottom:18px;box-sizing:border-box}
+.gk-ab-icon{width:42px;height:42px}
+.gk-ab-name{bottom:-18px;max-width:88px;font-size:9px;line-height:1.2}
+.gk-mode-swap{min-height:68px;min-width:84px;padding:10px 14px;align-self:center;margin-bottom:10px;box-sizing:border-box}
+.gk-frame-minimap,.gk-minimap-panel{position:relative;width:auto;min-width:188px;padding:0 6px 8px;box-sizing:border-box}
+.gk-minimap-frame{position:relative;inset:auto;width:100%;height:132px;background-image:url(/assets/ui-kit/craftpix/Minimap/Minimap_Background.png);background-size:100% 100%;background-repeat:no-repeat;border-radius:6px;pointer-events:none}
+.gk-minimap-canvas{position:relative;z-index:1;display:block;width:168px;height:112px;margin:10px auto 6px;border-radius:6px}
+.gk-tab-strip .gw-lobby-tab{min-width:0;height:40px;padding:0 20px;display:inline-flex;align-items:center;justify-content:center;background-size:auto 100%;background-position:center;background-repeat:no-repeat;font-size:10px;letter-spacing:.08em;line-height:1;white-space:nowrap;box-sizing:border-box}
+.gk-tab-strip{gap:8px;padding-bottom:4px}
+.gk-window-head{margin-bottom:12px;padding-bottom:8px;border-bottom:1px solid rgba(120,150,200,.18)}
+.gk-window-body,.gk-deploy-main,.gk-warcamp-shell .gw-deploy-panel,.gk-warcamp-shell .gw-lobby-main{min-width:0;overflow:visible}
+.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel{padding:var(--gk-panel-pad);border:28px solid transparent;border-image-source:url(/assets/ui-kit/craftpix/Window/Window_Background.png);border-image-slice:32 fill;border-image-width:28px;border-image-repeat:stretch;background-image:none!important;background-color:rgba(8,12,20,.62);border-radius:0;overflow:visible}
+.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel:first-of-type{border-image-source:url(/assets/ui-kit/craftpix/Window/Window_Background.png)}
+.gk-root .gw-deploy-panel{overflow:visible;max-width:100%;box-sizing:border-box}
+.gk-root .gw-btn:not(.gw-lobby-march):not(.gk-deploy-assault):not(.gw-deploy-assault){max-width:100%;box-sizing:border-box}
+.gk-root .gw-btn-mini{padding:8px 12px;font-size:10px;line-height:1.2}
+.gk-root .gw-collection-actions .gw-btn{min-width:min(136px,100%);padding:12px 14px}
+.gk-root .gw-mapsize-toggle .gw-btn-mini{flex:1 1 88px;padding:8px 10px;font-size:10px}
+.gk-root .wg-palette-row{padding:12px 14px;margin:12px 0}
+.gk-root .wg-palette-swatch{width:36px;height:36px}
+.gk-deploy-lanes .gk-lane-card,.gk-deploy-lanes .gw-lane-card{padding:16px 14px;min-height:min-content;box-sizing:border-box}
+.gk-lane-path-tile{padding:14px 12px;min-height:108px;box-sizing:border-box}
+.gk-deploy-footer{padding:16px 0 12px}
+@media(max-width:720px){.gk-frame-actionbar,.gk-actionbar{min-width:98vw;min-height:148px;padding:14px 10px 34px}.gk-ab-slot{width:56px;height:56px;min-width:56px;min-height:56px;margin-bottom:16px}.gk-ab-icon{width:36px;height:36px}.gk-frame-window,.gk-window-panel,.gk-deploy-window,.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel{border-width:22px;border-image-width:22px;padding:clamp(16px,4vw,22px)}.gk-tab-strip .gw-lobby-tab{height:36px;padding:0 14px;font-size:9px}}
