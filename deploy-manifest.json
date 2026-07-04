@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 49,
+  "bundleVersion": 50,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -611,9 +611,33 @@
     {
       "id": "combat-cast-hud",
       "needle": "wg-cast-bar"
+    },
+    {
+      "id": "combat-vfx-catalog",
+      "needle": "const WgVfxCat="
+    },
+    {
+      "id": "combat-spell-orbs",
+      "needle": "wg_flame_ball:{orb:1"
+    },
+    {
+      "id": "combat-proj-orb",
+      "needle": "Q.orb"
+    },
+    {
+      "id": "combat-skill-vfx-iaa",
+      "needle": "WgSkillProjectile(C,g)"
+    },
+    {
+      "id": "combat-cast-charge-vfx",
+      "needle": "WgCastChargeTick"
+    },
+    {
+      "id": "combat-proj-trail-rate",
+      "needle": "l.trail??"
     }
   ],
-  "lastBuilt": "2026-07-04T04:24:46.747Z",
-  "bundleBytes": 4104442,
-  "bundleSha256": "41d517392f2bac33"
+  "lastBuilt": "2026-07-04T05:01:21.576Z",
+  "bundleBytes": 4110327,
+  "bundleSha256": "366eef9ad8da2a17"
 }

@@ -1,0 +1,188 @@
+{
+  "version": "1.0.0",
+  "sandbox": "https://grudge-vfx.puter.site/",
+  "projectiles": {
+    "flame_ball": {
+      "uuid": "GRDG-3DFX-F30284DE",
+      "element": "fire",
+      "primary": "#ff4400",
+      "secondary": "#ffcc00",
+      "speed": 1
+    },
+    "lava_orb": {
+      "uuid": "GRDG-3DFX-BAFE89F2",
+      "element": "fire",
+      "primary": "#ff2200",
+      "secondary": "#ff6600",
+      "speed": 0.8
+    },
+    "frozen_orb": {
+      "uuid": "GRDG-3DFX-423A3B4F",
+      "element": "frost",
+      "primary": "#00bbff",
+      "secondary": "#cceeFF",
+      "speed": 1
+    },
+    "ice_ball": {
+      "uuid": "GRDG-3DFX-DF8F24DC",
+      "element": "frost",
+      "primary": "#44ddff",
+      "secondary": "#ffffff",
+      "speed": 1
+    },
+    "water_orb": {
+      "uuid": "GRDG-3DFX-F5EEE9B3",
+      "element": "frost",
+      "primary": "#0088cc",
+      "secondary": "#44bbee",
+      "speed": 1
+    },
+    "lightning_ball": {
+      "uuid": "GRDG-3DFX-69393D4F",
+      "element": "lightning",
+      "primary": "#ffff44",
+      "secondary": "#aaddff",
+      "speed": 1
+    },
+    "chaos_orb": {
+      "uuid": "GRDG-3DFX-4940C2F4",
+      "element": "arcane",
+      "primary": "#aa00ff",
+      "secondary": "#ff0066",
+      "speed": 1.2
+    },
+    "cured_ball": {
+      "uuid": "GRDG-3DFX-9110DFA3",
+      "element": "holy",
+      "primary": "#ffee44",
+      "secondary": "#ffffff",
+      "speed": 1
+    },
+    "arrow_trail": {
+      "uuid": "GRDG-3DFX-8E481340",
+      "element": "physical",
+      "primary": "#ffffff",
+      "secondary": "#aabbcc",
+      "speed": 1
+    },
+    "bone_dagger": {
+      "uuid": "GRDG-3DFX-4CBB2E32",
+      "element": "shadow",
+      "primary": "#ccbb88",
+      "secondary": "#665544",
+      "speed": 1
+    },
+    "magic_fire_blue": {
+      "uuid": "GRDG-3DFX-ECFBAA16",
+      "element": "arcane",
+      "primary": "#2266ff",
+      "secondary": "#88aaff",
+      "speed": 1
+    },
+    "magic_fire_purple": {
+      "uuid": "GRDG-3DFX-A3EFAEAB",
+      "element": "shadow",
+      "primary": "#8822cc",
+      "secondary": "#cc88ff",
+      "speed": 1
+    }
+  },
+  "castAuras": {
+    "casting_fire": {
+      "element": "fire",
+      "primary": "#ff5500",
+      "secondary": "#ffaa00"
+    },
+    "arcane_channeling": {
+      "element": "arcane",
+      "primary": "#8844ff",
+      "secondary": "#cc88ff"
+    },
+    "light_channeling": {
+      "element": "holy",
+      "primary": "#ffffaa",
+      "secondary": "#ffffff"
+    }
+  },
+  "fxMap": {
+    "fx.mage.firebolt": {
+      "proj": "flame_ball",
+      "cast": "casting_fire",
+      "element": "fire"
+    },
+    "fx.mage.arcane_shield": {
+      "proj": "chaos_orb",
+      "cast": "arcane_channeling",
+      "element": "arcane"
+    },
+    "fx.ranger.piercing_shot": {
+      "proj": "arrow_trail",
+      "cast": "light_channeling",
+      "element": "physical"
+    },
+    "fx.ranger.volley": {
+      "proj": "arrow_trail",
+      "cast": "light_channeling",
+      "element": "physical"
+    },
+    "fx.gun.burst": {
+      "proj": "wg_bullet",
+      "cast": "arcane_channeling",
+      "element": "physical"
+    },
+    "fx.warrior.cleave": {
+      "proj": null,
+      "cast": "casting_fire",
+      "element": "physical"
+    },
+    "fx.warrior.warcry": {
+      "proj": null,
+      "cast": "casting_fire",
+      "element": "physical"
+    }
+  },
+  "elementDefaults": {
+    "fire": {
+      "proj": "flame_ball",
+      "cast": "casting_fire",
+      "primary": "#ff4400",
+      "secondary": "#ffcc00"
+    },
+    "frost": {
+      "proj": "ice_ball",
+      "cast": "arcane_channeling",
+      "primary": "#44ddff",
+      "secondary": "#ffffff"
+    },
+    "lightning": {
+      "proj": "lightning_ball",
+      "cast": "light_channeling",
+      "primary": "#ffff44",
+      "secondary": "#aaddff"
+    },
+    "arcane": {
+      "proj": "chaos_orb",
+      "cast": "arcane_channeling",
+      "primary": "#aa44ff",
+      "secondary": "#cc88ff"
+    },
+    "holy": {
+      "proj": "cured_ball",
+      "cast": "light_channeling",
+      "primary": "#ffee44",
+      "secondary": "#ffffff"
+    },
+    "physical": {
+      "proj": "arrow_trail",
+      "cast": "light_channeling",
+      "primary": "#e8c878",
+      "secondary": "#cdeac0"
+    },
+    "shadow": {
+      "proj": "chaos_orb",
+      "cast": "arcane_channeling",
+      "primary": "#aa00ff",
+      "secondary": "#ff0066"
+    }
+  }
+}

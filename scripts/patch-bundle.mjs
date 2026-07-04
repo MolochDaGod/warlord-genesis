@@ -1597,9 +1597,74 @@ mustPatch("combat-skill-proj", js.includes('Z.addProjectile("archer1",Ap.clone()
 
 js = js.replace(
   'WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})})]})}',
-  'WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})}),WgCast.active&&d.jsxs("div",{className:"wg-cast-bar",children:[d.jsx("div",{className:"wg-cast-fill",style:{width:`${Math.max(0,100*(1-WgCast.left/WgCast.total))}%`}}),d.jsx("span",{className:"wg-cast-label",children:WgCast.skill?.label})]})]})}',
+  'WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})}),WgCast.active&&d.jsxs("div",{className:"wg-cast-bar",children:[d.jsx("div",{className:"wg-cast-fill",style:{width:Math.max(0,100*(1-WgCast.left/WgCast.total))+"%"}}),d.jsx("span",{className:"wg-cast-label",children:WgCast.skill?.label})]})]})}',
 );
 mustPatch("combat-cast-hud", js.includes("wg-cast-bar"));
+
+// ── v50 Skill VFX catalog — bullet / arrow / spell orbs from info.grudge-studio + grudge-vfx.puter.site ──
+const WGVFX_CATALOG_INLINE = String(
+  readFileSync(join(ROOT, "data", "vfx", "wg-vfx-catalog.json"), "utf8"),
+).replace(/\s+/g, "");
+
+const WGVFX_RUNTIME = `const WgVfxCat=${WGVFX_CATALOG_INLINE};function WgVfxSkillFx(sk){const fx=sk?.effects?.[0];return fx&&WgVfxCat.fxMap[fx]||null}function WgVfxGuessEl(sk){const id=(sk?.id||"").toLowerCase();return/ice|frost|blizzard|frozen/.test(id)?"frost":/lightning|thunder|shock|chain/.test(id)?"lightning":/heal|holy|bless|light|moon|consecrate/.test(id)?"holy":/shadow|void|chaos|arcane|blink|portal|missile/.test(id)?"arcane":/fire|flame|meteor|inferno|lava/.test(id)?"fire":"arcane"}function WgVfxNrKey(pid){return pid==="arrow_trail"?"archer1":"wg_"+pid}function WgSkillProjectile(sk,wt){if(wt==="BOW"||wt==="CROSSBOW")return"archer1";if(wt==="GUN")return"wg_bullet";const fx=WgVfxSkillFx(sk),el=fx?.element||WgVfxGuessEl(sk),def=WgVfxCat.elementDefaults[el]||WgVfxCat.elementDefaults.arcane,pid=fx?.proj||def.proj;return WgVfxNrKey(pid)}function WgVfxProjColor(key){const ent=nr[key];if(ent?.tint)return ent.tint;const pid=(key||"").replace(/^wg_/,""),p=WgVfxCat.projectiles[pid]||WgVfxCat.projectiles.flame_ball;return p?.primary||"#8fd8ff"}function WgCastChargeTick(o,col,wt,sk){const fx=WgVfxSkillFx(sk),el=fx?.element||WgVfxGuessEl(sk),castId=fx?.cast||(WgVfxCat.elementDefaults[el]||{}).cast||"arcane_channeling",aura=WgVfxCat.castAuras[castId]||{},c1=aura.primary||col,c2=aura.secondary||col;wt==="STAFF"||!AAA.has(wt)?(Math.random()<.5&&Z.addEmber(o.clone(),c1),Math.random()<.35&&Z.addSpark(o.clone(),c2),Math.random()<.2&&Z.addFireBurst(o.clone(),c1,2,.3)):(Math.random()<.55&&Z.addEmber(o.clone(),col),Math.random()<.3&&Z.addSpark(o.clone(),col))}`;
+
+if (!js.includes("const WgVfxCat=")) {
+  // End the shared `const Ap,mw,Ip` declarator before injecting WgVfxCat — otherwise we get
+  // `Ip=new O,const WgVfxCat=…` which is a SyntaxError (Unexpected token 'const').
+  js = js.replace(
+    'Ip=new O,AAA=new Set(["BOW","CROSSBOW","GUN"]);function IAA(',
+    `Ip=new O;${WGVFX_RUNTIME};const AAA=new Set(["BOW","CROSSBOW","GUN"]);function IAA(`,
+  );
+}
+mustPatch("combat-vfx-catalog", js.includes("const WgVfxCat="));
+
+js = js.replace(
+  "wizard:{file:\"wizard\",size:1.05,speed:50,spin:4,tint:\"#c9a3ff\",material:{texture:\"metal\",color:\"#6a4a8a\",roughness:.45,metalness:.4},splash:{radius:3.2,damage:16,slow:{factor:.5,duration:2.5}}}",
+  "wizard:{file:\"wizard\",size:1.05,speed:50,spin:4,tint:\"#c9a3ff\",material:{texture:\"metal\",color:\"#6a4a8a\",roughness:.45,metalness:.4},splash:{radius:3.2,damage:16,slow:{factor:.5,duration:2.5}}},wg_flame_ball:{orb:1,size:.5,speed:50,spin:10,tint:\"#ff4400\",forward:[0,0,1],trail:.5},wg_ice_ball:{orb:1,size:.45,speed:52,spin:8,tint:\"#44ddff\",forward:[0,0,1],trail:.45},wg_lightning_ball:{orb:1,size:.42,speed:56,spin:14,tint:\"#ffff44\",forward:[0,0,1],trail:.55},wg_chaos_orb:{orb:1,size:.48,speed:46,spin:12,tint:\"#aa44ff\",forward:[0,0,1],trail:.5},wg_cured_ball:{orb:1,size:.4,speed:54,spin:6,tint:\"#ffee88\",forward:[0,0,1],trail:.4},wg_lava_orb:{orb:1,size:.55,speed:42,spin:6,tint:\"#ff3300\",forward:[0,0,1],trail:.48},wg_frozen_orb:{orb:1,size:.5,speed:44,spin:16,tint:\"#00bbff\",forward:[0,0,1],trail:.5},wg_bullet:{orb:1,size:.14,speed:118,spin:0,tint:\"#ffc85a\",forward:[0,0,1],trail:.65}",
+);
+mustPatch("combat-spell-orbs", js.includes("wg_flame_ball:{orb:1"));
+
+const LIA_ORB_PATCH =
+  'let o=null;try{if(Q.glb){const gltf=await WgHeroGltf.loadAsync(Q.glb);o=YIA(gltf.scene,Q,e)}else{const l=await g.loadAsync(`${GT}models/projectiles/${Q.file}.fbx`);o=YIA(l,Q,e)}}catch{continue}if(!o)continue';
+const LIA_ORB_NEW =
+  'let o=null;try{if(Q.orb){const geo=new Yr(Q.size*.5,10,10),mat=new te({color:new rI(Q.tint||"#ffffff"),emissive:new rI(Q.tint||"#ffffff"),emissiveIntensity:1.35,transparent:!0,opacity:.92,depthWrite:!1}),mesh=new EC(geo,mat);o=YIA(mesh,Object.assign({forward:Q.forward||[0,0,1]},Q),e)}else if(Q.glb){const gltf=await WgHeroGltf.loadAsync(Q.glb);o=YIA(gltf.scene,Q,e)}else{const l=await g.loadAsync(`${GT}models/projectiles/${Q.file}.fbx`);o=YIA(l,Q,e)}}catch{continue}if(!o)continue';
+if (js.includes(LIA_ORB_PATCH)) {
+  js = js.replace(LIA_ORB_PATCH, LIA_ORB_NEW);
+  mustPatch("combat-proj-orb", true);
+} else if (js.includes("Q.orb")) {
+  mustPatch("combat-proj-orb", true);
+} else {
+  mustPatch("combat-proj-orb", false);
+}
+
+js = js.replace(
+  "const l=nr[s.model],c=l.splash?.38:.22;if(Math.random()<.5)",
+  "const l=nr[s.model],c=l.trail??(l.splash?.38:.22);if(Math.random()<.5)",
+);
+mustPatch("combat-proj-trail-rate", js.includes("l.trail??"));
+
+const IAA_V49 =
+  'function IAA(C,A,I,g,i){const e=C.damage*i*Z.factionDmgMult("ally");mw.copy(I).normalize(),Ap.copy(A);const t=AAA.has(g),Q=t?42:5.5,o=t?.08:1.05;if(!t){const h=new O(Z.playerPos.x,Z.playerPos.y+1,Z.playerPos.z);bF(h,mw,Q,o,e,"ally","#ffd080",!0),Z.addShake(C.damage>40?.12:.06);return}let s=Q;const l=(h,w)=>{Ip.copy(h).sub(Ap);const u=Ip.dot(mw);u<.2||u>s||(Ip.copy(Ap).addScaledVector(mw,u),Ip.distanceTo(h)<=w&&(s=u))};for(const h of Z.units)!h.alive||h.faction!=="enemy"&&h.faction!=="neutral"||l(h.pos,.95*h.def.scale);for(const h of Z.structures)!h.alive||h.faction!=="enemy"||!Ao(h)||l(h.pos,lQ(h.kind));const c=Ap.clone().addScaledVector(mw,s);Z.addMuzzleFlash(c);if(g==="BOW"||g==="CROSSBOW")Z.addProjectile("archer1",Ap.clone(),c,{arc:2}),Z.addSpark(c,"#cdeac0");else if(g==="GUN")Z.addBolt(Ap.clone(),c);for(const h of Z.units)!h.alive||h.faction!=="enemy"&&h.faction!=="neutral"||h.pos.distanceTo(c)>2.2||Wf(h,e);for(const h of Z.structures)!h.alive||h.faction!=="enemy"||!Ao(h)||h.pos.distanceTo(c)>lQ(h.kind)+1||Wf(h,e);C.damage>=55&&Z.addShockwave({pos:c.clone().setY(.12),maxRadius:7,duration:.45,damage:e*.35,color:"#8fd8ff",faction:"ally"})}';
+const IAA_V50 =
+  'function IAA(C,A,I,g,i){const e=C.damage*i*Z.factionDmgMult("ally");mw.copy(I).normalize();const t=AAA.has(g),Q=t?42:5.5,o=t?.08:1.05,orig=new O(Z.playerPos.x,Z.playerPos.y+1.15,Z.playerPos.z),tgt=A.clone?A.clone():new O(A.x,A.y,A.z);let s=Q;const clip=(h,w)=>{Ip.copy(h).sub(orig);const u=Ip.dot(mw);u<.2||u>s||(Ip.copy(orig).addScaledVector(mw,u),Ip.distanceTo(h)<=w&&(s=u))};if(!t)bF(orig,mw,Q,o,e,"ally","#ffd080",!0),Z.addShake(C.damage>40?.12:.06);else{for(const h of Z.units)!h.alive||h.faction!=="enemy"&&h.faction!=="neutral"||clip(h.pos,.95*h.def.scale);for(const h of Z.structures)!h.alive||h.faction!=="enemy"||!Ao(h)||clip(h.pos,lQ(h.kind))}const c=orig.clone().addScaledVector(mw,s),pk=WgSkillProjectile(C,g),pc=WgVfxProjColor(pk),dest=tgt.distanceTo(orig)>1.2?tgt:c;Z.addMuzzleFlash(c);if(g==="BOW"||g==="CROSSBOW")Z.addProjectile("archer1",orig.clone(),dest,{arc:2}),Z.addSpark(c,"#cdeac0"),Z.addEmber(c,"#e8c878");else if(g==="GUN")Z.addProjectile("wg_bullet",orig.clone(),c),Z.addBolt(orig.clone(),c),Z.addSpark(c,"#ffc85a");else Z.addProjectile(pk,orig.clone(),dest,{arc:C.damage>45?1.4:.35}),Z.addFireBurst(c,pc,4,.55),Z.addSpark(c,pc);if(t){for(const h of Z.units)!h.alive||h.faction!=="enemy"&&h.faction!=="neutral"||h.pos.distanceTo(c)>2.2||Wf(h,e);for(const h of Z.structures)!h.alive||h.faction!=="enemy"||!Ao(h)||h.pos.distanceTo(c)>lQ(h.kind)+1||Wf(h,e)}C.damage>=55&&Z.addShockwave({pos:c.clone().setY(.12),maxRadius:7,duration:.45,damage:e*.35,color:pc,faction:"ally"})}';
+if (js.includes(IAA_V49)) {
+  js = js.replace(IAA_V49, IAA_V50);
+  mustPatch("combat-skill-vfx-iaa", true);
+} else if (js.includes("WgSkillProjectile(C,g)")) {
+  mustPatch("combat-skill-vfx-iaa", true);
+} else {
+  mustPatch("combat-skill-vfx-iaa", false);
+}
+
+js = js.replace(
+  "if(o&&(Math.random()<.55&&Z.addEmber(o.clone(),WgCast.color),Math.random()<.3&&Z.addSpark(o.clone(),WgCast.color)),WgCast.left>0)return",
+  "if(o&&WgCastChargeTick(o,WgCast.color,WgCast.wt,WgCast.skill),WgCast.left>0)return",
+);
+js = js.replace(
+  "Z.addFireBurst(pos,WgCast.color,8,.75),Z.addSpark(pos.clone(),WgCast.color),Z.addImpact(pos),Z.addShake(.12);WgGetAimDir(cam,WgAimTmp),WgResolveAimPoint(cam,WgAimOut),IAA(sk,WgAimOut,WgAimTmp,wt,dmg*b.damageMult)",
+  "Z.addFireBurst(pos,WgVfxProjColor(WgSkillProjectile(sk,wt)),8,.75),Z.addSpark(pos.clone(),WgVfxProjColor(WgSkillProjectile(sk,wt))),Z.addImpact(pos),Z.addShake(.12);WgGetAimDir(cam,WgAimTmp),WgResolveAimPoint(cam,WgAimOut),IAA(sk,WgAimOut,WgAimTmp,wt,dmg*b.damageMult)",
+);
+mustPatch("combat-cast-charge-vfx", js.includes("WgCastChargeTick"));
 
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
