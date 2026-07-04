@@ -210,35 +210,57 @@ if (js.includes("const Jb=new rK;")) {
   mustPatch("psd-race-remap", false);
 }
 
-// Local KayKit GLBs in /models/units/ ship embedded textures — do not overwrite with tower palette atlas.
+// Canonical KayKit medium rig — mesh + movement GLBs from info.grudge-studio.com / ObjectStore.
+const KAYKIT_RIG_MEDIUM =
+  'const WgKayKitRig={mesh:"/models/characters/kaykit/Rig_Medium_General.glb",move:"/models/characters/kaykit/Rig_Medium_MovementBasic.glb"};function WgKayKitMinion({paletteUrl:A,tint:I,unitId:g,scale:s=1}){const{scene:i,animations:e}=Sa(WgKayKitRig.mesh),{animations:m}=Sa(WgKayKitRig.move),a=T.useMemo(()=>[...e,...m],[e,m]),t=T.useRef(null),Q=au(A),{root:o,mats:l}=T.useMemo(()=>{Q.flipY=!0,Q.colorSpace=zg,Q.magFilter=Qi,Q.minFilter=Qi,Q.generateMipmaps=!1,Q.needsUpdate=!0;const G=wM(i),p=[];G.traverse(F=>{const Y=F;if(!Y.isMesh)return;Y.castShadow=!0;const R=q=>{const M=q.clone();return M.map=Q,M.color&&M.color.set(I),M.needsUpdate=!0,p.push(M),M};Array.isArray(Y.material)?Y.material=Y.material.map(R):Y.material&&(Y.material=R(Y.material))});const y=new YC().setFromObject(G),N=new O;y.getSize(N);const F=dT/(N.y||1)*s;return G.scale.setScalar(F),G.position.y=-y.min.y*F,G.position.x=-((y.min.x+y.max.x)/2)*F,G.position.z=-((y.min.z+y.max.z)/2)*F,{root:G,mats:p}},[i,Q,I,s]),{actions:c,names:h}=rH(a,o),w=T.useMemo(()=>sh(h,["idle","stand","tpose"]),[h]),u=T.useMemo(()=>sh(h,["running","run","walk","jog","move"]),[h]),G=T.useMemo(()=>sh(h,["hit","attack","swing"]),[h]);return T.useEffect(()=>{const p=w?c[w]:null;return p?.reset().fadeIn(.15).play(),t.current=w??null,()=>{p?.fadeOut(.15)}},[c,w]),VC(()=>{if(g==null)return;const p=Z.units.find(y=>y.id===g);if(!p)return;const y=p.locomotion==="attack"?G:p.locomotion==="run"?u:w;if(!y||y===t.current)return;const M=t.current?c[t.current]:null,N=c[y];M?.fadeOut(.12),N?.reset().fadeIn(.12).play(),t.current=y}),T.useEffect(()=>()=>l.forEach(p=>p.dispose()),[l]),d.jsx("primitive",{object:o})}';
+if (!js.includes("function WgKayKitMinion(")) {
+  if (js.includes("function eU(")) {
+    js = js.replace("function eU(", `${KAYKIT_RIG_MEDIUM}function eU(`);
+    mustPatch("kaykit-rig-medium", js.includes("Rig_Medium_General"));
+  } else {
+    console.warn("[patch] eU anchor missing — KayKit rig injection skipped");
+    mustPatch("kaykit-rig-medium", false);
+  }
+} else {
+  mustPatch("kaykit-rig-medium", js.includes("Rig_Medium_General"));
+}
+
+const XAA_MINION =
+  'return d.jsx(WgKayKitMinion,{paletteUrl:t,tint:i,unitId:I,scale:C.scale});';
 const XAA_FOOTMAN =
   'case"footman":case"grunt":return d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
-const XAA_FOOTMAN_PATCHED =
-  'case"footman":case"grunt":return d.jsx(tU,{url:e.footman?.includes(".glb")?e.footman:"/models/units/footman.glb",unitId:I,scale:C.scale,tint:i});';
+const XAA_FOOTMAN_PATCHED = `case"footman":case"grunt":${XAA_MINION}`;
 const XAA_ARCHER =
   'case"archer":case"raider":return d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
-const XAA_ARCHER_PATCHED =
-  'case"archer":case"raider":return d.jsx(tU,{url:e.archer?.includes(".glb")?e.archer:"/models/units/archer.glb",unitId:I,scale:C.scale,tint:i});';
+const XAA_ARCHER_PATCHED = `case"archer":case"raider":${XAA_MINION}`;
 const XAA_KNIGHT =
   'case"knight":case"ogre":return d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
-const XAA_KNIGHT_PATCHED =
-  'case"knight":case"ogre":return d.jsx(tU,{url:e.knight?.includes(".glb")?e.knight:"/models/units/knight.glb",unitId:I,scale:C.scale,tint:i});';
+const XAA_KNIGHT_PATCHED = `case"knight":case"ogre":${XAA_MINION}`;
 const XAA_FOOTMAN_LEGACY =
-  'case"footman":case"grunt":return/\\/models\\/units\\//.test(e.footman)?d.jsx(tU,{url:e.footman,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
+  'case"footman":case"grunt":return d.jsx(tU,{url:e.footman?.includes(".glb")?e.footman:"/models/units/footman.glb",unitId:I,scale:C.scale,tint:i});';
 const XAA_ARCHER_LEGACY =
-  'case"archer":case"raider":return/\\/models\\/units\\//.test(e.archer)?d.jsx(tU,{url:e.archer,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
+  'case"archer":case"raider":return d.jsx(tU,{url:e.archer?.includes(".glb")?e.archer:"/models/units/archer.glb",unitId:I,scale:C.scale,tint:i});';
 const XAA_KNIGHT_LEGACY =
+  'case"knight":case"ogre":return d.jsx(tU,{url:e.knight?.includes(".glb")?e.knight:"/models/units/knight.glb",unitId:I,scale:C.scale,tint:i});';
+const XAA_FOOTMAN_LEGACY2 =
+  'case"footman":case"grunt":return/\\/models\\/units\\//.test(e.footman)?d.jsx(tU,{url:e.footman,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.footman,paletteUrl:t,tint:i,unitId:I});';
+const XAA_ARCHER_LEGACY2 =
+  'case"archer":case"raider":return/\\/models\\/units\\//.test(e.archer)?d.jsx(tU,{url:e.archer,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.archer,paletteUrl:t,tint:i,unitId:I});';
+const XAA_KNIGHT_LEGACY2 =
   'case"knight":case"ogre":return/\\/models\\/units\\//.test(e.knight)?d.jsx(tU,{url:e.knight,unitId:I,scale:C.scale,tint:i}):d.jsx(eU,{url:e.knight,paletteUrl:t,tint:i,unitId:I});';
-for (const [from, to, legacy, id] of [
-  [XAA_FOOTMAN, XAA_FOOTMAN_PATCHED, XAA_FOOTMAN_LEGACY, "kaykit-unit-footman"],
-  [XAA_ARCHER, XAA_ARCHER_PATCHED, XAA_ARCHER_LEGACY, "kaykit-unit-archer"],
-  [XAA_KNIGHT, XAA_KNIGHT_PATCHED, XAA_KNIGHT_LEGACY, "kaykit-unit-knight"],
+for (const [from, to, legacy, legacy2, id] of [
+  [XAA_FOOTMAN, XAA_FOOTMAN_PATCHED, XAA_FOOTMAN_LEGACY, XAA_FOOTMAN_LEGACY2, "kaykit-unit-footman"],
+  [XAA_ARCHER, XAA_ARCHER_PATCHED, XAA_ARCHER_LEGACY, XAA_ARCHER_LEGACY2, "kaykit-unit-archer"],
+  [XAA_KNIGHT, XAA_KNIGHT_PATCHED, XAA_KNIGHT_LEGACY, XAA_KNIGHT_LEGACY2, "kaykit-unit-knight"],
 ]) {
   if (js.includes(from)) {
     js = js.replace(from, to);
     mustPatch(id, true);
   } else if (js.includes(legacy)) {
     js = js.replace(legacy, to);
+    mustPatch(id, true);
+  } else if (legacy2 && js.includes(legacy2)) {
+    js = js.replace(legacy2, to);
     mustPatch(id, true);
   } else if (js.includes(to)) {
     mustPatch(id, true);

@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 44,
+  "bundleVersion": 45,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -297,16 +297,20 @@
       "needle": "WgRaceTex"
     },
     {
+      "id": "kaykit-rig-medium",
+      "needle": "Rig_Medium_General.glb"
+    },
+    {
       "id": "kaykit-unit-footman",
-      "needle": "e.footman?.includes(\".glb\")?e.footman:\"/models/units/footman.glb\""
+      "needle": "WgKayKitMinion,{paletteUrl:t,tint:i,unitId:I,scale:C.scale"
     },
     {
       "id": "kaykit-unit-archer",
-      "needle": "e.archer?.includes(\".glb\")?e.archer:\"/models/units/archer.glb\""
+      "needle": "case\"archer\":case\"raider\":return d.jsx(WgKayKitMinion"
     },
     {
       "id": "kaykit-unit-knight",
-      "needle": "e.knight?.includes(\".glb\")?e.knight:\"/models/units/knight.glb\""
+      "needle": "case\"knight\":case\"ogre\":return d.jsx(WgKayKitMinion"
     },
     {
       "id": "cdn-boot-off",
@@ -501,7 +505,7 @@
       "needle": "WgFinishHeroMesh"
     }
   ],
-  "lastBuilt": "2026-07-04T01:06:33.696Z",
-  "bundleBytes": 4083043,
-  "bundleSha256": "00d7d44912042b36"
+  "lastBuilt": "2026-07-04T01:10:41.869Z",
+  "bundleBytes": 4084567,
+  "bundleSha256": "166a42801a950e98"
 }
