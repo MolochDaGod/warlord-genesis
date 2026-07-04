@@ -281,3 +281,30 @@ body{background:#080c14}
 .gk-lane-path-tile{padding:14px 12px;min-height:108px;box-sizing:border-box}
 .gk-deploy-footer{padding:16px 0 12px}
 @media(max-width:720px){.gk-frame-actionbar,.gk-actionbar{min-width:98vw;min-height:148px;padding:14px 10px 34px}.gk-ab-slot{width:56px;height:56px;min-width:56px;min-height:56px;margin-bottom:16px}.gk-ab-icon{width:36px;height:36px}.gk-frame-window,.gk-window-panel,.gk-deploy-window,.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel{border-width:22px;border-image-width:22px;padding:clamp(16px,4vw,22px)}.gk-tab-strip .gw-lobby-tab{height:36px;padding:0 14px;font-size:9px}}
+
+.wg-admin-screen{display:flex;flex-direction:column;gap:12px;padding:clamp(12px,3vw,24px);overflow-y:auto;background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(224,178,82,.08),transparent 55%),#080c14;font-family:Cinzel,EB Garamond,Inter,sans-serif}
+.wg-admin-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(120,150,200,.22)}
+.wg-admin-title{margin:0;font-size:clamp(1.2rem,3vw,1.6rem);color:#f0e6d0}
+.wg-admin-lead{margin:4px 0 0;font-size:.88rem;color:#8fa3c4}
+.wg-admin-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wg-admin-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.wg-admin-tab{padding:8px 14px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(8,12,20,.75);color:#b8c4d8;cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.wg-admin-tab.is-active{border-color:rgba(224,178,82,.55);color:#e0c878;background:rgba(224,178,82,.1)}
+.wg-admin-msg{margin:0;padding:8px 12px;border-radius:8px;border:1px solid rgba(110,231,183,.35);background:rgba(8,20,16,.7);color:#9dffd8;font-size:.85rem}
+.wg-admin-body{display:flex;flex-direction:column;gap:14px}
+.wg-admin-row{display:flex;flex-wrap:wrap;gap:8px}
+.wg-admin-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:960px){.wg-admin-grid{grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr)}}
+.wg-admin-panel{padding:14px;border-radius:12px;border:1px solid rgba(120,150,200,.22);background:rgba(8,12,20,.82)}
+.wg-admin-map-canvas{display:block;width:100%;max-width:520px;border-radius:10px;border:1px solid rgba(120,150,200,.25);cursor:crosshair}
+.wg-admin-hint{margin:8px 0 0;font-size:.78rem;color:#8fa3c4}
+.wg-admin-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-size:.8rem;color:#a8b8d0}
+.wg-admin-field input,.wg-admin-field select{padding:8px 10px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(6,9,14,.9);color:#e8eef8;font-family:inherit}
+.wg-admin-pair{display:flex;gap:8px}
+.wg-admin-pair input{flex:1}
+.wg-admin-lane{margin-top:8px;padding-top:8px;border-top:1px solid rgba(120,150,200,.15)}
+.wg-admin-lane-name{display:block;font-size:.82rem;color:#e0c878;margin-bottom:6px}
+.wg-admin-lane-actions{display:flex;gap:6px}
+.wg-admin-asset-grid{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:720px){.wg-admin-asset-grid{grid-template-columns:1fr 1fr}}
+.wg-admin-flow-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}

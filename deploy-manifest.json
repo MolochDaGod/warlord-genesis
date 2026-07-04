@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 45,
+  "bundleVersion": 46,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -46,6 +46,12 @@
       "id": "auth-callback",
       "screen": "Grudge ID SSO return",
       "component": "WgAuthCallbackScreen"
+    },
+    {
+      "path": "/admin",
+      "id": "admin",
+      "screen": "Map & asset editor",
+      "component": "WgAdminScreen"
     },
     {
       "path": "/mp",
@@ -301,6 +307,30 @@
       "needle": "Rig_Medium_General.glb"
     },
     {
+      "id": "kaykit-anim-mixer",
+      "needle": "WgKayKitAnimPick"
+    },
+    {
+      "id": "eu-tu-mixer",
+      "needle": "mx?.update(dt)"
+    },
+    {
+      "id": "map-admin-helpers",
+      "needle": "WgApplyMapOverride"
+    },
+    {
+      "id": "map-override-newmatch",
+      "needle": "WgApplyMapOverride(m)"
+    },
+    {
+      "id": "admin-screen",
+      "needle": "function WgAdminScreen"
+    },
+    {
+      "id": "admin-route",
+      "needle": "path:\"/admin\""
+    },
+    {
       "id": "kaykit-unit-footman",
       "needle": "WgKayKitMinion,{paletteUrl:t,tint:i,unitId:I,scale:C.scale"
     },
@@ -505,7 +535,7 @@
       "needle": "WgFinishHeroMesh"
     }
   ],
-  "lastBuilt": "2026-07-04T01:10:41.869Z",
-  "bundleBytes": 4084567,
-  "bundleSha256": "166a42801a950e98"
+  "lastBuilt": "2026-07-04T02:25:31.525Z",
+  "bundleBytes": 4096620,
+  "bundleSha256": "486a10ff4ac9aa94"
 }

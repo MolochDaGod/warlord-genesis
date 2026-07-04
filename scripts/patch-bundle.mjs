@@ -180,7 +180,7 @@ function sliceFunction(source, name) {
 }
 const TITLE_XO_ORIG = sliceFunction(js, "xO");
 const TITLE_XO_NEW =
-  'function xO(){const C=Fh(),A=MN(o=>o.openHub),I=Rh(o=>o.user),g=Rh(o=>o.loading),i=Rh(o=>o.error),e=Rh(o=>o.guest),t=Rh(o=>o.signInWithStudio),n=Rh(o=>o.signInWithPuter),[Q,o]=T.useState(!0),[s,l]=T.useState(!1);T.useEffect(()=>{WS().then(h=>{l(h.cdnReachable),o(!1)})},[]);return d.jsxs("div",{className:"gw-screen gw-title-v3",children:[d.jsx("div",{className:"gw-title-bg","aria-hidden":!0}),d.jsxs("header",{className:"gw-auth-bar",children:[d.jsx("span",{className:"gw-auth-brand",children:"Grudge Studio"}),d.jsxs("div",{className:"gw-auth-actions",children:[g&&d.jsx("span",{className:"gw-auth-pill is-loading",children:"Connecting session…"}),!g&&I&&d.jsxs("span",{className:"gw-auth-pill is-ok",title:I.grudgeId,children:[I.role==="guest"?"Guest":"Account"," · ",I.displayName||I.username]}),!g&&!I&&d.jsx("span",{className:"gw-auth-pill is-warn",children:"Not signed in"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn",onClick:e,children:"Continue as guest"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-grudge",onClick:t,disabled:g,children:"Sign in with Grudge ID"}),d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:n,disabled:g,children:"Sign in with Puter"})]})]}),d.jsxs("main",{className:"gw-title-main",children:[d.jsx("p",{className:"gw-title-eyebrow",children:"Warlord Genesis · Three-lane RTS"}),d.jsxs("h1",{className:"gw-title-headline",children:["GRUDGE ",d.jsx("span",{children:"WARLORDS"})]}),d.jsx("p",{className:"gw-title-lead",children:"Pick your champion in the warcamp, deploy lane waves, and siege the enemy citadel."}),i&&d.jsx("p",{className:"gw-title-error",children:i}),d.jsxs("div",{className:"gw-title-ctas",children:[d.jsx("button",{type:"button",className:"gw-btn gw-title-play",onClick:()=>C("/lobby"),children:g?"Preparing…":"Enter the Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})]}),d.jsxs("div",{className:"gw-title-chips",children:[d.jsx("span",{className:"gw-title-chip",children:Q?"Booting engine…":"Engine v"+mt.version}),d.jsx("span",{className:"gw-title-chip",children:s?"CDN assets online":"Local assets"}),d.jsx("span",{className:"gw-title-chip",children:"Grudge ID · Puter · Railway saves"})]})]}),d.jsxs("footer",{className:"gw-title-footer",children:[d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"})]})]})}';
+  'function xO(){const C=Fh(),A=MN(o=>o.openHub),I=Rh(o=>o.user),g=Rh(o=>o.loading),i=Rh(o=>o.error),e=Rh(o=>o.guest),t=Rh(o=>o.signInWithStudio),n=Rh(o=>o.signInWithPuter),[Q,o]=T.useState(!0),[s,l]=T.useState(!1);T.useEffect(()=>{WS().then(h=>{l(h.cdnReachable),o(!1)})},[]);return d.jsxs("div",{className:"gw-screen gw-title-v3",children:[d.jsx("div",{className:"gw-title-bg","aria-hidden":!0}),d.jsxs("header",{className:"gw-auth-bar",children:[d.jsx("span",{className:"gw-auth-brand",children:"Grudge Studio"}),d.jsxs("div",{className:"gw-auth-actions",children:[g&&d.jsx("span",{className:"gw-auth-pill is-loading",children:"Connecting session…"}),!g&&I&&d.jsxs("span",{className:"gw-auth-pill is-ok",title:I.grudgeId,children:[I.role==="guest"?"Guest":"Account"," · ",I.displayName||I.username]}),!g&&!I&&d.jsx("span",{className:"gw-auth-pill is-warn",children:"Not signed in"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn",onClick:e,children:"Continue as guest"}),!g&&!I&&d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-grudge",onClick:t,disabled:g,children:"Sign in with Grudge ID"}),d.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:n,disabled:g,children:"Sign in with Puter"})]})]}),d.jsxs("main",{className:"gw-title-main",children:[d.jsx("p",{className:"gw-title-eyebrow",children:"Warlord Genesis · Three-lane RTS"}),d.jsxs("h1",{className:"gw-title-headline",children:["GRUDGE ",d.jsx("span",{children:"WARLORDS"})]}),d.jsx("p",{className:"gw-title-lead",children:"Pick your champion in the warcamp, deploy lane waves, and siege the enemy citadel."}),i&&d.jsx("p",{className:"gw-title-error",children:i}),d.jsxs("div",{className:"gw-title-ctas",children:[d.jsx("button",{type:"button",className:"gw-btn gw-title-play",onClick:()=>C("/lobby"),children:g?"Preparing…":"Enter the Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost gw-title-secondary",onClick:()=>C("/mp"),children:"Multiplayer"})]}),d.jsxs("div",{className:"gw-title-chips",children:[d.jsx("span",{className:"gw-title-chip",children:Q?"Booting engine…":"Engine v"+mt.version}),d.jsx("span",{className:"gw-title-chip",children:s?"CDN assets online":"Local assets"}),d.jsx("span",{className:"gw-title-chip",children:"Grudge ID · Puter · Railway saves"})]})]}),d.jsxs("footer",{className:"gw-title-footer",children:[d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>C("/admin"),children:"Admin"})]})]})}';
 if (TITLE_XO_ORIG && js.includes(TITLE_XO_ORIG)) {
   js = js.replace(TITLE_XO_ORIG, TITLE_XO_NEW);
   mustPatch("title-v3", true);
@@ -210,9 +210,23 @@ if (js.includes("const Jb=new rK;")) {
   mustPatch("psd-race-remap", false);
 }
 
+// Map / asset overrides — persisted in localStorage, applied on Z.newMatch (admin at /admin).
+const MAP_ADMIN_HELPERS =
+  'const WgMapStoreKey="warlord_genesis_map_override",WgAssetStoreKey="warlord_genesis_asset_paths";function WgLoadMapOverride(){try{const r=localStorage.getItem(WgMapStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveMapOverride(d){localStorage.setItem(WgMapStoreKey,JSON.stringify(d))}function WgClearMapOverride(){localStorage.removeItem(WgMapStoreKey)}function WgDefaultMapDraft(){return{mapSize:"standard",width:80,length:130,allyCore:{x:0,z:46},enemyCore:{x:0,z:-46},lanes:[{id:0,name:"West",pts:[{x:-18,z:46},{x:-18,z:0},{x:-18,z:-46}]},{id:1,name:"Center",pts:[{x:0,z:46},{x:0,z:0},{x:0,z:-46}]},{id:2,name:"East",pts:[{x:18,z:46},{x:18,z:0},{x:18,z:-46}]}]}}function WgDefaultMapDraftLarge(){return{mapSize:"large",width:200,length:325,allyCore:{x:0,z:120},enemyCore:{x:0,z:-120},lanes:[{id:0,name:"Top",pts:[{x:-40,z:120},{x:-55,z:40},{x:-30,z:-40},{x:-45,z:-120}]},{id:1,name:"Mid",pts:[{x:0,z:120},{x:0,z:40},{x:0,z:-40},{x:0,z:-120}]},{id:2,name:"Bottom",pts:[{x:40,z:120},{x:55,z:40},{x:30,z:-40},{x:45,z:-120}]}]}}function WgLoadAssetPaths(){try{const r=localStorage.getItem(WgAssetStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveAssetPaths(d){localStorage.setItem(WgAssetStoreKey,JSON.stringify(d))}function WgDefaultAssetPaths(){return{kaykitMesh:"/models/characters/kaykit/Rig_Medium_General.glb",kaykitMove:"/models/characters/kaykit/Rig_Medium_MovementBasic.glb",unitPalette:"/models/units/Color_Palette.png",footman:"/models/units/footman.glb",archer:"/models/units/archer.glb",knight:"/models/units/knight.glb"}}function WgGetAssetPath(k,f){const p=WgLoadAssetPaths();return p?.[k]||f}function WgApplyMapOverride(map){const ov=WgLoadMapOverride();if(!ov||!map)return;ov.mapSize&&(map.size=ov.mapSize);ov.width&&(map.width=ov.width);ov.length&&(map.length=ov.length);ov.allyCore&&map.allyCore&&Object.assign(map.allyCore,ov.allyCore);ov.enemyCore&&map.enemyCore&&Object.assign(map.enemyCore,ov.enemyCore);if(ov.lanes&&map.lanes)ov.lanes.forEach((lane,idx)=>{const L=map.lanes[idx];if(!L||!lane?.pts?.length)return;L.name=lane.name||L.name;L.pts=lane.pts.map(p=>{const y=typeof map.heightAt==="function"?map.heightAt(p.x,p.z):0;return new O(p.x,y,p.z)})})}';
+if (!js.includes("function WgApplyMapOverride(")) {
+  if (js.includes("function eU(")) {
+    js = js.replace("function eU(", `${MAP_ADMIN_HELPERS}function eU(`);
+    mustPatch("map-admin-helpers", js.includes("WgApplyMapOverride"));
+  } else {
+    mustPatch("map-admin-helpers", false);
+  }
+} else {
+  mustPatch("map-admin-helpers", true);
+}
+
 // Canonical KayKit medium rig — mesh + movement GLBs from info.grudge-studio.com / ObjectStore.
 const KAYKIT_RIG_MEDIUM =
-  'const WgKayKitRig={mesh:"/models/characters/kaykit/Rig_Medium_General.glb",move:"/models/characters/kaykit/Rig_Medium_MovementBasic.glb"};function WgKayKitMinion({paletteUrl:A,tint:I,unitId:g,scale:s=1}){const{scene:i,animations:e}=Sa(WgKayKitRig.mesh),{animations:m}=Sa(WgKayKitRig.move),a=T.useMemo(()=>[...e,...m],[e,m]),t=T.useRef(null),Q=au(A),{root:o,mats:l}=T.useMemo(()=>{Q.flipY=!0,Q.colorSpace=zg,Q.magFilter=Qi,Q.minFilter=Qi,Q.generateMipmaps=!1,Q.needsUpdate=!0;const G=wM(i),p=[];G.traverse(F=>{const Y=F;if(!Y.isMesh)return;Y.castShadow=!0;const R=q=>{const M=q.clone();return M.map=Q,M.color&&M.color.set(I),M.needsUpdate=!0,p.push(M),M};Array.isArray(Y.material)?Y.material=Y.material.map(R):Y.material&&(Y.material=R(Y.material))});const y=new YC().setFromObject(G),N=new O;y.getSize(N);const F=dT/(N.y||1)*s;return G.scale.setScalar(F),G.position.y=-y.min.y*F,G.position.x=-((y.min.x+y.max.x)/2)*F,G.position.z=-((y.min.z+y.max.z)/2)*F,{root:G,mats:p}},[i,Q,I,s]),{actions:c,names:h}=rH(a,o),w=T.useMemo(()=>sh(h,["idle","stand","tpose"]),[h]),u=T.useMemo(()=>sh(h,["running","run","walk","jog","move"]),[h]),G=T.useMemo(()=>sh(h,["hit","attack","swing"]),[h]);return T.useEffect(()=>{const p=w?c[w]:null;return p?.reset().fadeIn(.15).play(),t.current=w??null,()=>{p?.fadeOut(.15)}},[c,w]),VC(()=>{if(g==null)return;const p=Z.units.find(y=>y.id===g);if(!p)return;const y=p.locomotion==="attack"?G:p.locomotion==="run"?u:w;if(!y||y===t.current)return;const M=t.current?c[t.current]:null,N=c[y];M?.fadeOut(.12),N?.reset().fadeIn(.12).play(),t.current=y}),T.useEffect(()=>()=>l.forEach(p=>p.dispose()),[l]),d.jsx("primitive",{object:o})}';
+  'const WgKayKitRig={get mesh(){return WgGetAssetPath("kaykitMesh","/models/characters/kaykit/Rig_Medium_General.glb")},get move(){return WgGetAssetPath("kaykitMove","/models/characters/kaykit/Rig_Medium_MovementBasic.glb")}};function WgKayKitAnimPick(names,kind){const L=names.map(n=>n.toLowerCase()),pick=keys=>{for(const k of keys){const i=L.findIndex(n=>n.includes(k));if(i>=0)return names[i]}return null};return kind==="idle"?pick(["idle_a","idle_b","idle","stand","tpose"])||names[0]:kind==="run"?pick(["running_a","running_b","running","run","walk","jog","move"])||names[0]:kind==="attack"?pick(["hit_a","hit_b","hit","attack","swing"])||names[0]:names[0]}function WgKayKitMinion({paletteUrl:A,tint:I,unitId:g,scale:s=1}){const{scene:i,animations:e}=Sa(WgKayKitRig.mesh),{animations:m}=Sa(WgKayKitRig.move),a=T.useMemo(()=>[...e,...m],[e,m]),st=T.useRef({state:"idle",clip:null}),Q=au(A),{root:o,mats:l}=T.useMemo(()=>{Q.flipY=!0,Q.colorSpace=zg,Q.magFilter=Qi,Q.minFilter=Qi,Q.generateMipmaps=!1,Q.needsUpdate=!0;const G=wM(i),p=[];G.traverse(F=>{const Y=F;if(!Y.isMesh)return;Y.castShadow=!0;const R=q=>{const M=q.clone();return M.map=Q,M.color&&M.color.set(I),M.needsUpdate=!0,p.push(M),M};Array.isArray(Y.material)?Y.material=Y.material.map(R):Y.material&&(Y.material=R(Y.material))});const y=new YC().setFromObject(G),N=new O;y.getSize(N);const F=dT/(N.y||1)*s;return G.scale.setScalar(F),G.position.y=-y.min.y*F,G.position.x=-((y.min.x+y.max.x)/2)*F,G.position.z=-((y.min.z+y.max.z)/2)*F,{root:G,mats:p}},[i,Q,I,s]),{actions:c,names:h}=rH(a,o),w=T.useMemo(()=>WgKayKitAnimPick(h,"idle"),[h]),u=T.useMemo(()=>WgKayKitAnimPick(h,"run"),[h]),Gp=T.useMemo(()=>WgKayKitAnimPick(h,"attack"),[h]);return T.useEffect(()=>{const p=w?c[w]:null;return p?.reset().fadeIn(.15).play(),st.current={state:"idle",clip:w},()=>{p?.fadeOut(.15)}},[c,w]),VC((_,dt)=>{const mx=Object.values(c)[0]?.getMixer?.();mx?.update(dt);if(g==null)return;const p=Z.units.find(y=>y.id===g);if(!p)return;const y=p.alive===!1?"idle":p.locomotion==="attack"?"attack":p.locomotion==="run"?"run":"idle",M=y==="attack"?Gp:y==="run"?u:w;if(!M||y===st.current.state)return;const N=st.current.clip?c[st.current.clip]:null,F=c[M];N?.fadeOut(.12),F?.reset().fadeIn(.12).play(),st.current={state:y,clip:M}}),T.useEffect(()=>()=>l.forEach(p=>p.dispose()),[l]),d.jsx("primitive",{object:o})}';
 if (!js.includes("function WgKayKitMinion(")) {
   if (js.includes("function eU(")) {
     js = js.replace("function eU(", `${KAYKIT_RIG_MEDIUM}function eU(`);
@@ -269,6 +283,54 @@ for (const [from, to, legacy, legacy2, id] of [
     mustPatch(id, false);
   }
 }
+
+// eU / tU GLB minions — advance mixer each frame + KayKit Hit_* attack clips.
+const EU_MIXER_PATCH =
+  'VC((_,dt)=>{const mx=Object.values(l)[0]?.getMixer?.();mx?.update(dt);if(g==null)return;const G=Z.units.find(N=>N.id===g);if(!G)return;const p=G.locomotion==="attack"?u:G.locomotion==="run"?w:h;if(!p||p===t.current)return;const y=t.current?l[t.current]:null,M=l[p];y?.fadeOut(.12),M?.reset().fadeIn(.12).play(),t.current=p}),T.useEffect(()=>()=>s.forEach(G=>G.dispose()),[s]),d.jsx("primitive",{object:o})}function tU';
+const TU_MIXER_PATCH =
+  'VC((_,dt)=>{const mx=Object.values(o)[0]?.getMixer?.();mx?.update(dt);if(A==null)return;const w=Z.units.find(y=>y.id===A);if(!w)return;const u=w.locomotion==="attack"?h:w.locomotion==="run"?c:l;if(!u||u===t.current)return;const G=t.current?o[t.current]:null,p=o[u];G?.fadeOut(.12),p?.reset().fadeIn(.12).play(),t.current=u}),d.jsx("primitive",{object:Q})}function bAA';
+const EU_ATTACK_HIT = 'sh(c,["hit","attack","swing","shoot","slash"])';
+const EU_ATTACK_ORIG = 'sh(c,["attack","swing","shoot","slash"])';
+const TU_ATTACK_HIT = 'sh(s,["hit","attack","swing","shoot","slash"])';
+const TU_ATTACK_ORIG = 'sh(s,["attack","swing","shoot","slash"])';
+if (js.includes(EU_MIXER_PATCH)) {
+  mustPatch("eu-tu-mixer", true);
+} else if (js.includes('VC(()=>{if(g==null)return;const G=Z.units.find(N=>N.id===g)')) {
+  js = js.replace(
+    'VC(()=>{if(g==null)return;const G=Z.units.find(N=>N.id===g);if(!G)return;const p=G.locomotion==="attack"?u:G.locomotion==="run"?w:h;if(!p||p===t.current)return;const y=t.current?l[t.current]:null,M=l[p];y?.fadeOut(.12),M?.reset().fadeIn(.12).play(),t.current=p}),T.useEffect(()=>()=>s.forEach(G=>G.dispose()),[s]),d.jsx("primitive",{object:o})}function tU',
+    EU_MIXER_PATCH,
+  );
+  mustPatch("eu-tu-mixer", js.includes("mx?.update(dt)"));
+} else {
+  mustPatch("eu-tu-mixer", false);
+}
+if (js.includes(TU_MIXER_PATCH)) {
+  mustPatch("tu-mixer", true);
+} else if (js.includes('VC(()=>{if(A==null)return;const w=Z.units.find(y=>y.id===A)')) {
+  js = js.replace(
+    'VC(()=>{if(A==null)return;const w=Z.units.find(y=>y.id===A);if(!w)return;const u=w.locomotion==="attack"?h:w.locomotion==="run"?c:l;if(!u||u===t.current)return;const G=t.current?o[t.current]:null,p=o[u];G?.fadeOut(.12),p?.reset().fadeIn(.12).play(),t.current=u}),d.jsx("primitive",{object:Q})}function bAA',
+    TU_MIXER_PATCH,
+  );
+  mustPatch("tu-mixer", js.includes("mx?.update(dt)"));
+} else {
+  mustPatch("tu-mixer", false);
+}
+if (js.includes(EU_ATTACK_HIT)) {
+  mustPatch("eu-hit-clip", true);
+} else if (js.includes(EU_ATTACK_ORIG)) {
+  js = js.replace(EU_ATTACK_ORIG, EU_ATTACK_HIT);
+  mustPatch("eu-hit-clip", true);
+} else {
+  mustPatch("eu-hit-clip", false);
+}
+if (js.includes(TU_ATTACK_HIT)) {
+  mustPatch("tu-hit-clip", true);
+} else if (js.includes(TU_ATTACK_ORIG)) {
+  js = js.replace(TU_ATTACK_ORIG, TU_ATTACK_HIT);
+  mustPatch("tu-hit-clip", true);
+} else {
+  mustPatch("tu-hit-clip", false);
+}
 // local-units / boot-cache-v5 verified via deploy-manifest after full patch pass.
 
 // About panel component (lobby tab)
@@ -276,6 +338,18 @@ const ABOUT_COMPONENT = `function WCA(){return d.jsxs("div",{className:"gw-about
 
 if (!js.includes("function WCA()")) {
   js = js.replace("function u7(){", `${ABOUT_COMPONENT}function u7(){`);
+}
+
+// Admin map / asset editor — /admin
+const ADMIN_SCREEN_PATH = join(ROOT, "scripts", "admin-screen.min.txt");
+const ADMIN_SCREEN = existsSync(ADMIN_SCREEN_PATH)
+  ? readFileSync(ADMIN_SCREEN_PATH, "utf8").trim()
+  : "";
+if (ADMIN_SCREEN && !js.includes("function WgAdminScreen(")) {
+  js = js.replace("function u7(){", `${ADMIN_SCREEN}function u7(){`);
+  mustPatch("admin-screen", js.includes("function WgAdminScreen("));
+} else {
+  mustPatch("admin-screen", js.includes("function WgAdminScreen("));
 }
 
 // Lobby About tab
@@ -846,6 +920,13 @@ js = js.replace(
   'd.jsxs("group",{name:"hpbar"',
 );
 
+// Procedural map — merge admin lane/core overrides after sG().
+js = js.replace(
+  "newMatch(A,I=JJ()){return this.reset(sG(I,A)),this.map}",
+  "newMatch(A,I=JJ()){const m=sG(I,A);WgApplyMapOverride(m);return this.reset(m),this.map}",
+);
+mustPatch("map-override-newmatch", js.includes("WgApplyMapOverride(m)"));
+
 // startGame — keep deploy lane picks + spawn champion on chosen lane.
 js = js.replace(
   "startGame:()=>{const I=A().mapSize;Z.newMatch(I),_g.getState().resetCommand();",
@@ -866,13 +947,20 @@ js = js.replace(
 const LOBBY_ROUTE =
   'd.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})})';
 const LOBBY_ROUTE_PATCHED =
-  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/deploy",element:d.jsx(WgDeployScreen,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})}),d.jsx(jc,{path:"/battle",element:d.jsx(aq,{to:"/play",replace:!0})}),d.jsx(jc,{path:"/auth/callback",element:d.jsx(WgAuthCallbackScreen,{})})';
+  'd.jsx(jc,{path:"/warcamp",element:d.jsx(aq,{to:"/lobby",replace:!0})}),d.jsx(jc,{path:"/lobby",element:d.jsx(u7,{})}),d.jsx(jc,{path:"/deploy",element:d.jsx(WgDeployScreen,{})}),d.jsx(jc,{path:"/play",element:d.jsx(PgA,{})}),d.jsx(jc,{path:"/battle",element:d.jsx(aq,{to:"/play",replace:!0})}),d.jsx(jc,{path:"/auth/callback",element:d.jsx(WgAuthCallbackScreen,{})}),d.jsx(jc,{path:"/admin",element:d.jsx(WgAdminScreen,{})})';
 if (js.includes(LOBBY_ROUTE)) {
   js = js.replace(LOBBY_ROUTE, LOBBY_ROUTE_PATCHED);
   mustPatch("routes", true);
 } else {
   mustPatch("routes", js.includes('path:"/warcamp"') && js.includes('path:"/battle"') && js.includes('path:"/auth/callback"'));
 }
+if (!js.includes('path:"/admin"')) {
+  js = js.replace(
+    'd.jsx(jc,{path:"/mp",element:d.jsx(NCA,{})})',
+    'd.jsx(jc,{path:"/admin",element:d.jsx(WgAdminScreen,{})}),d.jsx(jc,{path:"/mp",element:d.jsx(NCA,{})})',
+  );
+}
+mustPatch("admin-route", js.includes('path:"/admin"'));
 
 // Pack reveal — portrait cards + effect copy (not text-only pills).
 const PACK_CARDS_ORIG =
@@ -1722,4 +1810,36 @@ if (!css.includes(".gw-about-panel")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended about styles to CSS");
+}
+if (!css.includes(".wg-admin-screen")) {
+  css += `
+.wg-admin-screen{display:flex;flex-direction:column;gap:12px;padding:clamp(12px,3vw,24px);overflow-y:auto;background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(224,178,82,.08),transparent 55%),#080c14;font-family:Cinzel,EB Garamond,Inter,sans-serif}
+.wg-admin-head{display:flex;flex-wrap:wrap;align-items:flex-start;justify-content:space-between;gap:12px;padding-bottom:10px;border-bottom:1px solid rgba(120,150,200,.22)}
+.wg-admin-title{margin:0;font-size:clamp(1.2rem,3vw,1.6rem);color:#f0e6d0}
+.wg-admin-lead{margin:4px 0 0;font-size:.88rem;color:#8fa3c4}
+.wg-admin-head-actions{display:flex;gap:8px;flex-wrap:wrap}
+.wg-admin-tabs{display:flex;flex-wrap:wrap;gap:8px}
+.wg-admin-tab{padding:8px 14px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(8,12,20,.75);color:#b8c4d8;cursor:pointer;font-size:11px;letter-spacing:.1em;text-transform:uppercase}
+.wg-admin-tab.is-active{border-color:rgba(224,178,82,.55);color:#e0c878;background:rgba(224,178,82,.1)}
+.wg-admin-msg{margin:0;padding:8px 12px;border-radius:8px;border:1px solid rgba(110,231,183,.35);background:rgba(8,20,16,.7);color:#9dffd8;font-size:.85rem}
+.wg-admin-body{display:flex;flex-direction:column;gap:14px}
+.wg-admin-row{display:flex;flex-wrap:wrap;gap:8px}
+.wg-admin-grid{display:grid;gap:14px;grid-template-columns:1fr}
+@media(min-width:960px){.wg-admin-grid{grid-template-columns:minmax(0,1.1fr) minmax(280px,.9fr)}}
+.wg-admin-panel{padding:14px;border-radius:12px;border:1px solid rgba(120,150,200,.22);background:rgba(8,12,20,.82)}
+.wg-admin-map-canvas{display:block;width:100%;max-width:520px;border-radius:10px;border:1px solid rgba(120,150,200,.25);cursor:crosshair}
+.wg-admin-hint{margin:8px 0 0;font-size:.78rem;color:#8fa3c4}
+.wg-admin-field{display:flex;flex-direction:column;gap:4px;margin-bottom:10px;font-size:.8rem;color:#a8b8d0}
+.wg-admin-field input,.wg-admin-field select{padding:8px 10px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(6,9,14,.9);color:#e8eef8;font-family:inherit}
+.wg-admin-pair{display:flex;gap:8px}
+.wg-admin-pair input{flex:1}
+.wg-admin-lane{margin-top:8px;padding-top:8px;border-top:1px solid rgba(120,150,200,.15)}
+.wg-admin-lane-name{display:block;font-size:.82rem;color:#e0c878;margin-bottom:6px}
+.wg-admin-lane-actions{display:flex;gap:6px}
+.wg-admin-asset-grid{display:grid;gap:10px;grid-template-columns:1fr}
+@media(min-width:720px){.wg-admin-asset-grid{grid-template-columns:1fr 1fr}}
+.wg-admin-flow-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended admin editor styles");
 }
