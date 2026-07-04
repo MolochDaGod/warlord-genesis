@@ -1123,11 +1123,17 @@ js = js.replace(
 );
 mustPatch("combat-ai-scale", js.includes("WgCombatAiMult(C)"));
 
-js = js.replace(
-  "this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0})",
-  'const tint=nr[A]?.tint??"#ffd0a6";this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0,tint})',
+const COMBAT_PROJ_PUSH_ORIG =
+  "this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0})";
+const COMBAT_PROJ_PUSH_PATCHED =
+  'const tint=nr[A]?.tint??"#ffd0a6";this.projectiles.push({id:this.id(),model:A,pos:I.clone(),from:I.clone(),to:g.clone(),dir:t,dist:Q,traveled:0,speed:e.speed,spin:e.spin,roll:0,faction:i.faction??null,splash:o,arc:i.arc??0,tint})';
+if (js.includes(COMBAT_PROJ_PUSH_ORIG)) {
+  js = js.replace(COMBAT_PROJ_PUSH_ORIG, COMBAT_PROJ_PUSH_PATCHED);
+}
+mustPatch(
+  "combat-proj-tint",
+  js.includes("tint=nr[A]") || js.includes("arc:i.arc??0,tint})"),
 );
-mustPatch("combat-proj-tint", js.includes("tint=nr[A]"));
 
 js = js.replace(
   'if(Math.random()<c){const h=l.tint??(l.splash?"#ffd0a6":"#d4b890");Z.addEmber(s.pos.clone(),h)}',
@@ -1141,15 +1147,26 @@ js = js.replace(
 );
 mustPatch("combat-melee-trail", js.includes("addScaledVector(ue,OA.reach"));
 
-js = js.replace(
-  "s.colorSpace=zg,s.flipY=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
-  "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
-);
-js = js.replace(
-  "s.colorSpace=zg,s.flipY=!1,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
-  "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)",
-);
-mustPatch("grudge6-flipy", js.includes("s.flipY=!0,s.needsUpdate=!0,o.traverse"));
+const GRUDGE6_FLIPY_PATCHED =
+  "s.colorSpace=zg,s.flipY=!0,s.needsUpdate=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)";
+const GRUDGE6_FLIPY_TRUE =
+  "s.colorSpace=zg,s.flipY=!0,o.traverse(w=>{(w instanceof GB||w instanceof EC)";
+const GRUDGE6_FLIPY_FALSE =
+  "s.colorSpace=zg,s.flipY=!1,o.traverse(w=>{(w instanceof GB||w instanceof EC)";
+if (js.includes(GRUDGE6_FLIPY_TRUE) && !js.includes(GRUDGE6_FLIPY_PATCHED)) {
+  js = js.replace(GRUDGE6_FLIPY_TRUE, GRUDGE6_FLIPY_PATCHED);
+}
+if (js.includes(GRUDGE6_FLIPY_FALSE)) {
+  js = js.replace(GRUDGE6_FLIPY_FALSE, GRUDGE6_FLIPY_PATCHED);
+}
+function grudge6FlipyOk(source) {
+  if (source.includes("s.flipY=!0,s.needsUpdate=!0,o.traverse")) return true;
+  const v6Idx = source.indexOf("async function v6(C,A)");
+  if (v6Idx < 0) return false;
+  const v6Chunk = source.slice(v6Idx, v6Idx + 4500);
+  return v6Chunk.includes("s.flipY=!0") && !v6Chunk.includes("s.flipY=!1");
+}
+mustPatch("grudge6-flipy", grudge6FlipyOk(js));
 
 js = js.replace(
   "d.jsx(WgMinimap,{}),d.jsx(qgA,{}),d.jsx(JgA,{}),",
