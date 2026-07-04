@@ -89,10 +89,11 @@ const rewrites = [
     source: "/api/assets/grudge-nexus/models/rts/units/:file",
     destination: "/models/units/:file",
   },
-  /** GRUDGE6 faction hero GLBs (~240MB) — too large for Vercel static output; serve from R2 CDN. */
+  /** GRUDGE6 faction hero GLBs (~240MB) — too large for Vercel static output; proxy from git raw. */
   {
     source: "/models/heroes/grudge6/:file",
-    destination: "https://assets.grudge-studio.com/models/heroes/grudge6/:file",
+    destination:
+      "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file",
   },
   /** GRUDGE6 race atlases — local /textures/grudge6 fallback proxies to canonical R2 CDN. */
   {
