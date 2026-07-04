@@ -584,10 +584,12 @@ const CAST_SKILL_PATCHED =
   'castWeaponSkill(A){const I=this.skillClips.get(A.baked);if(!I)return!1;this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend});const g=new O;this.handBone?this.handBone.getWorldPosition(g):this.root.getWorldPosition(g),g.y+=1.2;const i=A.color||"#8fd8ff";return Z.addFireBurst(g,i,5,.55),Z.addImpact(g),Z.addShake(.08),!0}';
 if (js.includes(CAST_SKILL_ORIG)) {
   js = js.replace(CAST_SKILL_ORIG, CAST_SKILL_PATCHED);
-  mustPatch("hero-skill-vfx", true);
-} else {
-  mustPatch("hero-skill-vfx", js.includes("Z.addFireBurst(g,i"));
 }
+mustPatch(
+  "hero-skill-vfx",
+  js.includes("Z.addFireBurst(g,i") ||
+    js.includes("requestOneShot(I,{fade:.1,blend:A.blend}),!0):!1}"),
+);
 
 // Pre-game deploy + REST sync + champion lane + /play boot.
 const WG_MODEL3D_HELPERS =
@@ -1479,6 +1481,126 @@ for (const [from, to] of UI_FRAME_REPLACEMENTS) {
 }
 mustPatch("ui-frame-fit-v43", js.includes("gk-frame-window"));
 
+// ── v49 Ranged combat: GLB arrow, semi-auto, barrel/staff muzzle, skill cast timers ──
+js = js.replace(
+  'archer1:{file:"archer-1",size:1.2,speed:55,spin:0,material:{texture:"concrete",color:"#b8915a",roughness:.8,metalness:.1}}',
+  'archer1:{file:"archer-1",glb:"/models/projectiles/GRDG-3D-5B98764B.glb",size:1.05,speed:58,spin:14,tint:"#e8c878",forward:[0,0,1],material:{texture:"concrete",color:"#b8915a",roughness:.8,metalness:.1}}',
+);
+mustPatch("combat-arrow-glb", js.includes("GRDG-3D-5B98764B.glb"));
+
+js = js.replace(
+  "s=o.x>=o.y&&o.x>=o.z?new O(1,0,0):o.z>=o.y?new O(0,0,1):new O(0,1,0),l=A.tint?new rI(A.tint):null",
+  "s=A.forward?new O(A.forward[0],A.forward[1],A.forward[2]):o.x>=o.y&&o.x>=o.z?new O(1,0,0):o.z>=o.y?new O(0,0,1):new O(0,1,0),l=A.tint?new rI(A.tint):null",
+);
+mustPatch("combat-proj-forward", js.includes("A.forward?new O"));
+
+js = js.replace(
+  "const l=await g.loadAsync(`${GT}models/projectiles/${Q.file}.fbx`);o=YIA(l,Q,e)",
+  'let o=null;try{if(Q.glb){const gltf=await WgHeroGltf.loadAsync(Q.glb);o=YIA(gltf.scene,Q,e)}else{const l=await g.loadAsync(`${GT}models/projectiles/${Q.file}.fbx`);o=YIA(l,Q,e)}}catch{continue}if(!o)continue',
+);
+mustPatch("combat-proj-glb-load", js.includes("Q.glb"));
+
+js = js.replace(
+  'sword:{targetSize:.72,pos:[.02,.05,0],rot:[1.5708,0,0],scale:1,muzzle:[0,.42,0]}}},Dq=',
+  'sword:{targetSize:.72,pos:[.02,.05,0],rot:[1.5708,0,0],scale:1,muzzle:[0,.42,0]},staff:{targetSize:.85,pos:[.02,.04,.02],rot:[1.5708,0,0],scale:1,muzzle:[0,.78,0]}}},Dq=',
+);
+mustPatch("combat-staff-mount", js.includes('staff:{targetSize:.85'));
+
+js = js.replace(
+  'sword:Rw("sword","right","sword")},nT=Object.keys(sT)',
+  'sword:Rw("sword","right","sword"),staff:Rw("staff","right","staff")},nT=Object.keys(sT)',
+);
+mustPatch("combat-staff-st", js.includes('staff:Rw("staff"'));
+
+js = js.replace(
+  'rifle:{id:"rifle",name:"Repeater Rifle",animClass:"ranged",damage:34,fireRate:.1,',
+  'rifle:{id:"rifle",name:"Repeater Rifle",animClass:"ranged",damage:34,fireRate:.42,',
+);
+js = js.replace(
+  'pistol:{id:"pistol",name:"Sidearm",animClass:"ranged",damage:22,fireRate:.2,',
+  'pistol:{id:"pistol",name:"Sidearm",animClass:"ranged",damage:22,fireRate:.36,',
+);
+js = js.replace(
+  'shotgun:{id:"shotgun",name:"Scattergun",animClass:"ranged",damage:13,fireRate:.78,',
+  'shotgun:{id:"shotgun",name:"Scattergun",animClass:"ranged",damage:13,fireRate:.85,',
+);
+mustPatch("combat-semi-rate", js.includes("fireRate:.42,"));
+
+js = js.replace(
+  "weaponMuzzle(){return this.handBone}retuneWeapon(A){}",
+  'weaponMuzzle(){const h=this.handBone;if(!h)return null;const key=this._wgMount||"rifle",m=mt.weaponMounts[key]||mt.weaponMounts.rifle;this._wgMuzzle||(this._wgMuzzle=new tt,this._wgMuzzle.name="WgMuzzle",h.add(this._wgMuzzle));return this._wgMuzzle.position.set(m.muzzle[0],m.muzzle[1],m.muzzle[2]),this._wgMuzzle}setWeaponMount(A){this._wgMount=A}retuneWeapon(A){}',
+);
+mustPatch("combat-muzzle-node", js.includes("setWeaponMount(A)"));
+
+js = js.replace(
+  "const j=l.current;OA.setAmmo(OA.ammo-1,OA.reserve)",
+  'const j=l.current;hA.current?.setWeaponMount(j.model||"rifle");OA.setAmmo(OA.ammo-1,OA.reserve)',
+);
+js = js.replace(
+  "const OA=c.current,j=hA.current;j?.attack();",
+  'const OA=c.current,j=hA.current;j?.setWeaponMount(OA.model||"sword"),j?.attack();',
+);
+mustPatch("combat-mount-sync", js.includes('setWeaponMount(j.model||"rifle")'));
+
+js = js.replace(
+  'const WgAim={focusEnabled:!1,rmb:!1,token:0};let WgAttackCd=0;const WgSoftLock={active:!1,targetId:null};',
+  'const WgAim={focusEnabled:!1,rmb:!1,token:0};let WgAttackCd=0,WgSemiPending=!1;const WgSoftLock={active:!1,targetId:null},WgCast={active:!1,skill:null,left:0,total:0,origin:null,color:"#8fd8ff",wt:null,dmg:1};function WgSkillCastTime(sk,wt){if(!sk)return 0;const cd=sk.cooldown||0;if(wt==="STAFF")return cd>=8?1.15:cd>=4?.72:.48;if(wt==="BOW"||wt==="CROSSBOW"||wt==="GUN")return cd>=6?.65:cd>=3?.42:.28;return cd>=8?.85:cd>=4?.5:0}function WgTickSkillCast(dt,cam,hero,wt,dmg){if(!WgCast.active)return;WgCast.left-=dt;const o=WgCast.origin;if(o&&(Math.random()<.55&&Z.addEmber(o.clone(),WgCast.color),Math.random()<.3&&Z.addSpark(o.clone(),WgCast.color)),WgCast.left>0)return;const sk=WgCast.skill,b=BI.getState();WgCast.active=!1;const pos=o||new O;Z.addFireBurst(pos,WgCast.color,8,.75),Z.addSpark(pos.clone(),WgCast.color),Z.addImpact(pos),Z.addShake(.12);WgGetAimDir(cam,WgAimTmp),WgResolveAimPoint(cam,WgAimOut),IAA(sk,WgAimOut,WgAimTmp,wt,dmg*b.damageMult),b.startWeaponSkillCooldown(sk.id,sk.cooldown),b.pushMessage(sk.label.toUpperCase(),"success")}',
+);
+mustPatch("combat-cast-state", js.includes("WgSkillCastTime"));
+
+js = js.replace(
+  "if(WgAim.focusEnabled)Q.current=!0;else{const rect=I.domElement.getBoundingClientRect();WgPickTargetFromRay(A,rA.clientX-rect.left,rA.clientY-rect.top,rect.width,rect.height)}",
+  "if(WgAim.focusEnabled)Q.current=!0;else{WgSemiPending=!0;const rect=I.domElement.getBoundingClientRect();WgPickTargetFromRay(A,rA.clientX-rect.left,rA.clientY-rect.top,rect.width,rect.height)}",
+);
+mustPatch("combat-semi-pending", js.includes("WgSemiPending=!0"));
+
+js = js.replace(
+  'eI&&!y.current&&SA==="combat"&&Q.current&&e.current<=0&&(WgAim.focusEnabled||WgSoftLock.active)',
+  'eI&&!y.current&&SA==="combat"&&e.current<=0&&(WgAim.focusEnabled?Q.current:WgSemiPending)&&(WgAim.focusEnabled||WgSoftLock.active||WgSemiPending)',
+);
+mustPatch("combat-semi-gate", js.includes("WgSemiPending)"));
+
+js = js.replace(
+  "o.current?(NI(),e.current=c.current.swingRate/KI):(tA(),e.current=l.current.fireRate/KI)",
+  "o.current?(NI(),e.current=c.current.swingRate/KI):(tA(),WgSemiPending=!1,e.current=l.current.fireRate/KI)",
+);
+mustPatch("combat-semi-clear", js.includes("WgSemiPending=!1,e.current"));
+
+js = js.replace(
+  'function ZA(OA){if(_g.getState().mode!=="combat"||y.current)return;const j=CA.current[OA];if(!j)return;const b=BI.getState();!b.weaponSkillReady(j.id)||!hA.current?.castWeaponSkill(j)||(b.startWeaponSkillCooldown(j.id,j.cooldown),WgGetAimDir(A,pB),WgResolveAimPoint(A,WgAimOut),IAA(j,WgAimOut,pB,cT(RA,AI,h.current),b.damageMult),b.pushMessage(j.label.toUpperCase(),"info"))}',
+  'function ZA(OA){if(_g.getState().mode!=="combat"||y.current||WgCast.active)return;const j=CA.current[OA];if(!j)return;const b=BI.getState();if(!b.weaponSkillReady(j.id))return;const wt=cT(RA,AI,h.current),ct=WgSkillCastTime(j,wt),col=j.color||WgClassBurstColor(XI.getState().classId);if(!hA.current?.castWeaponSkill(j))return;if(ct<=0){b.startWeaponSkillCooldown(j.id,j.cooldown),WgGetAimDir(A,pB),WgResolveAimPoint(A,WgAimOut),Z.addFireBurst(WgAimOut.clone(),col,6,.62),Z.addImpact(WgAimOut),IAA(j,WgAimOut,pB,wt,b.damageMult),b.pushMessage(j.label.toUpperCase(),"info");return}const pos=new O;hA.current?.weaponMuzzle?.()?(hA.current.root.updateMatrixWorld(!0),hA.current.weaponMuzzle().getWorldPosition(pos)):pos.copy(A.position).setY(A.position.y+1.2);WgCast.active=!0,WgCast.skill=j,WgCast.left=ct,WgCast.total=ct,WgCast.origin=pos.clone(),WgCast.color=col,WgCast.wt=wt,WgCast.dmg=1,b.pushMessage(j.label+"…","info")}',
+);
+mustPatch("combat-skill-cast", js.includes("WgCast.active=!0"));
+
+js = js.replace(
+  "const dA=YA.translation();Z.playerPos.set(dA.x,dA.y,dA.z),WgCombatSyncUnits(),WgAttackCd=e.current,",
+  "const dA=YA.translation();Z.playerPos.set(dA.x,dA.y,dA.z),WgCombatSyncUnits(),WgAttackCd=e.current,WgTickSkillCast(Math.min(.05,o),A,hA.current,cT(RA,AI,h.current),1),",
+);
+mustPatch("combat-cast-tick", js.includes("WgTickSkillCast(Math.min(.05,o),A"));
+
+const CAST_ANIM_ONLY =
+  'castWeaponSkill(A){const I=this.skillClips.get(A.baked);return I?(this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend}),!0):!1}';
+const CAST_VFX_VARIANTS = [
+  'castWeaponSkill(A){const I=this.skillClips.get(A.baked);if(!I)return!1;this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend});const g=new O;this.handBone?this.handBone.getWorldPosition(g):this.root.getWorldPosition(g),g.y+=1.2;const i=A.color||WgClassBurstColor(XI.getState().classId);return Z.addFireBurst(g,i,6,.62),Z.addSpark(g.clone(),i),Z.addImpact(g),Z.addShake(.1),!0}',
+  'castWeaponSkill(A){const I=this.skillClips.get(A.baked);if(!I)return!1;this.prepared.director.requestOneShot(I,{fade:.1,blend:A.blend});const g=new O;this.handBone?this.handBone.getWorldPosition(g):this.root.getWorldPosition(g),g.y+=1.2;const i=A.color||"#8fd8ff";return Z.addFireBurst(g,i,5,.55),Z.addImpact(g),Z.addShake(.08),!0}',
+];
+for (const vfx of CAST_VFX_VARIANTS) {
+  if (js.includes(vfx)) js = js.replace(vfx, CAST_ANIM_ONLY);
+}
+mustPatch("combat-cast-anim-only", js.includes("requestOneShot(I,{fade:.1,blend:A.blend}),!0):!1}"));
+
+js = js.replace(
+  "const c=Ap.clone().addScaledVector(mw,s);Z.addMuzzleFlash(c);for(const h of Z.units)",
+  'const c=Ap.clone().addScaledVector(mw,s);Z.addMuzzleFlash(c);if(g==="BOW"||g==="CROSSBOW")Z.addProjectile("archer1",Ap.clone(),c,{arc:2}),Z.addSpark(c,"#cdeac0");else if(g==="GUN")Z.addBolt(Ap.clone(),c);for(const h of Z.units)',
+);
+mustPatch("combat-skill-proj", js.includes('Z.addProjectile("archer1",Ap.clone(),c'));
+
+js = js.replace(
+  'WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})})]})}',
+  'WgAttackCd>.05&&d.jsx("div",{className:"wg-atk-cd-ring",children:d.jsx("span",{children:WgAttackCd.toFixed(1)})}),WgCast.active&&d.jsxs("div",{className:"wg-cast-bar",children:[d.jsx("div",{className:"wg-cast-fill",style:{width:`${Math.max(0,100*(1-WgCast.left/WgCast.total))}%`}}),d.jsx("span",{className:"wg-cast-label",children:WgCast.skill?.label})]})]})}',
+);
+mustPatch("combat-cast-hud", js.includes("wg-cast-bar"));
+
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
   mustPatch(id, js.includes(needle));
@@ -1824,6 +1946,15 @@ if (!css.includes(".gk-deploy-v2")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended deploy v2 container-query layout");
+}
+if (!css.includes(".wg-cast-bar")) {
+  css += `
+.wg-cast-bar{position:fixed;left:50%;top:calc(50% + 78px);transform:translateX(-50%);z-index:18;pointer-events:none;width:min(220px,52vw);height:10px;border-radius:999px;border:1px solid rgba(143,216,255,.45);background:rgba(8,12,20,.78);overflow:hidden}
+.wg-cast-fill{height:100%;background:linear-gradient(90deg,rgba(143,216,255,.35),rgba(224,178,82,.85));transition:width .08s linear}
+.wg-cast-label{position:absolute;left:50%;top:-18px;transform:translateX(-50%);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#9dffd8;white-space:nowrap}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended skill cast bar styles");
 }
 if (!css.includes(".wg-reticle-focus")) {
   css += `

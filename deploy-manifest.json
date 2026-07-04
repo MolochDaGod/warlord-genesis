@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 48,
+  "bundleVersion": 49,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -103,6 +103,7 @@
     "models/towers/orc/bashnia2.glb",
     "models/towers/ruins/slow_t1.glb",
     "models/towers/ruins/bashnia.glb",
+    "models/projectiles/GRDG-3D-5B98764B.glb",
     "models/weapons/polygon_guns.glb",
     "models/kaykit/heroes/barbarian.glb",
     "models/kaykit/heroes/rogue_hooded.glb",
@@ -405,7 +406,7 @@
     },
     {
       "id": "hero-skill-vfx",
-      "needle": "Z.addFireBurst(g,i"
+      "needle": "requestOneShot(I,{fade:.1,blend:A.blend}),!0):!1}"
     },
     {
       "id": "weapon-mesh-sync",
@@ -578,9 +579,41 @@
     {
       "id": "canonical-visual-mesh",
       "needle": "_wgVis?.length&&L6(C,_wgVis)"
+    },
+    {
+      "id": "combat-arrow-glb",
+      "needle": "GRDG-3D-5B98764B.glb"
+    },
+    {
+      "id": "combat-proj-glb-load",
+      "needle": "Q.glb"
+    },
+    {
+      "id": "combat-staff-mount",
+      "needle": "staff:{targetSize:.85"
+    },
+    {
+      "id": "combat-semi-rate",
+      "needle": "fireRate:.42,"
+    },
+    {
+      "id": "combat-muzzle-node",
+      "needle": "setWeaponMount(A)"
+    },
+    {
+      "id": "combat-cast-state",
+      "needle": "WgSkillCastTime"
+    },
+    {
+      "id": "combat-skill-cast",
+      "needle": "WgCast.active=!0"
+    },
+    {
+      "id": "combat-cast-hud",
+      "needle": "wg-cast-bar"
     }
   ],
-  "lastBuilt": "2026-07-04T03:55:41.012Z",
-  "bundleBytes": 4101824,
-  "bundleSha256": "f6ab99f8de071182"
+  "lastBuilt": "2026-07-04T04:24:46.747Z",
+  "bundleBytes": 4104442,
+  "bundleSha256": "41d517392f2bac33"
 }

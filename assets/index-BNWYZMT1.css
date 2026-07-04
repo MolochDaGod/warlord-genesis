@@ -308,3 +308,7 @@ body{background:#080c14}
 .wg-admin-asset-grid{display:grid;gap:10px;grid-template-columns:1fr}
 @media(min-width:720px){.wg-admin-asset-grid{grid-template-columns:1fr 1fr}}
 .wg-admin-flow-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px}
+
+.wg-cast-bar{position:fixed;left:50%;top:calc(50% + 78px);transform:translateX(-50%);z-index:18;pointer-events:none;width:min(220px,52vw);height:10px;border-radius:999px;border:1px solid rgba(143,216,255,.45);background:rgba(8,12,20,.78);overflow:hidden}
+.wg-cast-fill{height:100%;background:linear-gradient(90deg,rgba(143,216,255,.35),rgba(224,178,82,.85));transition:width .08s linear}
+.wg-cast-label{position:absolute;left:50%;top:-18px;transform:translateX(-50%);font-size:9px;letter-spacing:.14em;text-transform:uppercase;color:#9dffd8;white-space:nowrap}
