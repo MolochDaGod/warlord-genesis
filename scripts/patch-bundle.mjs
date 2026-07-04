@@ -442,7 +442,7 @@ for (const [from, to] of SX_PACK_FIXES) {
 const _6_ORIG =
   'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A);return T.useEffect(()=>{let t=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I}).then(Q=>{if(t){Q.mixer.stopAllAction();return}g.current=Q;const o=i.current;o&&(o.clear(),o.add(Q.root)),Q.actions.idle?.reset().fadeIn(.2).play()}),()=>{t=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I]),VC((t,Q)=>{g.current?.mixer.update(Q)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
 const _6_PATCHED =
-  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>qh(C,A),[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I,animPack:t?.animPack}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t?.animPack,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
+  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>qh(C,A),[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I||WgGetPlayerTint(),animPack:t?.animPack}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t?.animPack,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
 if (js.includes(_6_ORIG)) {
   js = js.replace(_6_ORIG, _6_PATCHED);
   mustPatch("lobby-hero-preview", true);
@@ -468,7 +468,7 @@ if (js.includes(HAA_ORIG)) {
 const BAA_ORIG =
   "function bAA({typeId:C,unitId:A,faction:I}){const g=yT[I]??\"#ffffff\",[i,e]=T.useState(null),t=T.useRef(\"idle\");return T.useEffect(()=>{let Q=!0;return e(null),T6(C,{fitHeight:qAA,tint:g}).then(o=>{Q&&e(o)}).catch(()=>{Q&&e(null)}),()=>{Q=!1}},[C,g]),VC((Q,o)=>{if(!i||(i.mixer.update(o),A==null))return;const s=Z.units.find(c=>c.id===A);if(!s)return;const l=s.locomotion===\"attack\"?\"attack\":s.locomotion===\"run\"?\"run\":\"idle\";l!==t.current&&(H6(i,l,t.current),t.current=l)}),i?d.jsx(\"primitive\",{object:i.root}):null}";
 const BAA_PATCHED =
-  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=yT[I]??"#ffffff",[e,t]=T.useState(null),Q=T.useRef("idle"),o=wa(C),s=o?.grudge?qh(o.grudge.raceId,o.grudge.classId)?.animPack??"unarmed":"unarmed",l=g?2.25:qAA;return T.useEffect(()=>{let c=!0;return t(null),T6(C,{fitHeight:l,tint:i,animPack:s}).then(h=>{c&&t(h)}).catch(()=>{c&&t(null)}),()=>{c=!1}},[C,i,l,s]),VC((c,h)=>{if(!e||(e.mixer.update(h),A==null))return;const w=Z.units.find(u=>u.id===A);if(!w)return;const u=w.locomotion==="attack"?"attack":w.locomotion==="run"?"run":"idle";u!==Q.current&&(H6(e,u,Q.current),Q.current=u)}),e?d.jsx("primitive",{object:e.root}):null}';
+  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=WgGetFactionTint(I),[e,t]=T.useState(null),Q=T.useRef("idle"),o=wa(C),s=o?.grudge?qh(o.grudge.raceId,o.grudge.classId)?.animPack??"unarmed":"unarmed",l=g?2.25:qAA;return T.useEffect(()=>{let c=!0;return t(null),T6(C,{fitHeight:l,tint:i,animPack:s}).then(h=>{c&&t(h)}).catch(()=>{c&&t(null)}),()=>{c=!1}},[C,i,l,s]),VC((c,h)=>{if(!e||(e.mixer.update(h),A==null))return;const w=Z.units.find(u=>u.id===A);if(!w)return;const u=w.locomotion==="attack"?"attack":w.locomotion==="run"?"run":"idle";u!==Q.current&&(H6(e,u,Q.current),Q.current=u)}),e?d.jsx("primitive",{object:e.root}):null}';
 if (js.includes(BAA_ORIG)) {
   js = js.replace(BAA_ORIG, BAA_PATCHED);
   mustPatch("hero-mesh-baa", true);
@@ -1180,6 +1180,71 @@ js = js.replace(
 );
 mustPatch("combat-sync-units", js.includes("WgCombatSyncUnits()"));
 
+// ── v42 Toon RTS team palettes + foot grounding ──
+const WG_TOON_PALETTES =
+  'const WgToonPalettes={royal:{name:"Royal Blue",primary:"#2a4f9c",accent:"#e0b252",enemy:"#8b2e2e"},crimson:{name:"Crimson",primary:"#9b2c2c",accent:"#d4a574",enemy:"#1e3a5f"},emerald:{name:"Emerald",primary:"#1f6b4a",accent:"#c8d878",enemy:"#7a2d2d"},frost:{name:"Frost",primary:"#3a7ab8",accent:"#e8f0ff",enemy:"#5c3030"},sand:{name:"Sand",primary:"#a67c3d",accent:"#f0e0c0",enemy:"#4a5a6a"},violet:{name:"Violet",primary:"#5a3d8a",accent:"#d4b8f0",enemy:"#2d5a4a"},obsidian:{name:"Obsidian",primary:"#3a3f4a",accent:"#9aa8c0",enemy:"#6b3a2a"},gold:{name:"Gold Guard",primary:"#8a7020",accent:"#ffe08a",enemy:"#4a3060"}};function WgGetPaletteId(){try{const c=XI.getState().custom?.teamPalette;return WgToonPalettes[c]?c:"royal"}catch{return"royal"}}function WgGetFactionTint(faction){const id=WgGetPaletteId(),p=WgToonPalettes[id];return faction==="enemy"?p.enemy:p.primary}function WgGetPlayerTint(){return WgGetFactionTint("ally")}function WgPaletteSwatches({value,onChange}){const keys=Object.keys(WgToonPalettes);return d.jsxs("div",{className:"wg-palette-row",children:[d.jsx("span",{className:"wg-palette-label",children:"Team Colors"}),d.jsx("div",{className:"wg-palette-swatches",children:keys.map(k=>{const p=WgToonPalettes[k];return d.jsx("button",{type:"button",className:"wg-palette-swatch"+(value===k?" is-active":""),title:p.name,style:{background:`linear-gradient(135deg,${p.primary} 55%,${p.accent} 55%)`},onClick:()=>onChange(k)},k)})})]})}';
+js = js.replace(
+  "const dT=1.7,qAA=2.05,yT={ally:\"#ffffff\",enemy:\"#d65a47\"};",
+  `${WG_TOON_PALETTES}const dT=1.7,qAA=2.05,yT={ally:\"#ffffff\",enemy:\"#d65a47\"};`,
+);
+mustPatch("toon-palettes", js.includes("WgToonPalettes"));
+
+js = js.replace(
+  "function bAA({typeId:C,unitId:A,faction:I}){const g=yT[I]??\"#ffffff\"",
+  "function bAA({typeId:C,unitId:A,faction:I}){const g=WgGetFactionTint(I)",
+);
+js = js.replace(
+  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=yT[I]??"#ffffff"',
+  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=WgGetFactionTint(I)',
+);
+mustPatch("toon-tint-baa", js.includes("WgGetFactionTint(I)"));
+
+js = js.replace(
+  'function xAA({def:C,faction:A,unitId:I,kaykit:g}){const i=yT[A]??"#ffffff"',
+  'function xAA({def:C,faction:A,unitId:I,kaykit:g}){const i=WgGetFactionTint(A)',
+);
+mustPatch("toon-tint-xaa", js.includes("WgGetFactionTint(A)"));
+
+js = js.replace(
+  "Y?.color&&Y.color.multiply(new rI(g))",
+  "Y?.color&&Y.color.set(new rI(g))",
+);
+mustPatch("toon-tint-tu", js.includes("Y.color.set(new rI(g))"));
+
+js = js.replace(
+  "Q.flipY=!1,Q.colorSpace=zg,Q.magFilter=Qi,Q.minFilter=Qi,Q.generateMipmaps=!1,Q.needsUpdate=!0;const G=wM(i)",
+  "Q.flipY=!0,Q.colorSpace=zg,Q.magFilter=Qi,Q.minFilter=Qi,Q.generateMipmaps=!1,Q.needsUpdate=!0;const G=wM(i)",
+);
+mustPatch("eu-flipy", js.includes("Q.flipY=!0,Q.colorSpace=zg,Q.magFilter=Qi"));
+
+js = js.replace(
+  "static async forPlayer(A){return ah.create({typeId:Iz(A.raceId,A.classId),animPack:A.animPack,tint:A.tint})}",
+  "static async forPlayer(A){return ah.create({typeId:Iz(A.raceId,A.classId),animPack:A.animPack,tint:A.tint||WgGetPlayerTint()})}",
+);
+mustPatch("toon-hero-tint", js.includes("tint:A.tint||WgGetPlayerTint()"));
+
+js = js.replace(
+  "if(!zI&&w.current&&!y.current){const pg=Z.map.heightAt(dA.x,dA.z);PI=G.current+(pg-rA.character.lowestSoleWorldY())}",
+  "if(!zI&&w.current&&!y.current){rA?.refreshSoleY();const pg=Z.map.heightAt(dA.x,dA.z);PI=G.current+(pg-rA.character.lowestSoleWorldY())}",
+);
+mustPatch("hero-foot-ik", js.includes("rA?.refreshSoleY()"));
+
+js = js.replace(
+  "position:[e.pos.x,0,e.pos.z]",
+  "position:[e.pos.x,e.pos.y,e.pos.z]",
+);
+mustPatch("unit-foot-y", js.includes("position:[e.pos.x,e.pos.y,e.pos.z]"));
+
+js = js.replace(
+  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s],_=()=>{m&&(p(),C("/deploy"))};',
+  '},[Q?.gbuxBalance]);const palId=XI(x=>x.custom?.teamPalette)||"royal",setPal=id=>XI.getState().setCustom({teamPalette:id});const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s],_=()=>{m&&(p(),C("/deploy"))};',
+);
+js = js.replace(
+  'd.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
+  'd.jsx(WgPaletteSwatches,{value:palId,onChange:setPal}),d.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
+);
+mustPatch("warcamp-palette-ui", js.includes("WgPaletteSwatches"));
+
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
   mustPatch(id, js.includes(needle));
@@ -1472,6 +1537,18 @@ if (!css.includes(".gk-warcamp-shell")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended warcamp/deploy UI kit shell styles");
+}
+if (!css.includes(".wg-palette-row")) {
+  css += `
+.wg-palette-row{display:flex;flex-direction:column;gap:8px;margin:10px 0 12px;padding:10px 12px;border-radius:10px;border:1px solid rgba(120,150,200,.22);background:rgba(8,12,20,.65)}
+.wg-palette-label{font-size:10px;letter-spacing:.2em;text-transform:uppercase;color:#8fa3c4;font-weight:700}
+.wg-palette-swatches{display:flex;flex-wrap:wrap;gap:6px}
+.wg-palette-swatch{width:32px;height:32px;border-radius:8px;border:2px solid rgba(120,150,200,.35);cursor:pointer;padding:0;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25);transition:border-color .12s ease,transform .12s ease,box-shadow .12s ease}
+.wg-palette-swatch:hover{border-color:rgba(224,178,82,.55);transform:translateY(-1px)}
+.wg-palette-swatch.is-active{border-color:#e0b252;box-shadow:0 0 0 2px rgba(224,178,82,.35),inset 0 0 0 1px rgba(0,0,0,.25)}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended toon palette swatch styles");
 }
 if (!css.includes(".gk-deploy-v2")) {
   css += `

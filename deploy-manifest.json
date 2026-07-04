@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 41,
+  "bundleVersion": 42,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -478,9 +478,21 @@
     {
       "id": "combat-sync-units",
       "needle": "WgCombatSyncUnits()"
+    },
+    {
+      "id": "toon-palettes",
+      "needle": "WgToonPalettes"
+    },
+    {
+      "id": "toon-faction-tint",
+      "needle": "WgGetFactionTint"
+    },
+    {
+      "id": "warcamp-palette-ui",
+      "needle": "wg-palette-row"
     }
   ],
-  "lastBuilt": "2026-07-03T23:56:39.126Z",
-  "bundleBytes": 4081282,
-  "bundleSha256": "cebffe3a9449c33d"
+  "lastBuilt": "2026-07-04T00:30:49.104Z",
+  "bundleBytes": 4082859,
+  "bundleSha256": "ab9e7161d4e7359a"
 }
