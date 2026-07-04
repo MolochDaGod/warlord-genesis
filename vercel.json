@@ -63,6 +63,10 @@
       "destination": "/models/units/:file"
     },
     {
+      "source": "/models/heroes/grudge6/:file",
+      "destination": "https://assets.grudge-studio.com/models/heroes/grudge6/:file"
+    },
+    {
       "source": "/textures/grudge6/:race/:file",
       "destination": "https://assets.grudge-studio.com/assets/:race/textures/:file"
     },

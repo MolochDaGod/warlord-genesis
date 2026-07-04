@@ -11,6 +11,7 @@
     "build": "npm run predeploy && npm run verify",
     "assets:stage": "node scripts/stage-assets.mjs",
     "assets:heroes": "node scripts/stage-heroes.mjs",
+    "assets:heroes:upload": "node scripts/upload-heroes-r2.mjs",
     "assets:icons": "node scripts/stage-icons.mjs",
     "deploy": "npm run build && node scripts/vercel-deploy.mjs",
     "patch": "node scripts/patch-bundle.mjs",

@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 43,
+  "bundleVersion": 44,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -139,6 +139,7 @@
     "/api/grudge/:path*",
     "/api/assets/models/maps/:theme/:file",
     "/api/assets/:path*",
+    "/models/heroes/grudge6/:file",
     "/models/kaykit/:path*",
     "/models/characters/:path*"
   ],
@@ -494,9 +495,13 @@
     {
       "id": "ui-frame-fit-v43",
       "needle": "gk-frame-window"
+    },
+    {
+      "id": "hero-textures-v44",
+      "needle": "WgFinishHeroMesh"
     }
   ],
-  "lastBuilt": "2026-07-04T00:59:26.451Z",
-  "bundleBytes": 4082599,
-  "bundleSha256": "71f2fe6648ca9773"
+  "lastBuilt": "2026-07-04T01:06:33.696Z",
+  "bundleBytes": 4083043,
+  "bundleSha256": "00d7d44912042b36"
 }

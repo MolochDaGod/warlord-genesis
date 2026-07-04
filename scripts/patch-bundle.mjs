@@ -380,7 +380,7 @@ js = js.replace(
 // Faction hero GLBs — 6 races × 4 classes (worge → knight mesh), embedded Bip001 clips.
 const U6_ANCHOR = 'const U6=new _K,N6={unarmed:"unarmed/punching"';
 const HERO_GLB_HELPERS =
-  'const WgHeroGltf=new vK();typeof Wy<"u"&&Wy&&WgHeroGltf.setDRACOLoader(Wy);const WgHeroClassFile={warrior:"warrior",worge:"knight",mage:"mage",ranger:"ranger"},WgPetByRace={human:"black_grouse",barbarian:"boar",dwarf:"boar",elf:"canada_goose",orc:"bigfoot",undead:"american_aligator"},WgClassVfx={warrior:"#ff6a3c",worge:"#c8a84b",mage:"#8fd8ff",ranger:"#9dffd8"};function WgHeroGlbUrl(C,A){const I=UK[C]||C,g=WgHeroClassFile[A]||A;return`/models/heroes/grudge6/${I}_${g}.glb`}function WgPetGlbUrl(C){const A=WgPetByRace[C];return A?`/models/pets/${A}.glb`:null}function WgClassBurstColor(C){return WgClassVfx[C]||"#8fd8ff"};';
+  'const WgHeroGltf=new vK();typeof Wy<"u"&&Wy&&WgHeroGltf.setDRACOLoader(Wy);const WgHeroClassFile={warrior:"warrior",worge:"knight",mage:"mage",ranger:"ranger"},WgPetByRace={human:"black_grouse",barbarian:"boar",dwarf:"boar",elf:"canada_goose",orc:"bigfoot",undead:"american_aligator"},WgClassVfx={warrior:"#ff6a3c",worge:"#c8a84b",mage:"#8fd8ff",ranger:"#9dffd8"};function WgHeroGlbUrl(C,A){const I=UK[C]||C,g=WgHeroClassFile[A]||A;return`/models/heroes/grudge6/${I}_${g}.glb`}function WgPetGlbUrl(C){const A=WgPetByRace[C];return A?`/models/pets/${A}.glb`:null}function WgClassBurstColor(C){return WgClassVfx[C]||"#8fd8ff"}async function WgFinishHeroMesh(C,A,I){let g=!1;C.traverse(i=>{if(!(i instanceof EC)&&!(i instanceof GB))return;const e=Array.isArray(i.material)?i.material:[i.material];for(const t of e)t?.map&&(t.map.colorSpace=zg,t.map.flipY=!0,t.map.needsUpdate=!0,g=!0)}),I?.visibleMeshes?.length&&L6(C,I.visibleMeshes),g||(await new Zs().loadAsync(F6(A)).then(e=>{e.colorSpace=zg,e.flipY=!0,e.needsUpdate=!0,q6(C,e)}).catch(()=>{}))};';
 if (js.includes(U6_ANCHOR) && !js.includes("WgHeroGlbUrl")) {
   js = js.replace(U6_ANCHOR, `${HERO_GLB_HELPERS}${U6_ANCHOR}`);
   mustPatch("hero-glb-helpers", true);
@@ -442,7 +442,7 @@ for (const [from, to] of SX_PACK_FIXES) {
 const _6_ORIG =
   'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A);return T.useEffect(()=>{let t=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I}).then(Q=>{if(t){Q.mixer.stopAllAction();return}g.current=Q;const o=i.current;o&&(o.clear(),o.add(Q.root)),Q.actions.idle?.reset().fadeIn(.2).play()}),()=>{t=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I]),VC((t,Q)=>{g.current?.mixer.update(Q)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
 const _6_PATCHED =
-  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>qh(C,A),[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I||WgGetPlayerTint(),animPack:t?.animPack}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t?.animPack,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
+  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>qh(C,A),[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I||"#ffffff",animPack:t?.animPack}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t?.animPack,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
 if (js.includes(_6_ORIG)) {
   js = js.replace(_6_ORIG, _6_PATCHED);
   mustPatch("lobby-hero-preview", true);
@@ -1244,6 +1244,25 @@ js = js.replace(
   'd.jsx(WgPaletteSwatches,{value:palId,onChange:setPal}),d.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
 );
 mustPatch("warcamp-palette-ui", js.includes("WgPaletteSwatches"));
+
+// ── v44 Hero textures — GLB atlas + equipment on lobby preview; CDN-backed hero GLBs ──
+const WG_FINISH_HERO_MESH =
+  'async function WgFinishHeroMesh(C,A,I){let g=!1;C.traverse(i=>{if(!(i instanceof EC)&&!(i instanceof GB))return;const e=Array.isArray(i.material)?i.material:[i.material];for(const t of e)t?.map&&(t.map.colorSpace=zg,t.map.flipY=!0,t.map.needsUpdate=!0,g=!0)}),I?.visibleMeshes?.length&&L6(C,I.visibleMeshes),g||(await new Zs().loadAsync(F6(A)).then(e=>{e.colorSpace=zg,e.flipY=!0,e.needsUpdate=!0,q6(C,e)}).catch(()=>{}))}';
+const WG_CLASS_BURST_ANCHOR = 'function WgClassBurstColor(C){return WgClassVfx[C]||"#8fd8ff"};';
+if (!js.includes("function WgFinishHeroMesh")) {
+  if (js.includes(WG_CLASS_BURST_ANCHOR)) {
+    js = js.replace(WG_CLASS_BURST_ANCHOR, `${WG_FINISH_HERO_MESH};${WG_CLASS_BURST_ANCHOR}`);
+  }
+}
+const V6_GLB_Y6_OLD =
+  'Y6(o,A.fitHeight),A.tint&&A.tint!=="#ffffff"&&o.traverse(w=>{if(w instanceof EC||w instanceof GB){const u=w.material;u?.color&&u.color.multiply(new rI(A.tint))}});const byName={};';
+const V6_GLB_Y6_NEW =
+  'Y6(o,A.fitHeight),await WgFinishHeroMesh(o,e,t),A.tint&&A.tint!=="#ffffff"&&o.traverse(w=>{if(w instanceof EC||w instanceof GB){const u=w.material;u?.color&&u.color.multiply(new rI(A.tint))}});const byName={};';
+if (js.includes(V6_GLB_Y6_OLD)) {
+  js = js.replace(V6_GLB_Y6_OLD, V6_GLB_Y6_NEW);
+}
+js = js.replaceAll('tint:I||WgGetPlayerTint()', 'tint:I||"#ffffff"');
+mustPatch("hero-textures-v44", js.includes("WgFinishHeroMesh"));
 
 // ── v43 Craftpix frame fit — 9-slice panels sized to content, not stretched thumbnails ──
 const UI_FRAME_REPLACEMENTS = [

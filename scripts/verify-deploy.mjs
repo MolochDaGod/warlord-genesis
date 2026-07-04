@@ -153,6 +153,15 @@ if (LIVE) {
     ok(`live tower GLB ${towerRes.status} ${towerCt}`);
   }
 
+  const heroGlb = "/models/heroes/grudge6/western-kingdoms_warrior.glb";
+  const heroRes = await fetch(`${SITE}${heroGlb}`, { method: "HEAD" });
+  const heroCt = heroRes.headers.get("content-type") || "";
+  if (!heroRes.ok || heroCt.includes("text/html") || !heroCt.includes("gltf")) {
+    fail(`live hero GLB bad ${heroGlb}: ${heroRes.status} ${heroCt}`);
+  } else {
+    ok(`live hero GLB ${heroGlb} ${heroRes.status}`);
+  }
+
   for (const unitPath of [
     "/models/kaykit/heroes/barbarian.glb",
     "/models/kaykit/enemies/skeleton_warrior.glb",
