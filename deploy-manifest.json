@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 47,
+  "bundleVersion": 48,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -91,14 +91,18 @@
     "models/towers/orc/tower_3_full.glb",
     "models/towers/ruins/ruin_11.glb",
     "models/towers/ruins/ruin_15.glb",
-    "models/towers/medieval/watchtower_lvl1.glb",
-    "models/towers/medieval/game_ready_turret.glb",
+    "models/buildings/faction/muu.glb",
+    "models/buildings/faction/mantah.glb",
+    "models/buildings/faction/krakee.glb",
+    "models/buildings/faction/antuk.glb",
+    "models/towers/medieval/luchnik.glb",
+    "models/towers/medieval/stylized_turret.glb",
     "models/towers/elven/fantasy_crossbow_tower.glb",
-    "models/towers/elven/archer_t3.glb",
-    "models/towers/orc/bomber_t1.glb",
-    "models/towers/orc/bomber_t3.glb",
+    "models/towers/elven/mag.glb",
+    "models/towers/orc/pushka.glb",
+    "models/towers/orc/bashnia2.glb",
     "models/towers/ruins/slow_t1.glb",
-    "models/towers/ruins/slow_t3.glb",
+    "models/towers/ruins/bashnia.glb",
     "models/weapons/polygon_guns.glb",
     "models/kaykit/heroes/barbarian.glb",
     "models/kaykit/heroes/rogue_hooded.glb",
@@ -297,7 +301,7 @@
     },
     {
       "id": "castle-glb",
-      "needle": "e.kind===\"core\"?1.42:1"
+      "needle": "WgFactionCoreBuilding"
     },
     {
       "id": "champion-lane",
@@ -548,15 +552,35 @@
       "needle": "WgAnimatedTower"
     },
     {
+      "id": "tower-v48",
+      "needle": "inner:\"stylized_turret\""
+    },
+    {
+      "id": "core-building-v48",
+      "needle": "WgFactionCoreBuilding"
+    },
+    {
       "id": "hero-weapon-battle",
       "needle": "WgHeroBattleAnimPack"
     },
     {
       "id": "hero-weapon-lobby",
       "needle": "MK(l)?.animPack"
+    },
+    {
+      "id": "canonical-model3d-helper",
+      "needle": "WgModel3dToVisibleMeshes"
+    },
+    {
+      "id": "canonical-handoff",
+      "needle": "WgModel3dToVisibleMeshes(i,m3)"
+    },
+    {
+      "id": "canonical-visual-mesh",
+      "needle": "_wgVis?.length&&L6(C,_wgVis)"
     }
   ],
-  "lastBuilt": "2026-07-04T03:09:52.440Z",
-  "bundleBytes": 4100105,
-  "bundleSha256": "85a297f8519c56fa"
+  "lastBuilt": "2026-07-04T03:55:41.012Z",
+  "bundleBytes": 4101824,
+  "bundleSha256": "f6ab99f8de071182"
 }

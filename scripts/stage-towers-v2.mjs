@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Stage v47 tower + weapon GLBs from user Documents folder.
+ * Stage v47/v48 tower, faction core, and weapon GLBs from user Documents folder.
  */
 import { copyFileSync, existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -87,6 +87,49 @@ for (const [from, to] of aliases) {
   ensureDir(b);
   copyFileSync(a, b);
   console.log("[stage-towers-v2] alias", to);
+}
+
+// v48 — stylized animated turret (medieval inner tier)
+copy("stylized_game_asset_turret.glb", "models/towers/medieval/stylized_turret.glb");
+
+// v48 — tribal hut faction citadels (4 packs)
+const factionBuildings = [
+  ["muu.glb", "Mainhouse_Muu_Lv3"],
+  ["mantah.glb", "Mainhouse_Mantah_Lv3"],
+  ["krakee.glb", "Mainhouse_Krakee_Lv3"],
+  ["antuk.glb", "Mainhouse_Antuk_Lv3"],
+];
+for (const [file, node] of factionBuildings) {
+  split("stylized_tribal_hut.glb", `models/buildings/faction/${file}`, node);
+}
+
+// v48 — medieval tower showcase splits
+const medievalSplits = [
+  ["luchnik.glb", "luchnik"],
+  ["mag.glb", "mag"],
+  ["pushka.glb", "pushka"],
+  ["bashnia.glb", "bashnia"],
+  ["bashnia1.glb", "bashnia1"],
+  ["bashnia2.glb", "bashnia2"],
+];
+for (const [file, node] of medievalSplits) {
+  split("3_medieval_towers.glb", `models/towers/medieval/${file}`, node);
+}
+
+// Pack-specific aliases for CIA v48
+const v48Aliases = [
+  ["models/towers/medieval/mag.glb", "models/towers/elven/mag.glb"],
+  ["models/towers/medieval/pushka.glb", "models/towers/orc/pushka.glb"],
+  ["models/towers/medieval/bashnia2.glb", "models/towers/orc/bashnia2.glb"],
+  ["models/towers/medieval/bashnia.glb", "models/towers/ruins/bashnia.glb"],
+];
+for (const [from, to] of v48Aliases) {
+  const a = join(ROOT, from);
+  const b = join(ROOT, to);
+  if (!existsSync(a)) continue;
+  ensureDir(b);
+  copyFileSync(a, b);
+  console.log("[stage-towers-v2] v48 alias", to);
 }
 
 console.log("[stage-towers-v2] done");
