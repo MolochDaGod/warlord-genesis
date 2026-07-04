@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 46,
+  "bundleVersion": 47,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -91,6 +91,15 @@
     "models/towers/orc/tower_3_full.glb",
     "models/towers/ruins/ruin_11.glb",
     "models/towers/ruins/ruin_15.glb",
+    "models/towers/medieval/watchtower_lvl1.glb",
+    "models/towers/medieval/game_ready_turret.glb",
+    "models/towers/elven/fantasy_crossbow_tower.glb",
+    "models/towers/elven/archer_t3.glb",
+    "models/towers/orc/bomber_t1.glb",
+    "models/towers/orc/bomber_t3.glb",
+    "models/towers/ruins/slow_t1.glb",
+    "models/towers/ruins/slow_t3.glb",
+    "models/weapons/polygon_guns.glb",
     "models/kaykit/heroes/barbarian.glb",
     "models/kaykit/heroes/rogue_hooded.glb",
     "models/kaykit/heroes/knight.glb",
@@ -160,7 +169,7 @@
     },
     {
       "id": "local-towers",
-      "needle": "return`${pT}models/towers/${C}/${g}.glb`"
+      "needle": "WgGetAssetPath(`tower_${C}_${A}`"
     },
     {
       "id": "local-tower-atlas",
@@ -533,9 +542,21 @@
     {
       "id": "hero-textures-v44",
       "needle": "WgFinishHeroMesh"
+    },
+    {
+      "id": "tower-v47",
+      "needle": "WgAnimatedTower"
+    },
+    {
+      "id": "hero-weapon-battle",
+      "needle": "WgHeroBattleAnimPack"
+    },
+    {
+      "id": "hero-weapon-lobby",
+      "needle": "MK(l)?.animPack"
     }
   ],
-  "lastBuilt": "2026-07-04T02:25:31.525Z",
-  "bundleBytes": 4096620,
-  "bundleSha256": "486a10ff4ac9aa94"
+  "lastBuilt": "2026-07-04T03:09:52.440Z",
+  "bundleBytes": 4100105,
+  "bundleSha256": "85a297f8519c56fa"
 }
