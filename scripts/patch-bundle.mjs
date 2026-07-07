@@ -666,7 +666,7 @@ mustPatch(
 // Pre-game deploy + REST sync + champion lane + /play boot.
 const WG_MODEL3D_HELPERS =
   'const WgRacePrefix={human:"WK_",barbarian:"BRB_",dwarf:"DWF_",elf:"ELF_",orc:"ORC_",undead:"UD_"};function WgModel3dToVisibleMeshes(raceId,m3){if(!m3)return null;const p=WgRacePrefix[raceId]||"WK_",out=[],em=m3.equippedMeshes||{},map={head:p+"Units_head_",body:p+"Units_Body_",arms:p+"Units_Arms_",legs:p+"Units_Legs_",shoulders:p+"Units_shoulderpads_",bag:p+"Units_bag_",quiver:p+"Units_quiver_"};for(const k in em){const v=em[k],stem=map[k];stem&&v&&v!=="_default"&&out.push(stem+v)}const ws=m3.weaponSlots||{},wp=(stem,v)=>{v&&v!=="_default"&&out.push(p+stem+v)};wp("weapon_sword_",ws.sword);wp("Shield_",ws.shield);wp("weapon_longbow_",ws.bow);wp("weapon_staff_",ws.staff);wp("weapon_axe_",ws.axe);wp("weapon_hammer_",ws.hammer);wp("weapon_spear_",ws.spear);wp("weapon_pick_",ws.pick);return out.length?out:null}';
-const PLAY_HELPERS = `${WG_MODEL3D_HELPERS}const WgChampionLaneKey="wg-champion-lane",WgDeployDoneKey="wg-deploy-done";function WgReadChampionLane(){try{const v=sessionStorage.getItem(WgChampionLaneKey),n=Number(v);return n===0||n===1||n===2?n:1}catch{}return 1}function WgSaveChampionLane(l){try{sessionStorage.setItem(WgChampionLaneKey,String(l))}catch{}}function WgMarkDeployDone(){try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;if(Rh.getState().loading)return null;try{await Rh.getState().restore()}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:\`Bearer \${tok}\`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}function WgApplyChampionLane(){const lane=WgReadChampionLane(),lanes=Z.map?.lanes;if(!lanes?.[lane]?.pts?.length)return;const pts=lanes[lane].pts,idx=Math.max(0,Math.min(pts.length-1,Math.floor(pts.length*.14))),p=pts[idx];Z.playerPos.set(p.x,1.7,p.z)}function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
+const PLAY_HELPERS = `${WG_MODEL3D_HELPERS}const WgChampionLaneKey="wg-champion-lane",WgDeployDoneKey="wg-deploy-done";function WgReadChampionLane(){try{const v=sessionStorage.getItem(WgChampionLaneKey),n=Number(v);return n===0||n===1||n===2?n:1}catch{}return 1}function WgSaveChampionLane(l){try{sessionStorage.setItem(WgChampionLaneKey,String(l))}catch{}}function WgMarkDeployDone(){try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;if(Rh.getState().loading)return null;try{await Rh.getState().restore()}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:\`Bearer \${tok}\`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}function WgApplyChampionLane(){const lane=WgReadChampionLane(),lanes=Z.map?.lanes;if(!lanes?.[lane]?.pts?.length)return;const pts=lanes[lane].pts,idx=Math.max(0,Math.min(pts.length-1,Math.floor(pts.length*.14))),p=pts[idx];Z.playerPos.set(p.x,1.7,p.z)}function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
 const DEPLOY_SCREEN_PATH = join(ROOT, "scripts", "deploy-screen-v2.min.txt");
 const DEPLOY_SCREEN = existsSync(DEPLOY_SCREEN_PATH)
   ? readFileSync(DEPLOY_SCREEN_PATH, "utf8").trim()
@@ -675,7 +675,7 @@ const DEPLOY_SCREEN = existsSync(DEPLOY_SCREEN_PATH)
 const DEPLOY_SCREEN_ORIG = sliceFunction(js, "WgDeployScreen");
 if (DEPLOY_SCREEN_ORIG && js.includes(DEPLOY_SCREEN_ORIG)) {
   js = js.replace(DEPLOY_SCREEN_ORIG, DEPLOY_SCREEN);
-  mustPatch("deploy-screen", js.includes("gk-deploy-v2"));
+mustPatch("deploy-screen", js.includes("gk-deploy-v2") && js.includes("WgDeployTierCard"));
 } else if (!js.includes("function WgDeployScreen()")) {
   js = js.replace("function u7(){", `${DEPLOY_SCREEN}function u7(){`);
   mustPatch("deploy-screen", true);
@@ -705,7 +705,7 @@ if (!js.includes("function WgAutoOnboard")) {
 const WgAutoOnboardLegacy =
   `function WgAutoOnboard(){const s=zC.getState();if(s.onboardingDone)return!0;const p=s.starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;s.completeStarterPick(p),XI.getState().setFaction(c.faction),XI.getState().setPrefab(p),Yz(p,XI.getState().setMelee,XI.getState().setRanged,XI.getState().setGearTier),zC.getState().seedDefaultLaneGuards(c.faction);return!0}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;WgAutoOnboard();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
 const WgAutoOnboardUpgraded =
-  `function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return WgDebug.flow("ensure.fail",{extra:{reason:"catalog"}}),!1;const c=qe.find(h=>h.id===p);if(!c)return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:p,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){WgDebug.flow("quickbattle.start",{route:location.pathname});if(!WgEnsureReady())return;WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("quickbattle.nav",{route:"/play"}),nav("/play")}function WgDeployAndPlay(){WgDebug.flow("deploy.play.start",{});if(!WgIsDeployDone()&&!WgRestoreMatch())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"gate"}}),!1;if(!WgEnsureReady())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"ensure"}}),!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("deploy.play.ok",{});return!0}`;
+  `function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return WgDebug.flow("ensure.fail",{extra:{reason:"catalog"}}),!1;const c=qe.find(h=>h.id===p);if(!c)return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:p,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){WgDebug.flow("quickbattle.start",{route:location.pathname});if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("quickbattle.nav",{route:"/play"}),nav("/play")}function WgDeployAndPlay(){WgDebug.flow("deploy.play.start",{});if(!WgIsDeployDone()&&!WgRestoreMatch())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"gate"}}),!1;if(!WgEnsureReady())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"ensure"}}),!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("deploy.play.ok",{});return!0}`;
 if (js.includes(WgAutoOnboardLegacy)) {
   js = js.replace(WgAutoOnboardLegacy, WgAutoOnboardUpgraded);
 }
@@ -719,6 +719,7 @@ if (js.includes(WgFetchBattleReadyLegacy)) {
 js = js.replaceAll("if(!WgAutoOnboard())", "if(!WgEnsureReady())");
 mustPatch("quick-battle", js.includes("function WgQuickBattle"));
 mustPatch("ensure-ready", js.includes("function WgEnsureReady"));
+mustPatch("deploy-seed", js.includes("function WgSeedDefaultDeploy"));
 mustPatch("weapon-catalog", js.includes(`if(!${WCAT}[p])`));
 js = js.replaceAll("if(!Da[p])", `if(!${WCAT}[p])`);
 
@@ -1122,6 +1123,22 @@ js = js.replace(
   "laneDeployment:OU({meleeGuard:g.laneMeleeHeroId,rangedGuard:g.laneRangedHeroId}),deploymentRound:1",
   "laneDeployment:A().laneDeployment?.lanes?A().laneDeployment:OU({meleeGuard:g.laneMeleeHeroId,rangedGuard:g.laneRangedHeroId}),deploymentRound:1",
 );
+
+// Pre-battle deploy — free building tier picks + faction-synced lane defaults.
+const RESET_LANES_ORIG =
+  'resetLaneDeployment:()=>{const I=XI.getState();C({laneDeployment:OU({meleeGuard:I.laneMeleeHeroId,rangedGuard:I.laneRangedHeroId})}),A().pushMessage("LANE WAVE CREEPS RESET TO FACTION DEFAULTS","info")}';
+const RESET_LANES_PATCHED =
+  'resetLaneDeployment:()=>{const I=XI.getState();Az(I.factionId,I.enemyFactionId);C({laneDeployment:OU({meleeGuard:I.laneMeleeHeroId,rangedGuard:I.laneRangedHeroId})}),A().pushMessage("LANE WAVE CREEPS RESET TO FACTION DEFAULTS","info")}';
+if (js.includes(RESET_LANES_ORIG)) {
+  js = js.replace(RESET_LANES_ORIG, RESET_LANES_PATCHED);
+}
+const UPGRADE_BUILDING_ANCHOR = "upgradeBuilding:I=>{";
+const DEPLOY_BUILDING_METHODS =
+  'setDeployBuildingTier:(I,g)=>{const i=Math.max(1,Math.min(cU,Number(g)||1));C({buildings:{...A().buildings,[I]:i}})},setDeployBuildings:(I)=>C({buildings:{barracks:Math.max(1,Math.min(cU,I?.barracks??1)),archery:Math.max(1,Math.min(cU,I?.archery??1))},productionSpecs:{warrior:"base",worge:"base",mage:"base",ranger:"base"}}),upgradeBuilding:I=>{';
+if (js.includes(UPGRADE_BUILDING_ANCHOR) && !js.includes("setDeployBuildingTier:")) {
+  js = js.replace(UPGRADE_BUILDING_ANCHOR, DEPLOY_BUILDING_METHODS);
+}
+mustPatch("deploy-buildings", js.includes("setDeployBuildingTier"));
 
 // Victory — redeploy flow + overlay above canvas.
 js = js.replace(
@@ -2153,6 +2170,30 @@ if (!css.includes(".gk-deploy-v2")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended deploy v2 container-query layout");
+}
+if (!css.includes(".gk-deploy-army-grid")) {
+  css += `
+.gk-deploy-grid-v3{grid-template-columns:1fr}
+@container deploy (min-width:960px){.gk-deploy-grid-v3{grid-template-columns:minmax(220px,.85fr) minmax(240px,.95fr) minmax(0,1.2fr);align-items:start}.gk-deploy-lanes-wide{grid-column:span 1}}
+.gk-deploy-army-grid{display:grid;gap:10px;grid-template-columns:1fr}
+@container deploy (min-width:520px){.gk-deploy-army-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.gk-deploy-tier-card{display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:10px;border:1px solid rgba(120,150,200,.25);background:rgba(6,9,14,.78)}
+.gk-deploy-tier-head{display:flex;align-items:center;gap:10px}
+.gk-deploy-tier-icon{width:32px;height:32px;object-fit:contain;opacity:.92}
+.gk-deploy-tier-copy{display:flex;flex-direction:column;gap:2px;min-width:0}
+.gk-deploy-tier-name{font-size:12px;font-weight:700;letter-spacing:.06em;color:#e8eef8}
+.gk-deploy-tier-lvl{font-size:10px;color:#9dffd8;letter-spacing:.04em}
+.gk-deploy-tier-blurb{margin:0;font-size:10px;line-height:1.4;color:#8fa3c4}
+.gk-deploy-tier-btns{display:flex;flex-wrap:wrap;gap:6px}
+.gk-deploy-tier-btn{display:flex;flex-direction:column;align-items:center;gap:2px;min-width:72px;padding:8px 10px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:rgba(8,12,20,.75);cursor:pointer;font-family:inherit;transition:border-color .12s ease,background .12s ease}
+.gk-deploy-tier-btn:hover{border-color:rgba(224,178,82,.45)}
+.gk-deploy-tier-btn.is-active{border-color:rgba(224,178,82,.75);background:rgba(224,178,82,.12);box-shadow:0 0 0 1px rgba(224,178,82,.25)}
+.gk-deploy-tier-btn-tag{font-size:9px;letter-spacing:.12em;color:#e0c878;font-weight:700}
+.gk-deploy-tier-btn-name{font-size:10px;color:#a8b8d0;text-transform:capitalize}
+.gk-deploy-assault:disabled{opacity:.45;cursor:not-allowed;box-shadow:none}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended deploy army tier styles");
 }
 if (!css.includes(".wg-cast-bar")) {
   css += `

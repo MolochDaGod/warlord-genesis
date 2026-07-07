@@ -91,14 +91,22 @@ npm run deploy
 
 ## Railway deploy
 
-From repo root (linked to `grudge-warlords-db` or new `warlord-genesis-api` project):
+Production API lives on **`grudge-warlords-rpg`** → service **`warlord-genesis-api`**  
+URL: `https://warlord-genesis-api-production.up.railway.app`
+
+Deploy **only** the `api/` folder (the full repo is ~1.2GB of GLBs and will 413 on upload):
 
 ```bash
-railway link
-railway variables set GRUDGE_API_URL=https://grudge-api-production-0d46.up.railway.app
-# DATABASE_URL — reference Postgres from grudge-studio-api project
-railway up
+railway link --project grudge-warlords-rpg --service warlord-genesis-api
+railway up api --path-as-root --detach
 ```
+
+Required service variables (already set on production):
+
+| Variable | Value |
+|----------|-------|
+| `DATABASE_URL` | Postgres from `grudge-warlords-rpg` (internal URL) |
+| `GRUDGE_API_URL` | `https://grudge-api-production-0d46.up.railway.app` |
 
 After deploy, set `WARLORD_GENESIS_API_URL` on Vercel to the Railway public URL and redeploy.
 

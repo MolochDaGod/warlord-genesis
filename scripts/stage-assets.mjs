@@ -180,4 +180,12 @@ if (kaykit.status !== 0) {
   process.exit(kaykit.status ?? 1);
 }
 
+const textures = spawnSync("node", ["scripts/stage-textures.mjs"], {
+  cwd: ROOT,
+  stdio: "inherit",
+});
+if (textures.status !== 0) {
+  process.exit(textures.status ?? 1);
+}
+
 console.log(`[stage] copied ${copied} files`);
