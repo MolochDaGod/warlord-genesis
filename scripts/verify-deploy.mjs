@@ -161,10 +161,12 @@ if (LIVE) {
     }
   }
 
-  if (liveBundle.includes("Warlord Genesis — Grudge Studio")) {
-    ok("live bundle is Warlord Genesis (not wrong app)");
+  if (homeHtml.includes("Warlord Genesis") && homeHtml.includes("index-warlord-fix3.js")) {
+    ok("live HTML is Warlord Genesis (not wrong app)");
+  } else if (homeHtml.includes("index-iNz-kS32") || homeHtml.includes("Grudge Warlords")) {
+    fail("live HTML is wrong app (Grudge Warlords / old bundle)");
   } else {
-    fail("live bundle title missing — may be serving wrong Vercel project");
+    fail("live HTML missing Warlord Genesis shell");
   }
 
   if (liveBundle.includes("shardProgress(")) {
