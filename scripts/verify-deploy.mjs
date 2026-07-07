@@ -110,11 +110,44 @@ for (const required of manifest.vercelRewritesRequired) {
     ok(`rewrite ${required}`);
   }
 }
-const spaFallback = vercel.rewrites?.find((r) => r.destination === "/index.html");
+const spaFallback = vercel.rewrites?.find(
+  (r) => r.destination === "/index.html" && r.source?.includes("((?!"),
+);
 if (!spaFallback?.source?.includes("models/")) {
   fail("SPA fallback must exclude /models/ from catch-all");
 } else {
   ok("SPA fallback excludes static asset dirs");
+}
+
+const authCatchAll = vercel.rewrites?.find((r) => r.source === "/api/auth/:path*");
+if (!authCatchAll?.destination?.includes("id.grudge-studio.com/api/auth")) {
+  fail(`auth catch-all must proxy to id.grudge-studio.com/api/auth (got ${authCatchAll?.destination})`);
+} else {
+  ok("auth catch-all → id.grudge-studio.com/api/auth");
+}
+const deprecatedApi = vercel.rewrites?.find(
+  (r) => r.source === "/api/:path*" && r.destination?.includes("api.grudge-studio.com"),
+);
+if (deprecatedApi) {
+  fail("remove deprecated api.grudge-studio.com catch-all from vercel.json");
+} else {
+  ok("no deprecated api.grudge-studio.com catch-all");
+}
+const bundleAuthPath = join(ROOT, manifest.bundleFile);
+if (existsSync(bundleAuthPath)) {
+  const bundleAuth = readFileSync(bundleAuthPath, "utf8");
+  if (!bundleAuth.includes("login?redirect_uri")) {
+    fail("bundle must use canonical Grudge ID login (/login?redirect_uri=)");
+  } else if (bundleAuth.includes("/auth/sso-check")) {
+    fail("bundle still references broken /auth/sso-check");
+  } else {
+    ok("canonical Grudge ID login URL in bundle");
+  }
+  if (!bundleAuth.includes("WgEnsureSession")) {
+    fail("bundle missing WgEnsureSession (deploy auth boot)");
+  } else {
+    ok("deploy session boot [WgEnsureSession]");
+  }
 }
 const CI_BUILD = "node scripts/ci-build.mjs";
 if (vercel.buildCommand !== CI_BUILD) {

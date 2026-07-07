@@ -38,8 +38,11 @@ const PREFIXES = [
   "items",
 ];
 
+const AUTH_GATEWAY = "https://id.grudge-studio.com";
+
 const AUTH_PATHS = [
   "puter",
+  "puter-sso",
   "guest",
   "login",
   "register",
@@ -145,10 +148,14 @@ for (const segment of AUTH_PATHS) {
   });
 }
 
+/** Canonical fleet auth proxy — id hub, not deprecated api.grudge-studio.com */
 rewrites.push(
-  { source: "/api/auth/:path*", destination: "https://id.grudge-studio.com/auth/:path*" },
+  { source: "/auth/callback", destination: "/index.html" },
+  { source: "/api/auth/:path*", destination: `${AUTH_GATEWAY}/api/auth/:path*` },
+  { source: "/auth/:path*", destination: `${AUTH_GATEWAY}/auth/:path*` },
+  { source: "/login", destination: `${AUTH_GATEWAY}/login` },
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
-  { source: "/api/:path*", destination: "https://api.grudge-studio.com/api/:path*" },
+  { source: "/api/:path*", destination: "https://grudge-studio.com/api/:path*" },
   {
     source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
     destination: "/index.html",

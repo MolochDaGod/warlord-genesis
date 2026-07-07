@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 56,
+  "bundleVersion": 59,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -159,6 +159,8 @@
     "/api/grudge/:path*",
     "/api/assets/models/maps/:theme/:file",
     "/api/assets/:path*",
+    "/api/auth/:path*",
+    "/login",
     "/models/heroes/grudge6/:file",
     "/models/kaykit/:path*",
     "/models/characters/:path*"
@@ -271,6 +273,14 @@
     {
       "id": "auth-sso-redirect",
       "needle": "WgGrudgeIdLogin"
+    },
+    {
+      "id": "auth-canonical-login",
+      "needle": "login?redirect_uri="
+    },
+    {
+      "id": "deploy-session-boot",
+      "needle": "WgEnsureSession"
     },
     {
       "id": "auth-callback-route",
@@ -665,7 +675,7 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-07T05:21:34.109Z",
-  "bundleBytes": 4116517,
-  "bundleSha256": "41bf6c89c581582a"
+  "lastBuilt": "2026-07-07T05:50:16.694Z",
+  "bundleBytes": 4117189,
+  "bundleSha256": "6c2e349facb5ffac"
 }
