@@ -675,7 +675,7 @@ const DEPLOY_SCREEN = existsSync(DEPLOY_SCREEN_PATH)
 const DEPLOY_SCREEN_ORIG = sliceFunction(js, "WgDeployScreen");
 if (DEPLOY_SCREEN_ORIG && js.includes(DEPLOY_SCREEN_ORIG)) {
   js = js.replace(DEPLOY_SCREEN_ORIG, DEPLOY_SCREEN);
-mustPatch("deploy-screen", js.includes("gk-deploy-v2") && js.includes("WgDeployTierCard"));
+  mustPatch("deploy-screen", js.includes("gk-deploy-v2") && js.includes("WgDeployTierCard"));
 } else if (!js.includes("function WgDeployScreen()")) {
   js = js.replace("function u7(){", `${DEPLOY_SCREEN}function u7(){`);
   mustPatch("deploy-screen", true);
