@@ -920,30 +920,55 @@ js = js.replace(
   'children:"DEPLOY & MARCH"}),d.jsx("span",{className:"gw-deploy-hint gw-deploy-hint--ok",children:"Champion path + lane waves on deploy screen · breach a lane to siege their citadel"}),!m&&d.jsx("span",{className:"gw-deploy-hint",children:N(h)?"Canonical weapons apply automatically — check loadout.":"Recruit this warlord with 10 shards in the War Chest."})',
 );
 
-// Lobby deploy gate — starter onboarding unlocks march without War Chest shards.
-const LOBBY_DEPLOY_GATE_OLD = "const q=RS[o],m=y&&N(h),H=RS[s]";
-const LOBBY_DEPLOY_GATE_NEW =
-  "const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]";
-if (js.includes(LOBBY_DEPLOY_GATE_OLD)) {
-  js = js.replace(LOBBY_DEPLOY_GATE_OLD, LOBBY_DEPLOY_GATE_NEW);
-  mustPatch("lobby-deploy-gate", true);
+// Lobby — reactive onboarding hook + march gate that bypasses weapon/shard checks when onboarded.
+const LOBBY_ONBOARDING_OLD =
+  "y=Wz(w,u),M=zC(x=>x.gbux),N=zC(x=>x.isCharacterUnlocked),F=zC(x=>x.syncGbuxFromAccount)";
+const LOBBY_ONBOARDING_NEW =
+  "y=Wz(w,u),O=zC(x=>x.onboardingDone),M=zC(x=>x.gbux),N=zC(x=>x.isCharacterUnlocked),F=zC(x=>x.syncGbuxFromAccount)";
+if (js.includes(LOBBY_ONBOARDING_OLD)) {
+  js = js.replace(LOBBY_ONBOARDING_OLD, LOBBY_ONBOARDING_NEW);
+  mustPatch("lobby-onboarding-hook", true);
 } else {
-  mustPatch("lobby-deploy-gate", js.includes(LOBBY_DEPLOY_GATE_NEW));
+  mustPatch("lobby-onboarding-hook", js.includes(LOBBY_ONBOARDING_NEW));
 }
 
-// Auto-seed canonical weapons/loadout when warcamp mounts (fixes disabled DEPLOY & MARCH).
-const LOBBY_ENSURE_OLD =
-  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]';
-const LOBBY_ENSURE_NEW =
-  '},[Q?.gbuxBalance]);T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]';
-if (js.includes(LOBBY_ENSURE_OLD)) {
-  js = js.replace(LOBBY_ENSURE_OLD, LOBBY_ENSURE_NEW);
-  mustPatch("lobby-ensure-ready", true);
-} else if (js.includes('T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o]')) {
-  mustPatch("lobby-ensure-ready", true);
-} else {
-  mustPatch("lobby-ensure-ready", false);
+const LOBBY_GATE_V55 = "const q=RS[o],m=O||(y&&N(h)),H=RS[s]";
+const LOBBY_GATE_PATTERNS = [
+  "const q=RS[o],m=y&&N(h),H=RS[s]",
+  "const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]",
+];
+let lobbyGatePatched = js.includes(LOBBY_GATE_V55);
+if (!lobbyGatePatched) {
+  for (const oldGate of LOBBY_GATE_PATTERNS) {
+    if (js.includes(oldGate)) {
+      js = js.replace(oldGate, LOBBY_GATE_V55);
+      lobbyGatePatched = true;
+      break;
+    }
+  }
 }
+mustPatch("lobby-deploy-gate", lobbyGatePatched);
+
+const LOBBY_ENSURE_V55 =
+  '},[Q?.gbuxBalance]);T.useLayoutEffect(()=>{WgEnsureReady()},[]);const q=RS[o],m=O||(y&&N(h)),H=RS[s]';
+const LOBBY_ENSURE_PATTERNS = [
+  '},[Q?.gbuxBalance]);const q=RS[o],m=O||(y&&N(h)),H=RS[s]',
+  '},[Q?.gbuxBalance]);T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o],m=O||(y&&N(h)),H=RS[s]',
+  '},[Q?.gbuxBalance]);T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]',
+  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]',
+  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&N(h),H=RS[s]',
+];
+let lobbyEnsurePatched = js.includes("T.useLayoutEffect(()=>{WgEnsureReady()},[]);const q=RS[o]");
+if (!lobbyEnsurePatched) {
+  for (const oldEnsure of LOBBY_ENSURE_PATTERNS) {
+    if (js.includes(oldEnsure)) {
+      js = js.replace(oldEnsure, LOBBY_ENSURE_V55);
+      lobbyEnsurePatched = true;
+      break;
+    }
+  }
+}
+mustPatch("lobby-ensure-ready", lobbyEnsurePatched);
 
 // Title — quick path to deploy for returning players.
 js = js.replace(

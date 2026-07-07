@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 54,
+  "bundleVersion": 55,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -653,15 +653,19 @@
       "needle": "l.trail??"
     },
     {
+      "id": "lobby-onboarding-hook",
+      "needle": "O=zC(x=>x.onboardingDone)"
+    },
+    {
       "id": "lobby-deploy-gate",
-      "needle": "m=y&&(N(h)||zC.getState().onboardingDone)"
+      "needle": "m=O||(y&&N(h))"
     },
     {
       "id": "lobby-ensure-ready",
-      "needle": "T.useEffect(()=>{WgEnsureReady()},[])"
+      "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-07T04:36:01.925Z",
-  "bundleBytes": 4116364,
-  "bundleSha256": "fb1ad9ec0cb7778e"
+  "lastBuilt": "2026-07-07T05:04:30.514Z",
+  "bundleBytes": 4116369,
+  "bundleSha256": "8a7d8ebac24f3c62"
 }
