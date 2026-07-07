@@ -116,9 +116,11 @@ if (!spaFallback?.source?.includes("models/")) {
 } else {
   ok("SPA fallback excludes static asset dirs");
 }
-const ciBuild = vercel.buildCommand?.includes("patch-bundle") && vercel.buildCommand?.includes("verify-deploy");
-if (!ciBuild) {
-  fail(`Vercel buildCommand must patch bundle + verify: ${vercel.buildCommand}`);
+const CI_BUILD = "node scripts/ci-build.mjs";
+if (vercel.buildCommand !== CI_BUILD) {
+  fail(`Vercel buildCommand must be exactly "${CI_BUILD}" (got: ${vercel.buildCommand})`);
+} else if ((vercel.buildCommand?.length ?? 0) > 256) {
+  fail(`Vercel buildCommand exceeds 256-char limit (${vercel.buildCommand.length} chars)`);
 } else {
   ok(`Vercel CI build: ${vercel.buildCommand}`);
 }
@@ -137,12 +139,39 @@ if (LIVE) {
 
   const bundleUrl = `${SITE}/${manifest.bundleFile}?v=${manifest.bundleVersion}`;
   const liveBundle = await fetch(bundleUrl).then((r) => r.text());
-  for (const patch of manifest.bundlePatches.slice(0, 6)) {
+  const liveCritical = [
+    "cdn-proxy",
+    "lobby-onboarding-hook",
+    "lobby-deploy-gate",
+    "lobby-ensure-ready",
+    "ensure-ready",
+    "deploy-route",
+    "local-palette",
+  ];
+  for (const id of liveCritical) {
+    const patch = manifest.bundlePatches.find((p) => p.id === id);
+    if (!patch) {
+      fail(`manifest missing critical patch id: ${id}`);
+      continue;
+    }
     if (!liveBundle.includes(patch.needle)) {
-      fail(`live bundle missing patch [${patch.id}]`);
+      fail(`live bundle missing patch [${id}]`);
+    } else {
+      ok(`live patch [${id}]`);
     }
   }
-  ok("live bundle contains core patches");
+
+  if (liveBundle.includes("Warlord Genesis — Grudge Studio")) {
+    ok("live bundle is Warlord Genesis (not wrong app)");
+  } else {
+    fail("live bundle title missing — may be serving wrong Vercel project");
+  }
+
+  if (liveBundle.includes("shardProgress(")) {
+    fail("live bundle still has shardProgress() — React #185 risk");
+  } else {
+    ok("live bundle has no shardProgress()");
+  }
 
   const towerUrl = `${SITE}/models/towers/medieval/tower_02_1.glb`;
   const towerRes = await fetch(towerUrl, { method: "HEAD" });
@@ -188,7 +217,18 @@ if (LIVE) {
     }
   }
 
-  for (const route of ["/", "/lobby", "/warcamp", "/play", "/battle", "/mp"]) {
+  const guestRes = await fetch(`${SITE}/api/auth/guest`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Grudge-Client": "web" },
+    body: JSON.stringify({ deviceId: `verify-${Date.now()}` }),
+  });
+  if (!guestRes.ok) {
+    fail(`live /api/auth/guest returned ${guestRes.status}`);
+  } else {
+    ok(`live /api/auth/guest ${guestRes.status}`);
+  }
+
+  for (const route of ["/", "/lobby", "/deploy", "/warcamp", "/play", "/battle", "/mp"]) {
     const res = await fetch(`${SITE}${route}`, { redirect: "manual" });
     const ct = res.headers.get("content-type") || "";
     if (!ct.includes("text/html")) {

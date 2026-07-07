@@ -179,7 +179,7 @@ js = js.replace(
 const PO_ORIG =
   'function pO(){return new Promise((C,A)=>{const I=window.location.origin,g=window.open(`${bR}/?origin=${encodeURIComponent(I)}`,"grudge-auth","width=480,height=720");if(!g){A(new Error("Popup blocked. Allow popups for this site and retry."));return}let i=!1;const e=()=>{window.removeEventListener("message",t),clearInterval(Q),clearTimeout(o)},t=s=>{if(s.origin!==bR)return;const l=s.data;if(!(!l||l.type!=="grudge-auth:success"||!l.token)){i=!0,e();try{g.close()}catch{}C(l.token)}};window.addEventListener("message",t);try{g.postMessage({type:"grudge-auth:init",origin:I},"*")}catch{}const Q=setInterval(()=>{g.closed&&!i&&(e(),A(new Error("Sign-in window was closed before completing.")))},500),o=setTimeout(()=>{if(!i){i=!0,e();try{g.close()}catch{}A(new Error("Sign-in timed out. Please try again."))}},wO)})}';
 const AUTH_SSO =
-  'const WgAuthReturnKey="wg-auth-return";function WgSafeReturnPath(p){return typeof p==="string"&&p.startsWith("/")&&!p.startsWith("//")?p:"/lobby"}function WgGrudgeIdLogin(p){try{const path=p||window.location.pathname+window.location.search+window.location.hash;sessionStorage.setItem(WgAuthReturnKey,WgSafeReturnPath(path))}catch{}const dest=window.location.origin+"/auth/callback";window.location.href=`${bR}/auth/sso-check?return=${encodeURIComponent(dest)}`}function WgAuthCallbackScreen(){const C=Fh(),[A,I]=T.useState("loading"),[g,i]=T.useState("");T.useEffect(()=>{let e=!1;return(async()=>{try{const t=new URLSearchParams(window.location.search),Q=t.get("grudge_token")||t.get("sso_token")||t.get("token");Q&&cq(Q);const o=["grudge_token","sso_token","token","grudge_id","grudgeId","username","grudge_username","provider"];try{const s=new URL(window.location.href);o.forEach(l=>s.searchParams.delete(l));const h=s.searchParams.toString();window.history.replaceState({},"",s.pathname+(h?"?"+h:"")+s.hash)}catch{}const u=SO();if(!u){if(!e){I("error");setTimeout(()=>C("/"),2e3)}return}const w=await hq(u);if(e)return;Rh.setState({user:w,loading:!1,error:null}),await WgFleetSync(w),i(w.displayName||w.username||"Commander"),I("success");let p="/lobby";try{const s=sessionStorage.getItem(WgAuthReturnKey);s&&(p=WgSafeReturnPath(s),sessionStorage.removeItem(WgAuthReturnKey))}catch{}const y=t.get("return")||t.get("redirect")||t.get("redirect_uri");y&&y.startsWith("/")&&!y.startsWith("//")&&(p=WgSafeReturnPath(y)),setTimeout(()=>C(p),600)}catch{if(!e){I("error");setTimeout(()=>C("/"),2e3)}}})(),()=>{e=!0}},[C]);return d.jsx("div",{className:"gw-screen gw-auth-callback",children:d.jsxs("div",{className:"gw-auth-callback-card",children:[A==="loading"&&d.jsxs(d.Fragment,{children:[d.jsx("span",{className:"gw-auth-callback-spin","aria-hidden":!0}),d.jsx("p",{children:"Completing Grudge ID sign-in…"})]}),A==="success"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-ok",children:"Welcome, "+g}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Returning to warcamp…"})]}),A==="error"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-err",children:"Sign-in failed"}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Redirecting…"})]})]})})}function pO(){WgGrudgeIdLogin();return new Promise(()=>{})}';
+  'const WgAuthReturnKey="wg-auth-return";function WgSafeReturnPath(p){return typeof p==="string"&&p.startsWith("/")&&!p.startsWith("//")?p:"/lobby"}function WgGrudgeIdLogin(p){try{const path=p||window.location.pathname+window.location.search+window.location.hash;sessionStorage.setItem(WgAuthReturnKey,WgSafeReturnPath(path))}catch{}const dest=window.location.origin+"/auth/callback";window.location.href=`${bR}/auth/sso-check?return=${encodeURIComponent(dest)}`}function WgAuthCallbackScreen(){const C=Fh(),[A,I]=T.useState("loading"),[g,i]=T.useState("");T.useEffect(()=>{let e=!1;return(async()=>{try{const t=new URLSearchParams(window.location.search),h=new URLSearchParams(window.location.hash?.length>1?window.location.hash.slice(1):""),Q=t.get("grudge_token")||t.get("sso_token")||t.get("token")||h.get("token")||h.get("grudge_token");Q&&cq(Q);const o=["grudge_token","sso_token","token","grudge_id","grudgeId","username","grudge_username","provider"];try{const s=new URL(window.location.href);o.forEach(l=>s.searchParams.delete(l));const w=s.searchParams.toString();window.history.replaceState({},"",s.pathname+(w?"?"+w:""))}catch{}const u=SO();if(!u){if(!e){I("error");setTimeout(()=>C("/"),2e3)}return}const w=await hq(u);if(e)return;Rh.setState({user:w,loading:!1,error:null}),await WgFleetSync(w),i(w.displayName||w.username||"Commander"),I("success");let p="/lobby";try{const s=sessionStorage.getItem(WgAuthReturnKey);s&&(p=WgSafeReturnPath(s),sessionStorage.removeItem(WgAuthReturnKey))}catch{}const y=t.get("return")||t.get("redirect")||t.get("redirect_uri");y&&y.startsWith("/")&&!y.startsWith("//")&&(p=WgSafeReturnPath(y)),setTimeout(()=>C(p),600)}catch{if(!e){I("error");setTimeout(()=>C("/"),2e3)}}})(),()=>{e=!0}},[C]);return d.jsx("div",{className:"gw-screen gw-auth-callback",children:d.jsxs("div",{className:"gw-auth-callback-card",children:[A==="loading"&&d.jsxs(d.Fragment,{children:[d.jsx("span",{className:"gw-auth-callback-spin","aria-hidden":!0}),d.jsx("p",{children:"Completing Grudge ID sign-in…"})]}),A==="success"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-ok",children:"Welcome, "+g}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Returning to warcamp…"})]}),A==="error"&&d.jsxs(d.Fragment,{children:[d.jsx("p",{className:"gw-auth-callback-err",children:"Sign-in failed"}),d.jsx("p",{className:"gw-auth-callback-sub",children:"Redirecting…"})]})]})})}function pO(){WgGrudgeIdLogin();return new Promise(()=>{})}';
 if (js.includes(PO_ORIG)) {
   js = js.replace(PO_ORIG, AUTH_SSO);
   mustPatch("auth-sso-redirect", true);
@@ -193,9 +193,14 @@ js = js.replace(
   'function uO(){if(!(typeof window>"u"))try{const C=new URLSearchParams(window.location.search),A=C.get("grudge_token")||C.get("sso_token");A&&(cq(A),window.history.replaceState({},"",window.location.pathname))}catch{}}uO();',
   'function uO(){if(!(typeof window>"u"))try{if(window.location.pathname==="/auth/callback")return;const C=new URLSearchParams(window.location.search),A=C.get("grudge_token")||C.get("sso_token");A&&(cq(A),window.history.replaceState({},"",window.location.pathname))}catch{}}uO();',
 );
+// fO kept for legacy callers — signInWithStudio uses WgGrudgeIdLogin directly (no blocking promise).
 js = js.replace(
   'async function fO(){const C=await pO();cq(C);try{return await hq(C)}catch(A){throw NN(),A instanceof Error?A:new Error("Could not load your Grudge Studio profile.")}}',
+  'async function fO(){WgGrudgeIdLogin();throw new Error("Redirecting to Grudge ID…")}',
+);
+js = js.replace(
   'async function fO(){WgGrudgeIdLogin();return new Promise(()=>{})}',
+  'async function fO(){WgGrudgeIdLogin();throw new Error("Redirecting to Grudge ID…")}',
 );
 
 // Title screen — compact viewport-fit landing with visible Puter/guest auth (before copy replacements)
@@ -464,7 +469,11 @@ if (js.includes(RESTORE_ORIG)) {
 
 js = js.replace(
   "signInWithStudio:()=>xR(C,fO),signOut:",
+  "signInWithStudio:()=>{WgGrudgeIdLogin()},signInWithPuter:()=>xR(C,WgPuterSignIn),signOut:",
+);
+js = js.replace(
   "signInWithStudio:()=>xR(C,fO),signInWithPuter:()=>xR(C,WgPuterSignIn),signOut:",
+  "signInWithStudio:()=>{WgGrudgeIdLogin()},signInWithPuter:()=>xR(C,WgPuterSignIn),signOut:",
 );
 
 js = js.replace(
@@ -1815,11 +1824,16 @@ try {
   process.exit(1);
 }
 const bundleHash = createHash("sha256").update(js).digest("hex").slice(0, 16);
+const prevSha = manifest.bundleSha256;
+if (bundleHash !== prevSha) {
+  manifest.bundleVersion = Number(manifest.bundleVersion || 0) + 1;
+  console.log(`[patch] bundle changed (${prevSha ?? "new"} → ${bundleHash}) — v${manifest.bundleVersion}`);
+}
 manifest.lastBuilt = new Date().toISOString();
 manifest.bundleBytes = js.length;
 manifest.bundleSha256 = bundleHash;
 writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
-console.log("[patch] wrote", OUT, `(${js.length} bytes, sha ${bundleHash})`);
+console.log("[patch] wrote", OUT, `(${js.length} bytes, sha ${bundleHash}, v${manifest.bundleVersion})`);
 
 let html = readFileSync(INDEX, "utf8");
 const BUNDLE_BUST = String(manifest.bundleVersion);

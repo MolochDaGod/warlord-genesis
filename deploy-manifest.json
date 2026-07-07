@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 55,
+  "bundleVersion": 56,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -665,7 +665,7 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-07T05:04:30.514Z",
-  "bundleBytes": 4116369,
-  "bundleSha256": "8a7d8ebac24f3c62"
+  "lastBuilt": "2026-07-07T05:21:34.109Z",
+  "bundleBytes": 4116517,
+  "bundleSha256": "41bf6c89c581582a"
 }
