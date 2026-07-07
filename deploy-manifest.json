@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 50,
+  "bundleVersion": 54,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -95,14 +95,14 @@
     "models/buildings/faction/mantah.glb",
     "models/buildings/faction/krakee.glb",
     "models/buildings/faction/antuk.glb",
-    "models/towers/medieval/luchnik.glb",
-    "models/towers/medieval/stylized_turret.glb",
+    "models/towers/medieval/watchtower_lvl1.glb",
+    "models/towers/medieval/game_ready_turret.glb",
     "models/towers/elven/fantasy_crossbow_tower.glb",
-    "models/towers/elven/mag.glb",
-    "models/towers/orc/pushka.glb",
-    "models/towers/orc/bashnia2.glb",
+    "models/towers/elven/archer_t3.glb",
+    "models/towers/orc/bomber_t1.glb",
+    "models/towers/orc/bomber_t3.glb",
     "models/towers/ruins/slow_t1.glb",
-    "models/towers/ruins/bashnia.glb",
+    "models/towers/ruins/slow_t3.glb",
     "models/projectiles/GRDG-3D-5B98764B.glb",
     "models/weapons/polygon_guns.glb",
     "models/kaykit/heroes/barbarian.glb",
@@ -189,8 +189,24 @@
       "needle": "cdnReachable:!1,bootedAt:0"
     },
     {
-      "id": "boot-cache-v5",
-      "needle": "gw_engine_boot_v5"
+      "id": "boot-cache-v6",
+      "needle": "gw_engine_boot_v6"
+    },
+    {
+      "id": "asset-sanitize",
+      "needle": "function WgSanitizeAssetPaths()"
+    },
+    {
+      "id": "debug-core",
+      "needle": "function WgDebugPanel("
+    },
+    {
+      "id": "debug-anim",
+      "needle": "function WgAnimLog("
+    },
+    {
+      "id": "debug-panel-mount",
+      "needle": "d.jsx(WgDebugPanel,{})"
     },
     {
       "id": "local-units",
@@ -274,7 +290,7 @@
     },
     {
       "id": "baked-null-guard",
-      "needle": "[warlord] baked clip missing"
+      "needle": "WgDebug.asset(\"clip.missing\""
     },
     {
       "id": "pack-card-art",
@@ -554,7 +570,7 @@
     },
     {
       "id": "tower-v48",
-      "needle": "inner:\"stylized_turret\""
+      "needle": "outer:\"watchtower_lvl1\""
     },
     {
       "id": "core-building-v48",
@@ -635,9 +651,17 @@
     {
       "id": "combat-proj-trail-rate",
       "needle": "l.trail??"
+    },
+    {
+      "id": "lobby-deploy-gate",
+      "needle": "m=y&&(N(h)||zC.getState().onboardingDone)"
+    },
+    {
+      "id": "lobby-ensure-ready",
+      "needle": "T.useEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-04T05:01:21.576Z",
-  "bundleBytes": 4110327,
-  "bundleSha256": "366eef9ad8da2a17"
+  "lastBuilt": "2026-07-07T04:36:01.925Z",
+  "bundleBytes": 4116364,
+  "bundleSha256": "fb1ad9ec0cb7778e"
 }

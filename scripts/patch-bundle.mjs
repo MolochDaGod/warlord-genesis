@@ -99,7 +99,7 @@ js = js.replace(
 const PY_ORIG =
   'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),o={idle:g,walk:i,run:e,sprint:t};return{director:new G6(C,o),attackClip:Q,actions:{idle:C.clipAction(g),walk:C.clipAction(i),run:C.clipAction(e),attack:C.clipAction(Q)}}}';
 const PY_PATCHED =
-  'async function pY(C,A){const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),f=g||i||e||t||Q,o={idle:g||f,walk:i||f,run:e||f,sprint:t||f},s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}';
+  'async function pY(C,A){WgDebug.anim("pack.load",{extra:{pack:A}});const I=sx[A],[g,i,e,t,Q]=await Promise.all([zc(I.idle),zc(I.walk),zc(I.run),zc(I.sprint),zc(N6[A])]),f=g||i||e||t||Q,o={idle:g||f,walk:i||f,run:e||f,sprint:t||f},s=a=>a?C.clipAction(a):f?C.clipAction(f):null;return WgDebug.anim("pack.bind",{extra:{pack:A,hasIdle:!!g,hasWalk:!!i,hasRun:!!e}}),{director:new G6(C,o),attackClip:Q,actions:{idle:s(g),walk:s(i),run:s(e),attack:s(Q)}}}';
 if (js.includes(PY_ORIG)) {
   js = js.replace(PY_ORIG, PY_PATCHED);
   mustPatch("anim-pack-binder", true);
@@ -115,6 +115,45 @@ js = js.replace(
   "constructor(A,I){this.mixer=A;const g=i=>{const e=A.clipAction(i);return e.setLoop(cr,1/0),e.enabled=!0,e.setEffectiveWeight(0),e.play(),e};this.loco={idle:g(I.idle),walk:g(I.walk),run:g(I.run),sprint:g(I.sprint)},this.loco.idle.setEffectiveWeight(1)",
   "constructor(A,I){this.mixer=A;const g=i=>{if(!i)return null;const e=A.clipAction(i);return e.setLoop(cr,1/0),e.enabled=!0,e.setEffectiveWeight(0),e.play(),e},f=I.idle||I.walk||I.run||I.sprint;this.loco={idle:g(I.idle||f),walk:g(I.walk||f),run:g(I.run||f),sprint:g(I.sprint||f)},this.loco.idle?.setEffectiveWeight(1)",
 );
+
+// ── Debug: flow tracing + positional animation logs (?debug=1 or Shift+`) ──
+const WG_DEBUG_CODE = readFileSync(join(ROOT, "scripts", "wg-debug-code.txt"), "utf8").trim();
+if (!js.includes("function WgDebugPanel(")) {
+  if (js.includes("async function zc(C)")) {
+    js = js.replace("async function zc(C)", `${WG_DEBUG_CODE}WgDebug.init();async function zc(C)`);
+    mustPatch("debug-core", js.includes("function WgDebugPanel("));
+  } else {
+    mustPatch("debug-core", false);
+  }
+} else {
+  mustPatch("debug-core", true);
+}
+js = js.replace(
+  'if(!I.ok){console.warn(`[warlord] baked clip missing ${A} (${I.status})`);return null}try{const g=await I.json();return b6(oa.parse(g))}catch(e){console.warn(`[warlord] baked clip parse failed ${A}`,e);return null}',
+  'if(!I.ok){WgDebug.asset("clip.missing",{extra:{url:A,status:I.status}});return null}try{const g=await I.json();return b6(oa.parse(g))}catch(e){WgDebug.asset("clip.parse",{extra:{url:A,err:String(e)}});return null}',
+);
+js = js.replace(
+  "function H6(C,A,I){if(A===I)return;const g=C.actions[A]??C.actions.idle??C.actions.walk,i=C.actions[I];g&&(i?.fadeOut(.12),A===\"attack\"?(g.setLoop(ak,1),g.clampWhenFinished=!1):g.setLoop(cr,1/0),g.reset().fadeIn(.12).play())}",
+  "function H6(C,A,I,ctx){WgAnimLog(C,A,I,ctx);if(A===I)return;const g=C.actions[A]??C.actions.idle??C.actions.walk,i=C.actions[I];g&&(i?.fadeOut(.12),A===\"attack\"?(g.setLoop(ak,1),g.clampWhenFinished=!1):g.setLoop(cr,1/0),g.reset().fadeIn(.12).play())}",
+);
+js = js.replace(
+  "u!==Q.current&&(H6(e,u,Q.current),Q.current=u)",
+  "u!==Q.current&&(H6(e,u,Q.current,{id:A,typeId:C,faction:I,locomotion:w?.locomotion,pos:w?.pos}),Q.current=u)",
+);
+js = js.replace(
+  "if(!M||y===st.current.state)return;const N=st.current.clip?c[st.current.clip]:null,F=c[M];N?.fadeOut(.12),F?.reset().fadeIn(.12).play(),st.current={state:y,clip:M}",
+  "if(!M||y===st.current.state)return;WgAnimLog({root:o},st.current.state,y,{id:g,typeId:\"kaykit\",locomotion:p?.locomotion,pos:p?.pos});const N=st.current.clip?c[st.current.clip]:null,F=c[M];N?.fadeOut(.12),F?.reset().fadeIn(.12).play(),st.current={state:y,clip:M}",
+);
+js = js.replace(
+  "return Zc={ready:!0,manifest:mt,cdnReachable:!1,bootedAt:Date.now()}",
+  "return WgDebug.flow(\"engine.boot\",{extra:{cdn:!1}}),Zc={ready:!0,manifest:mt,cdnReachable:!1,bootedAt:Date.now()}",
+);
+if (!js.includes("d.jsx(WgDebugPanel,{})")) {
+  js = js.replace("d.jsx(YCA,{})", "d.jsx(WgDebugPanel,{}),d.jsx(YCA,{})");
+  mustPatch("debug-panel", js.includes("d.jsx(WgDebugPanel,{})"));
+} else {
+  mustPatch("debug-panel", true);
+}
 
 // Standard Grudge fleet auth — /api/auth/* rewrites to grudge-api (JWT in body, not cookies).
 js = js.replace('GN="/api/grudge/auth"', 'GN="/api/auth"');
@@ -212,7 +251,7 @@ if (js.includes("const Jb=new rK;")) {
 
 // Map / asset overrides — persisted in localStorage, applied on Z.newMatch (admin at /admin).
 const MAP_ADMIN_HELPERS =
-  'const WgMapStoreKey="warlord_genesis_map_override",WgAssetStoreKey="warlord_genesis_asset_paths";function WgLoadMapOverride(){try{const r=localStorage.getItem(WgMapStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveMapOverride(d){localStorage.setItem(WgMapStoreKey,JSON.stringify(d))}function WgClearMapOverride(){localStorage.removeItem(WgMapStoreKey)}function WgDefaultMapDraft(){return{mapSize:"standard",width:80,length:130,allyCore:{x:0,z:46},enemyCore:{x:0,z:-46},lanes:[{id:0,name:"West",pts:[{x:-18,z:46},{x:-18,z:0},{x:-18,z:-46}]},{id:1,name:"Center",pts:[{x:0,z:46},{x:0,z:0},{x:0,z:-46}]},{id:2,name:"East",pts:[{x:18,z:46},{x:18,z:0},{x:18,z:-46}]}]}}function WgDefaultMapDraftLarge(){return{mapSize:"large",width:200,length:325,allyCore:{x:0,z:120},enemyCore:{x:0,z:-120},lanes:[{id:0,name:"Top",pts:[{x:-40,z:120},{x:-55,z:40},{x:-30,z:-40},{x:-45,z:-120}]},{id:1,name:"Mid",pts:[{x:0,z:120},{x:0,z:40},{x:0,z:-40},{x:0,z:-120}]},{id:2,name:"Bottom",pts:[{x:40,z:120},{x:55,z:40},{x:30,z:-40},{x:45,z:-120}]}]}}function WgLoadAssetPaths(){try{const r=localStorage.getItem(WgAssetStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveAssetPaths(d){localStorage.setItem(WgAssetStoreKey,JSON.stringify(d))}function WgDefaultAssetPaths(){return{kaykitMesh:"/models/characters/kaykit/Rig_Medium_General.glb",kaykitMove:"/models/characters/kaykit/Rig_Medium_MovementBasic.glb",unitPalette:"/models/units/Color_Palette.png",footman:"/models/units/footman.glb",archer:"/models/units/archer.glb",knight:"/models/units/knight.glb",polygonGuns:"/models/weapons/polygon_guns.glb",tower_medieval_outer:"/models/towers/medieval/luchnik.glb",tower_medieval_inner:"/models/towers/medieval/stylized_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/mag.glb",tower_orc_outer:"/models/towers/orc/pushka.glb",tower_orc_inner:"/models/towers/orc/bashnia2.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/bashnia.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"}}function WgGetAssetPath(k,f){const p=WgLoadAssetPaths();return p?.[k]||f}function WgApplyMapOverride(map){const ov=WgLoadMapOverride();if(!ov||!map)return;ov.mapSize&&(map.size=ov.mapSize);ov.width&&(map.width=ov.width);ov.length&&(map.length=ov.length);ov.allyCore&&map.allyCore&&Object.assign(map.allyCore,ov.allyCore);ov.enemyCore&&map.enemyCore&&Object.assign(map.enemyCore,ov.enemyCore);if(ov.lanes&&map.lanes)ov.lanes.forEach((lane,idx)=>{const L=map.lanes[idx];if(!L||!lane?.pts?.length)return;L.name=lane.name||L.name;L.pts=lane.pts.map(p=>{const y=typeof map.heightAt==="function"?map.heightAt(p.x,p.z):0;return new O(p.x,y,p.z)})})}';
+  'const WgMapStoreKey="warlord_genesis_map_override",WgAssetStoreKey="warlord_genesis_asset_paths";function WgLoadMapOverride(){try{const r=localStorage.getItem(WgMapStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveMapOverride(d){localStorage.setItem(WgMapStoreKey,JSON.stringify(d))}function WgClearMapOverride(){localStorage.removeItem(WgMapStoreKey)}function WgDefaultMapDraft(){return{mapSize:"standard",width:80,length:130,allyCore:{x:0,z:46},enemyCore:{x:0,z:-46},lanes:[{id:0,name:"West",pts:[{x:-18,z:46},{x:-18,z:0},{x:-18,z:-46}]},{id:1,name:"Center",pts:[{x:0,z:46},{x:0,z:0},{x:0,z:-46}]},{id:2,name:"East",pts:[{x:18,z:46},{x:18,z:0},{x:18,z:-46}]}]}}function WgDefaultMapDraftLarge(){return{mapSize:"large",width:200,length:325,allyCore:{x:0,z:120},enemyCore:{x:0,z:-120},lanes:[{id:0,name:"Top",pts:[{x:-40,z:120},{x:-55,z:40},{x:-30,z:-40},{x:-45,z:-120}]},{id:1,name:"Mid",pts:[{x:0,z:120},{x:0,z:40},{x:0,z:-40},{x:0,z:-120}]},{id:2,name:"Bottom",pts:[{x:40,z:120},{x:55,z:40},{x:30,z:-40},{x:45,z:-120}]}]}}function WgLoadAssetPaths(){try{const r=localStorage.getItem(WgAssetStoreKey);return r?JSON.parse(r):null}catch{return null}}function WgSaveAssetPaths(d){localStorage.setItem(WgAssetStoreKey,JSON.stringify(d))}function WgDefaultAssetPaths(){return{kaykitMesh:"/models/characters/kaykit/Rig_Medium_General.glb",kaykitMove:"/models/characters/kaykit/Rig_Medium_MovementBasic.glb",unitPalette:"/models/units/Color_Palette.png",footman:"/models/units/footman.glb",archer:"/models/units/archer.glb",knight:"/models/units/knight.glb",polygonGuns:"/models/weapons/polygon_guns.glb",tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb",tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/archer_t3.glb",tower_orc_outer:"/models/towers/orc/bomber_t1.glb",tower_orc_inner:"/models/towers/orc/bomber_t3.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/slow_t3.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"}}let WgAssetSanitized=false;function WgSanitizeAssetPaths(){try{const p=WgLoadAssetPaths();if(!p)return;const bad=["luchnik","stylized_turret","/mag.glb","pushka","bashnia2","/bashnia.glb"];let d=false;for(const k of Object.keys(p)){const v=p[k];if(typeof v==="string"&&bad.some(b=>v.includes(b))){delete p[k];d=true}}if(d)localStorage.setItem(WgAssetStoreKey,JSON.stringify(p))}catch(_){}}function WgGetAssetPath(k,f){WgAssetSanitized||(WgAssetSanitized=true,WgSanitizeAssetPaths());const p=WgLoadAssetPaths();return p?.[k]||f}function WgApplyMapOverride(map){const ov=WgLoadMapOverride();if(!ov||!map)return;ov.mapSize&&(map.size=ov.mapSize);ov.width&&(map.width=ov.width);ov.length&&(map.length=ov.length);ov.allyCore&&map.allyCore&&Object.assign(map.allyCore,ov.allyCore);ov.enemyCore&&map.enemyCore&&Object.assign(map.enemyCore,ov.enemyCore);if(ov.lanes&&map.lanes)ov.lanes.forEach((lane,idx)=>{const L=map.lanes[idx];if(!L||!lane?.pts?.length)return;L.name=lane.name||L.name;L.pts=lane.pts.map(p=>{const y=typeof map.heightAt==="function"?map.heightAt(p.x,p.z):0;return new O(p.x,y,p.z)})})}';
 if (!js.includes("function WgApplyMapOverride(")) {
   if (js.includes("function eU(")) {
     js = js.replace("function eU(", `${MAP_ADMIN_HELPERS}function eU(`);
@@ -223,6 +262,30 @@ if (!js.includes("function WgApplyMapOverride(")) {
 } else {
   mustPatch("map-admin-helpers", true);
 }
+js = js.replaceAll(
+  'tower_medieval_outer:"/models/towers/medieval/luchnik.glb"',
+  'tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb"',
+);
+js = js.replaceAll(
+  'tower_medieval_inner:"/models/towers/medieval/stylized_turret.glb"',
+  'tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb"',
+);
+js = js.replaceAll(
+  'tower_elven_inner:"/models/towers/elven/mag.glb"',
+  'tower_elven_inner:"/models/towers/elven/archer_t3.glb"',
+);
+js = js.replaceAll(
+  'tower_orc_outer:"/models/towers/orc/pushka.glb"',
+  'tower_orc_outer:"/models/towers/orc/bomber_t1.glb"',
+);
+js = js.replaceAll(
+  'tower_orc_inner:"/models/towers/orc/bashnia2.glb"',
+  'tower_orc_inner:"/models/towers/orc/bomber_t3.glb"',
+);
+js = js.replaceAll(
+  'tower_ruins_inner:"/models/towers/ruins/bashnia.glb"',
+  'tower_ruins_inner:"/models/towers/ruins/slow_t3.glb"',
+);
 
 // Canonical KayKit medium rig — mesh + movement GLBs from info.grudge-studio.com / ObjectStore.
 const KAYKIT_RIG_MEDIUM =
@@ -564,7 +627,7 @@ if (js.includes(HAA_ORIG)) {
 const BAA_ORIG =
   "function bAA({typeId:C,unitId:A,faction:I}){const g=yT[I]??\"#ffffff\",[i,e]=T.useState(null),t=T.useRef(\"idle\");return T.useEffect(()=>{let Q=!0;return e(null),T6(C,{fitHeight:qAA,tint:g}).then(o=>{Q&&e(o)}).catch(()=>{Q&&e(null)}),()=>{Q=!1}},[C,g]),VC((Q,o)=>{if(!i||(i.mixer.update(o),A==null))return;const s=Z.units.find(c=>c.id===A);if(!s)return;const l=s.locomotion===\"attack\"?\"attack\":s.locomotion===\"run\"?\"run\":\"idle\";l!==t.current&&(H6(i,l,t.current),t.current=l)}),i?d.jsx(\"primitive\",{object:i.root}):null}";
 const BAA_PATCHED =
-  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=g?"#ffffff":WgGetFactionTint(I),[e,t]=T.useState(null),Q=T.useRef("idle"),o=wa(C),s=g?WgHeroBattleAnimPack(C,I,g):o?.grudge?qh(o.grudge.raceId,o.grudge.classId)?.animPack??"unarmed":"unarmed",l=g?2.25:qAA,wc=g?WgHeroWeaponAnimClass(C,I,g):null;return T.useEffect(()=>{let c=!0;return t(null),T6(C,{fitHeight:l,tint:i,animPack:s}).then(h=>{if(!c)return;wc&&WgSyncWeaponMeshes(h.root,wc);t(h)}).catch(()=>{c&&t(null)}),()=>{c=!1}},[C,i,l,s,wc]),VC((c,h)=>{if(!e||(e.mixer.update(h),A==null))return;const w=Z.units.find(u=>u.id===A);if(!w)return;const u=w.locomotion==="attack"?"attack":w.locomotion==="run"?"run":"idle";u!==Q.current&&(H6(e,u,Q.current),Q.current=u)}),e?d.jsx("primitive",{object:e.root}):null}';
+  'function bAA({typeId:C,unitId:A,faction:I,isHero:g=!1}){const i=g?"#ffffff":WgGetFactionTint(I),[e,t]=T.useState(null),Q=T.useRef("idle"),o=wa(C),s=g?WgHeroBattleAnimPack(C,I,g):o?.grudge?qh(o.grudge.raceId,o.grudge.classId)?.animPack??"unarmed":"unarmed",l=g?2.25:qAA,wc=g?WgHeroWeaponAnimClass(C,I,g):null;return T.useEffect(()=>{let c=!0;return t(null),T6(C,{fitHeight:l,tint:i,animPack:s}).then(h=>{if(!c)return;wc&&WgSyncWeaponMeshes(h.root,wc);t(h)}).catch(()=>{c&&t(null)}),()=>{c=!1}},[C,i,l,s,wc]),VC((c,h)=>{if(!e||(e.mixer.update(h),A==null))return;const w=Z.units.find(u=>u.id===A);if(!w)return;const u=w.locomotion==="attack"?"attack":w.locomotion==="run"?"run":"idle";u!==Q.current&&(H6(e,u,Q.current,{id:A,typeId:C,faction:I,locomotion:w?.locomotion,pos:w?.pos}),Q.current=u)}),e?d.jsx("primitive",{object:e.root}):null}';
 if (js.includes(BAA_ORIG)) {
   js = js.replace(BAA_ORIG, BAA_PATCHED);
   mustPatch("hero-mesh-baa", true);
@@ -633,15 +696,11 @@ if (!js.includes("function WgAutoOnboard")) {
 const WgAutoOnboardLegacy =
   `function WgAutoOnboard(){const s=zC.getState();if(s.onboardingDone)return!0;const p=s.starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;s.completeStarterPick(p),XI.getState().setFaction(c.faction),XI.getState().setPrefab(p),Yz(p,XI.getState().setMelee,XI.getState().setRanged,XI.getState().setGearTier),zC.getState().seedDefaultLaneGuards(c.faction);return!0}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;WgAutoOnboard();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
 const WgAutoOnboardUpgraded =
-  `function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
+  `function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return WgDebug.flow("ensure.fail",{extra:{reason:"catalog"}}),!1;const c=qe.find(h=>h.id===p);if(!c)return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:p,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){WgDebug.flow("quickbattle.start",{route:location.pathname});if(!WgEnsureReady())return;WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("quickbattle.nav",{route:"/play"}),nav("/play")}function WgDeployAndPlay(){WgDebug.flow("deploy.play.start",{});if(!WgIsDeployDone()&&!WgRestoreMatch())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"gate"}}),!1;if(!WgEnsureReady())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"ensure"}}),!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("deploy.play.ok",{});return!0}`;
 if (js.includes(WgAutoOnboardLegacy)) {
   js = js.replace(WgAutoOnboardLegacy, WgAutoOnboardUpgraded);
 }
 js = js.replaceAll("if(!WgAutoOnboard())", "if(!WgEnsureReady())");
-js = js.replace(
-  "y=Wz(w,u),M=zC(x=>x.gbux),N=zC(x=>x.isCharacterUnlocked),F=zC(x=>x.syncGbuxFromAccount),[Y,R]=T.useState(\"warcamp\");const gbuxRef=T.useRef(null);T.useEffect(()=>{if(Q?.gbuxBalance==null)return;const v=Number(Q.gbuxBalance);gbuxRef.current!==v&&(gbuxRef.current=v,zC.getState().syncGbuxFromAccount(v))},[Q?.gbuxBalance]);const q=RS[o],m=y&&N(h),H=RS[s],_=()=>{m&&(p(),C(\"/deploy\"))};",
-  'y=Wz(w,u),M=zC(x=>x.gbux),N=zC(x=>x.isCharacterUnlocked),F=zC(x=>x.syncGbuxFromAccount),[Y,R]=T.useState("warcamp");const gbuxRef=T.useRef(null);T.useEffect(()=>{if(Q?.gbuxBalance==null)return;const v=Number(Q.gbuxBalance);gbuxRef.current!==v&&(gbuxRef.current=v,zC.getState().syncGbuxFromAccount(v))},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s],_=()=>{m&&(p(),C("/deploy"))};',
-);
 mustPatch("quick-battle", js.includes("function WgQuickBattle"));
 mustPatch("ensure-ready", js.includes("function WgEnsureReady"));
 mustPatch("weapon-catalog", js.includes(`if(!${WCAT}[p])`));
@@ -652,7 +711,7 @@ const ICON_HELPERS =
   'const WgIconBase="/assets/icons";const WgFactionIcon={crusade:`${WgIconBase}/factions/holy.png`,fabled:`${WgIconBase}/factions/ice.png`,legion:`${WgIconBase}/factions/storm.png`};const WgWeaponIconMap={SWORD:"weapons/sword.png",BOW:"weapons/bow.png",STAFF:"weapons/staff.png",HAMMER:"weapons/hammer.png",DAGGER:"weapons/dagger.png",GUN:"weapons/gun.png",GREATSWORD:"weapons/greatsword.png",GREATAXE:"weapons/greataxe.png",AXE:"weapons/axe.png",CROSSBOW:"weapons/crossbow.png",SHIELD:"weapons/shield.png",SCYTHE:"weapons/scythe.png",MACE:"weapons/mace.png",LANCE:"weapons/lance.png",TOME:"weapons/tome.png",RELIC:"weapons/tome.png"};const WgAbilityIcon={dash:`${WgIconBase}/skills/warrior-01.png`,slam:`${WgIconBase}/skills/warrior-02.png`};function WgSkillIcon(s){if(!s)return`${WgIconBase}/weapons/sword.png`;if(s.kind==="ability")return WgAbilityIcon[s.id]||`${WgIconBase}/skills/warrior-01.png`;const id=String(s.id||"").toLowerCase(),lab=String(s.label||"").toLowerCase(),mix=id+" "+lab;if(/fire|cleave|burn|slam/.test(mix))return`${WgIconBase}/vox/fire-rock.png`;if(/holy|light|vengeful|crusade/.test(mix))return`${WgIconBase}/vox/holy.png`;if(/ice|frost|cold/.test(mix))return`${WgIconBase}/vox/ice.png`;if(/storm|lightning|thunder/.test(mix))return`${WgIconBase}/vox/storm.png`;if(/^bow_|ranger|arrow|shot|pierce/.test(id))return`${WgIconBase}/vox/flaming-spear.png`;if(/^staff_|mage|arcane|spell|magic/.test(id))return`${WgIconBase}/vox/flaming-staff.png`;if(/^dagger_|worge|shadow|spectral/.test(id))return`${WgIconBase}/vox/spectral-dagger.png`;if(/^gun_|rifle|pistol/.test(id))return`${WgIconBase}/weapons/gun.png`;if(/^hammer_|mace/.test(id))return`${WgIconBase}/weapons/mace.png`;if(/^axe_|greataxe/.test(id))return`${WgIconBase}/weapons/greataxe.png`;if(/^crossbow_/.test(id))return`${WgIconBase}/weapons/crossbow.png`;if(/^lance_|thrust|lunging/.test(id))return`${WgIconBase}/vox/golden-arrow.png`;const pref=id.split("_")[0],api={sword:"SWORD",bow:"BOW",staff:"STAFF",hammer:"HAMMER",dagger:"DAGGER",gun:"GUN",axe:"AXE",crossbow:"CROSSBOW",lance:"LANCE",mace:"MACE",scythe:"SCYTHE"}[pref];return api&&WgWeaponIconMap[api]?`${WgIconBase}/${WgWeaponIconMap[api]}`:`${WgIconBase}/weapons/sword.png`};';
 const UI_KIT_HUD = `${ICON_HELPERS}const WgUiKitBase="/assets/ui-kit/craftpix";function WgMinimap(){const ph=BI(x=>x.phase),md=_g(x=>x.mode),ref=T.useRef(null);T.useEffect(()=>{if(ph!=="battle")return;let id;const draw=()=>{const c=ref.current;if(!c)return;const ctx=c.getContext("2d"),w=c.width,h=c.height,map=Z.map;if(!map){id=requestAnimationFrame(draw);return}const W=map.width||120,L=map.length||120,mx=Math.max(W,L,.1),sx=w/mx,sz=h/mx,ox=(w-W*sx)/2,oz=(h-L*sz)/2;ctx.clearRect(0,0,w,h);ctx.fillStyle="rgba(6,9,14,0.55)";ctx.fillRect(0,0,w,h);ctx.strokeStyle="rgba(120,150,200,0.42)";ctx.lineWidth=1.5;for(let li=0;li<3;li++){const lane=map.lanes?.[li];if(!lane?.pts?.length)continue;ctx.beginPath();lane.pts.forEach((p,i)=>{const x=ox+p.x*sx,y=oz+p.z*sz;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const dot=(x,z,r,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(ox+x*sx,oz+z*sz,r,0,6.283);ctx.fill()};map.allyCore&&dot(map.allyCore.x,map.allyCore.z,5,"#5ad48a");map.enemyCore&&dot(map.enemyCore.x,map.enemyCore.z,5,"#e0584a");for(const u of Z.units||[])u.alive&&dot(u.pos.x,u.pos.z,2.5,u.faction==="ally"?"#7ec8ff":u.faction==="enemy"?"#ff7b6b":"#c8a84b");md==="combat"&&dot(Z.playerPos.x,Z.playerPos.z,6,"#f0c46b");id=requestAnimationFrame(draw)};draw();return()=>cancelAnimationFrame(id)},[ph,md]);if(ph!=="battle")return null;return d.jsxs("div",{className:"gk-minimap-panel",children:[d.jsx("div",{className:"gk-minimap-frame gk-frame-minimap"}),d.jsx("canvas",{ref:ref,className:"gk-minimap-canvas",width:168,height:112}),d.jsx("span",{className:"gk-minimap-label",children:md==="combat"?"Warrior":"Warlord"})]})}function WgKitActionBar(){const wCd=BI(e=>e.weaponSkillCd),ab=BI(e=>e.abilityCd),aw=BI(e=>e.heroActiveWeapon),mi=XI(e=>e.meleeId),ri=XI(e=>e.rangedId),md=_g(e=>e.mode),skills=hp(mi,ri,aw),slots=[];skills.forEach(s=>slots.push({kind:"weapon",id:s.id,label:s.label,key:s.keyLabel,cd:wCd[s.id]??0,cooldown:s.cooldown??0,tip:s.description||s.label}));mgA.forEach(a=>{const I=$c[a];I&&slots.push({kind:"ability",id:a,label:I.name,key:I.key,color:I.color,cd:ab[a]??0,cooldown:I.cooldown,tip:I.name})});return d.jsxs("div",{className:"gk-actionbar gk-frame-actionbar",children:[d.jsx("div",{className:"gk-actionbar-slots",children:slots.map((s,i)=>{const ready=s.cd<=0,pct=ready||s.cooldown<=0?0:s.cd/s.cooldown*100;return d.jsxs("div",{className:\`gk-ab-slot\${ready?" is-ready":""}\`,style:{backgroundImage:\`url(\${WgUiKitBase}/Action Bar/Slots/ActionBar_Slot_Background.png)\`},title:s.tip,children:[d.jsx("span",{className:"gk-ab-key",children:s.key}),d.jsx("img",{className:"gk-ab-icon",src:WgSkillIcon(s),alt:"",draggable:!1}),!ready&&d.jsx("span",{className:"gk-ab-cool",style:{height:\`\${pct}%\`}}),!ready&&s.cooldown>0&&d.jsx("span",{className:"gk-ab-timer",children:Math.ceil(s.cd)}),d.jsx("span",{className:"gk-ab-name",children:s.label})]},\`\${s.kind}-\${s.id||i}\`)})}),d.jsxs("button",{type:"button",className:"gk-mode-swap",onClick:()=>_g.getState().toggleMode(),title:"Swap warrior (TPS) / warlord (RTS overhead)",children:[d.jsx("span",{className:"gk-mode-swap-key",children:"\`"}),d.jsx("span",{className:"gk-mode-swap-label",children:md==="combat"?"Warlord View":"Warrior View"})]})]})}function WgKitWindow({title,children,className:cn}){return d.jsxs("div",{className:"gk-window-panel gk-frame-window"+(cn?" "+cn:""),children:[title&&d.jsx("span",{className:"gk-window-head",children:title}),d.jsx("div",{className:"gk-window-body",children:children})]})}function WgKitResourceBar({gbux,user,onAccount}){return d.jsxs("div",{className:"gk-resource-bar",children:[d.jsxs("div",{className:"gk-res-coin",children:[d.jsx("img",{className:"gk-coin-art",src:\`\${WgUiKitBase}/Inventory/Coins/Coin_Gold.png\`,alt:"",draggable:!1}),d.jsx("span",{className:"gk-res-val",children:gbux??0}),d.jsx("span",{className:"gk-res-label",children:"GBUX"})]}),d.jsx("button",{type:"button",className:"gk-account-chip",onClick:onAccount,children:user?d.jsxs(d.Fragment,{children:[d.jsx("img",{className:"gk-coin-art gk-coin-sm",src:\`\${WgUiKitBase}/Inventory/Coins/Coin_Copper.png\`,alt:"",draggable:!1}),d.jsx("span",{children:user.displayName||user.username||"Account"})]}):d.jsx("span",{children:"Sign in"})})]})}function WgKitQuestRail({activeStep}){const steps=[{id:"recruit",label:"Recruit Warlord"},{id:"deploy",label:"Deploy Lanes"},{id:"siege",label:"Siege Citadel"}],idx=steps.findIndex(s=>s.id===activeStep);return d.jsxs("aside",{className:"gk-quest-rail gk-frame-quest",children:[d.jsx("span",{className:"gk-quest-title",children:"March Orders"}),d.jsx("ul",{className:"gk-quest-steps",children:steps.map((s,i)=>d.jsxs("li",{className:\`gk-quest-step\${s.id===activeStep?" is-active":""}\${i<idx?" is-done":""}\`,children:[d.jsx("span",{className:"gk-quest-dot","aria-hidden":!0}),d.jsx("span",{className:"gk-quest-label",children:s.label})]},s.id))})]})}`;
 
-const MATCH_PERSIST = `const WgMatchKey="wg-active-match";function WgSaveMatch(){try{sessionStorage.setItem(WgMatchKey,JSON.stringify({phase:"battle",at:Date.now()}))}catch{}}function WgClearMatch(){try{sessionStorage.removeItem(WgMatchKey)}catch{}}function WgRestoreMatch(){try{const r=sessionStorage.getItem(WgMatchKey);if(!r)return!1;const p=JSON.parse(r);if(p?.phase==="battle"&&Date.now()-(p.at||0)<18e5)return BI.getState().setPhase("battle"),!0}catch{}return!1}`;
+const MATCH_PERSIST = `const WgMatchKey="wg-active-match";function WgSaveMatch(){try{sessionStorage.setItem(WgMatchKey,JSON.stringify({phase:"battle",at:Date.now()})),WgDebug.flow("match.save",{})}catch{}}function WgClearMatch(){try{sessionStorage.removeItem(WgMatchKey),WgDebug.flow("match.clear",{})}catch{}}function WgRestoreMatch(){try{const r=sessionStorage.getItem(WgMatchKey);if(!r)return!1;const p=JSON.parse(r);if(p?.phase==="battle"&&Date.now()-(p.at||0)<18e5)return BI.getState().setPhase("battle"),WgDebug.flow("match.restore",{extra:{ageMs:Date.now()-(p.at||0)}}),!0}catch{}return!1}`;
 if (!js.includes("function WgRestoreMatch")) {
   const hG_ANCHOR = 'const hG={phase:"menu",credits:dp.startCredits';
   if (js.includes(hG_ANCHOR)) {
@@ -808,11 +867,11 @@ if (js.includes(RESET_ORIG)) {
 
 js = js.replace(
   'win:()=>{A().phase==="battle"&&C({phase:"victory"})}',
-  'win:()=>{A().phase==="battle"&&(WgClearMatch(),WgClearDeployDone(),C({phase:"victory"}))}',
+  'win:()=>{A().phase==="battle"&&(WgDebug.flow("game.win",{pos:WgDebug.posFrom(Z?.playerPos)}),WgClearMatch(),WgClearDeployDone(),C({phase:"victory"}))}',
 );
 js = js.replace(
   'lose:()=>{A().phase==="battle"&&C({phase:"defeat"})}',
-  'lose:()=>{A().phase==="battle"&&(WgClearMatch(),WgClearDeployDone(),C({phase:"defeat"}))}',
+  'lose:()=>{A().phase==="battle"&&(WgDebug.flow("game.lose",{pos:WgDebug.posFrom(Z?.playerPos)}),WgClearMatch(),WgClearDeployDone(),C({phase:"defeat"}))}',
 );
 
 const PLAY_ROUTE_ORIG =
@@ -844,7 +903,7 @@ js = js.replace(
 );
 js = js.replace(
   'A().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL","good"),A().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)","info"),WgSaveMatch()},reset:',
-  'A().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL","good"),A().pushMessage("CLICK TAKE THE FIELD FOR THIRD-PERSON COMBAT · ` FOR LANE COMMAND","info"),_g.getState().setMode("combat"),WgSaveMatch()},reset:',
+  'WgDebug.flow("game.battle.begin",{pos:WgDebug.posFrom(Z?.playerPos),extra:{mode:"combat"}}),A().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL","good"),A().pushMessage("CLICK TAKE THE FIELD FOR THIRD-PERSON COMBAT · ` FOR LANE COMMAND","info"),_g.getState().setMode("combat"),WgSaveMatch()},reset:',
 );
 
 // Lobby — march goes to pre-game deploy (lane + champion path), not straight into battle.
@@ -853,9 +912,38 @@ js = js.replace(
   '_=()=>{m&&(p(),C("/deploy"))}',
 );
 js = js.replace(
+  '_=()=>{m&&(p(),C("/play"))}',
+  '_=()=>{m&&(p(),C("/deploy"))}',
+);
+js = js.replace(
   'children:"MARCH TO WAR"}),!m&&d.jsx("span",{className:"gw-deploy-hint",children:N(h)?"Canonical weapons apply automatically — check loadout.":"Recruit this warlord with 10 shards in the War Chest."})',
   'children:"DEPLOY & MARCH"}),d.jsx("span",{className:"gw-deploy-hint gw-deploy-hint--ok",children:"Champion path + lane waves on deploy screen · breach a lane to siege their citadel"}),!m&&d.jsx("span",{className:"gw-deploy-hint",children:N(h)?"Canonical weapons apply automatically — check loadout.":"Recruit this warlord with 10 shards in the War Chest."})',
 );
+
+// Lobby deploy gate — starter onboarding unlocks march without War Chest shards.
+const LOBBY_DEPLOY_GATE_OLD = "const q=RS[o],m=y&&N(h),H=RS[s]";
+const LOBBY_DEPLOY_GATE_NEW =
+  "const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]";
+if (js.includes(LOBBY_DEPLOY_GATE_OLD)) {
+  js = js.replace(LOBBY_DEPLOY_GATE_OLD, LOBBY_DEPLOY_GATE_NEW);
+  mustPatch("lobby-deploy-gate", true);
+} else {
+  mustPatch("lobby-deploy-gate", js.includes(LOBBY_DEPLOY_GATE_NEW));
+}
+
+// Auto-seed canonical weapons/loadout when warcamp mounts (fixes disabled DEPLOY & MARCH).
+const LOBBY_ENSURE_OLD =
+  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]';
+const LOBBY_ENSURE_NEW =
+  '},[Q?.gbuxBalance]);T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s]';
+if (js.includes(LOBBY_ENSURE_OLD)) {
+  js = js.replace(LOBBY_ENSURE_OLD, LOBBY_ENSURE_NEW);
+  mustPatch("lobby-ensure-ready", true);
+} else if (js.includes('T.useEffect(()=>{WgEnsureReady()},[]);const q=RS[o]')) {
+  mustPatch("lobby-ensure-ready", true);
+} else {
+  mustPatch("lobby-ensure-ready", false);
+}
 
 // Title — quick path to deploy for returning players.
 js = js.replace(
@@ -928,15 +1016,15 @@ if (js.includes(OIA_ORIG)) {
   mustPatch("tower-v47", false);
 }
 
-// v48 — tribal hut faction citadels + stylized/medieval tower splits.
-js = js.replace(
-  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}',
-  'CIA={medieval:{outer:"luchnik",inner:"stylized_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"mag"},orc:{outer:"pushka",inner:"bashnia2"},ruins:{outer:"slow_t1",inner:"bashnia"}}',
-);
-js = js.replace(
-  'WgTowerClips={medieval:{inner:{idle:"idle",attack:"attack"}},elven:{outer:{idle:"CrossBow-tower-ctrl|ArmatureAction.002_CrossBow-tower-ctrl",attack:"CrossBow-tower-ctrl|ArmatureAction.002_CrossBow-tower-ctrl"}}}',
-  'WgTowerClips={medieval:{inner:{idle:"Gears",attack:"Gears"}},elven:{outer:{idle:"CrossBow-tower-ctrl|ArmatureAction.002_CrossBow-tower-ctrl",attack:"CrossBow-tower-ctrl|ArmatureAction.002_CrossBow-tower-ctrl"}}}',
-);
+// v48 tower splits (luchnik/stylized_turret/mag/pushka) produce corrupt 16–52MB GLBs
+// that crash Three.js (Invalid typed array length). Keep proven v47 tower IDs.
+if (!js.includes('outer:"watchtower_lvl1"')) {
+  js = js.replace(
+    'CIA={medieval:{outer:"luchnik",inner:"stylized_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"mag"},orc:{outer:"pushka",inner:"bashnia2"},ruins:{outer:"slow_t1",inner:"bashnia"}}',
+    'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}',
+  );
+}
+// tower-v48: verified after final safety pass below
 const CORE_V48_HOOK =
   'const WgFactionCoreMap={medieval:"muu",elven:"mantah",orc:"krakee",ruins:"antuk"},WgCoreBIA=12.5;function WgFactionCoreUrl(C){const A=WgFactionCoreMap[C]||"muu";return WgGetAssetPath(`core_${C}`,`${pT}models/buildings/faction/${A}.glb`)}function WgFactionCoreBuilding({pack:C}){const A=WgFactionCoreUrl(C),{scene:I}=Sa(A),g=T.useMemo(()=>WgFitTowerScene(I,WgCoreBIA),[I]);return d.jsx("primitive",{object:g})}';
 if (js.includes("function WgAnimatedTower(") && !js.includes("WgFactionCoreBuilding")) {
@@ -949,15 +1037,15 @@ js = js.replace(
   'e.kind==="tower"||e.kind==="core"?d.jsx("group",{scale:e.kind==="core"?1.42:1,children:d.jsx(oIA,{pack:aIA(e.faction,e.kind==="core"?"inner":e.tier??"outer"),tier:e.kind==="core"?"inner":e.tier??"outer"})}):d.jsx(nIA,{kind:e.kind,faction:e.faction})',
   'e.kind==="core"?d.jsx(WgFactionCoreBuilding,{pack:aIA(e.faction,"inner")}):e.kind==="tower"?d.jsx(oIA,{pack:aIA(e.faction,e.tier??"outer"),tier:e.tier??"outer"}):d.jsx(nIA,{kind:e.kind,faction:e.faction})',
 );
-mustPatch("tower-v48", js.includes('inner:"stylized_turret"') && js.includes('outer:"luchnik"'));
 js = js.replace(
-  'tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb",tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/archer_t3.glb",tower_orc_outer:"/models/towers/orc/bomber_t1.glb",tower_orc_inner:"/models/towers/orc/bomber_t3.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/slow_t3.glb"',
   'tower_medieval_outer:"/models/towers/medieval/luchnik.glb",tower_medieval_inner:"/models/towers/medieval/stylized_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/mag.glb",tower_orc_outer:"/models/towers/orc/pushka.glb",tower_orc_inner:"/models/towers/orc/bashnia2.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/bashnia.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"',
+  'tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb",tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/archer_t3.glb",tower_orc_outer:"/models/towers/orc/bomber_t1.glb",tower_orc_inner:"/models/towers/orc/bomber_t3.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/slow_t3.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"',
 );
 
 js = js.replace("cdnReachable:!0,bootedAt:0", "cdnReachable:!1,bootedAt:0");
-js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v5"');
-js = js.replace('Dq="gw_engine_boot_v4"', 'Dq="gw_engine_boot_v5"');
+js = js.replace('Dq="gw_engine_boot_v3"', 'Dq="gw_engine_boot_v6"');
+js = js.replace('Dq="gw_engine_boot_v4"', 'Dq="gw_engine_boot_v6"');
+js = js.replace('Dq="gw_engine_boot_v5"', 'Dq="gw_engine_boot_v6"');
 
 // Citadel destruction — end match immediately; show castle GLB + HP bar.
 js = js.replace(
@@ -987,7 +1075,7 @@ mustPatch("map-override-newmatch", js.includes("WgApplyMapOverride(m)"));
 // startGame — keep deploy lane picks + spawn champion on chosen lane.
 js = js.replace(
   "startGame:()=>{const I=A().mapSize;Z.newMatch(I),_g.getState().resetCommand();",
-  "startGame:()=>{const I=A().mapSize;Z.newMatch(I),WgApplyChampionLane(),_g.getState().resetCommand();",
+  'startGame:()=>{WgDebug.flow("game.start",{route:location.pathname,extra:{mapSize:A().mapSize,lane:WgReadChampionLane()}});const I=A().mapSize;Z.newMatch(I),WgApplyChampionLane(),_g.getState().resetCommand();',
 );
 js = js.replace(
   "laneDeployment:OU({meleeGuard:g.laneMeleeHeroId,rangedGuard:g.laneRangedHeroId}),deploymentRound:1",
@@ -1403,14 +1491,10 @@ js = js.replace(
 mustPatch("unit-foot-y", js.includes("position:[e.pos.x,e.pos.y,e.pos.z]"));
 
 js = js.replace(
-  '},[Q?.gbuxBalance]);const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s],_=()=>{m&&(p(),C("/deploy"))};',
-  '},[Q?.gbuxBalance]);const palId=XI(x=>x.custom?.teamPalette)||"royal",setPal=id=>XI.getState().setCustom({teamPalette:id});const q=RS[o],m=y&&(N(h)||zC.getState().onboardingDone),H=RS[s],_=()=>{m&&(p(),C("/deploy"))};',
-);
-js = js.replace(
   'd.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
-  'd.jsx(WgPaletteSwatches,{value:palId,onChange:setPal}),d.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
+  'd.jsx(WgPaletteSwatches,{value:WgGetPaletteId(),onChange:id=>XI.getState().setCustom({teamPalette:id})}),d.jsx("button",{type:"button",className:"gw-btn gw-lobby-march",onClick:_,disabled:!m,title:m?"Deploy with chosen warlord and canonical weapons":"Unlock warlord in War Chest or finish loadout",children:"DEPLOY & MARCH"})',
 );
-mustPatch("warcamp-palette-ui", js.includes("WgPaletteSwatches"));
+mustPatch("warcamp-palette-ui", js.includes("WgGetPaletteId(),onChange:id=>XI.getState().setCustom"));
 
 // ── v44/v48 Hero textures — GLB atlas + canonical visibleMeshes from XI store ──
 const WG_FINISH_HERO_MESH =
@@ -1665,6 +1749,17 @@ js = js.replace(
   "Z.addFireBurst(pos,WgVfxProjColor(WgSkillProjectile(sk,wt)),8,.75),Z.addSpark(pos.clone(),WgVfxProjColor(WgSkillProjectile(sk,wt))),Z.addImpact(pos),Z.addShake(.12);WgGetAimDir(cam,WgAimTmp),WgResolveAimPoint(cam,WgAimOut),IAA(sk,WgAimOut,WgAimTmp,wt,dmg*b.damageMult)",
 );
 mustPatch("combat-cast-charge-vfx", js.includes("WgCastChargeTick"));
+
+// Final safety — v48 split GLBs crash Three.js; lobby palId typo crashes React.
+const CIA_V47 =
+  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}';
+const CIA_BROKEN =
+  'CIA={medieval:{outer:"luchnik",inner:"stylized_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"mag"},orc:{outer:"pushka",inner:"bashnia2"},ruins:{outer:"slow_t1",inner:"bashnia"}}';
+if (js.includes(CIA_BROKEN)) js = js.replace(CIA_BROKEN, CIA_V47);
+js = js.replaceAll(
+  'd.jsx(WgPaletteSwatches,{value:palId,onChange:setPal})',
+  'd.jsx(WgPaletteSwatches,{value:WgGetPaletteId(),onChange:id=>XI.getState().setCustom({teamPalette:id})})',
+);
 
 // Manifest-driven patch fingerprints — hard fail if any critical needle missing.
 for (const { id, needle } of manifest.bundlePatches) {
@@ -1921,6 +2016,7 @@ if (!css.includes(".gk-combat-hud")) {
 }
 if (!css.includes(".gk-warcamp-shell")) {
   css += `
+.gk-warcamp-shell.gw-screen,.gk-deploy-shell.gw-screen{overflow-x:hidden;overflow-y:auto;height:100dvh;max-height:100dvh;-webkit-overflow-scrolling:touch}
 .gk-warcamp-shell,.gk-deploy-shell{--gk-accent:#e0b252;--gk-surface:rgba(8,12,20,.88);--gk-ink:#e8eef8;--gk-ink-dim:#8fa3c4;font-family:Cinzel,EB Garamond,Inter,sans-serif;background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(224,178,82,.08),transparent 55%),#080c14}
 .gk-resource-bar{position:relative;z-index:3;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px clamp(12px,3vw,24px);border-bottom:1px solid rgba(120,150,200,.2);background:rgba(6,9,14,.86);backdrop-filter:blur(8px)}
 .gk-res-coin{display:flex;align-items:center;gap:8px;padding:6px 12px;border-radius:10px;border:1px solid rgba(224,178,82,.35);background:rgba(12,16,24,.75)}
@@ -2118,4 +2214,37 @@ if (!css.includes(".wg-admin-screen")) {
 `;
   writeFileSync(CSS, css);
   console.log("[patch] appended admin editor styles");
+}
+if (!css.includes(".gk-warcamp-shell.gw-screen")) {
+  css += `
+.gk-warcamp-shell.gw-screen,.gk-deploy-shell.gw-screen{overflow-x:hidden;overflow-y:auto;height:100dvh;max-height:100dvh;-webkit-overflow-scrolling:touch}
+.gk-warcamp-shell .gw-lobby-grid-v2{min-width:0}
+.gk-warcamp-shell .gw-char-card,.gk-warcamp-shell .gw-pack-card{min-width:0}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended warcamp scroll + card containment");
+}
+if (!css.includes(".wg-debug-panel")) {
+  css += `
+.wg-debug-panel{position:fixed;left:10px;bottom:10px;z-index:9999;width:min(420px,94vw);max-height:min(42vh,360px);display:flex;flex-direction:column;font-family:JetBrains Mono,Consolas,monospace;font-size:10px;color:#dce6f4;background:rgba(6,9,14,.92);border:1px solid rgba(120,150,200,.35);border-radius:10px;box-shadow:0 12px 36px rgba(0,0,0,.55);backdrop-filter:blur(8px);pointer-events:auto}
+.wg-debug-head{display:flex;align-items:center;gap:6px;padding:8px 10px;border-bottom:1px solid rgba(120,150,200,.22);flex-wrap:wrap}
+.wg-debug-title{font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#e0c878;font-weight:700}
+.wg-debug-tabs{display:flex;gap:4px;flex:1;flex-wrap:wrap}
+.wg-debug-tabs button{padding:3px 8px;border-radius:6px;border:1px solid rgba(120,150,200,.28);background:rgba(8,12,20,.8);color:#8fa3c4;cursor:pointer;font:inherit;font-size:9px;text-transform:uppercase}
+.wg-debug-tabs button.is-active{border-color:rgba(224,178,82,.55);color:#f0c46b;background:rgba(224,178,82,.1)}
+.wg-debug-btn{padding:3px 8px;border-radius:6px;border:1px solid rgba(120,150,200,.28);background:rgba(8,12,20,.8);color:#9dffd8;cursor:pointer;font:inherit;font-size:9px}
+.wg-debug-meta{padding:6px 10px;font-size:9px;color:#8fa3c4;border-bottom:1px solid rgba(120,150,200,.15);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.wg-debug-log{overflow-y:auto;padding:6px 8px 8px;display:flex;flex-direction:column;gap:3px}
+.wg-debug-line{display:grid;grid-template-columns:auto auto 1fr auto;gap:6px;align-items:baseline;line-height:1.35}
+.wg-debug-ts{color:#6b7a94;font-size:8px}
+.wg-debug-cat{font-size:8px;letter-spacing:.06em;text-transform:uppercase;padding:1px 4px;border-radius:4px}
+.wg-debug-cat--flow{background:rgba(93,200,255,.15);color:#7ec8ff}
+.wg-debug-cat--anim{background:rgba(157,255,216,.12);color:#9dffd8}
+.wg-debug-cat--asset{background:rgba(251,191,36,.12);color:#fbbf24}
+.wg-debug-cat--combat{background:rgba(248,113,113,.12);color:#fca5a5}
+.wg-debug-msg{color:#c8d4e8;min-width:0;overflow:hidden;text-overflow:ellipsis}
+.wg-debug-pos{color:#e0c878;font-size:8px;white-space:nowrap}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended WG debug panel styles");
 }
