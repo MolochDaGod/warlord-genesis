@@ -7,6 +7,8 @@ import { fileURLToPath } from "node:url";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 
 const steps = [
+  "node scripts/generate-ground-textures.mjs",
+  "node scripts/generate-battle-textures.mjs",
   "node scripts/stage-textures.mjs",
   "node scripts/stage-icons.mjs",
   "node scripts/stage-vfx-catalog.mjs",

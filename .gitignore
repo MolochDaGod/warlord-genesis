@@ -1,9 +1,42 @@
 .vercel
+.railway
 node_modules
 api/node_modules
-.railway
 .env
 .env.*
 *.log
 .DS_Store
-.vercel
+
+# Local / CI scratch
+.tmp-*
+tmp-*
+.tmp/
+scripts/_*.mjs
+scripts/.syntax-probe.js
+scripts/haa.txt
+scripts/wg-debug-code.txt
+
+# Diagnostic outputs
+*-output.txt
+*-out.txt
+bisect-*.txt
+auth-diff.txt
+backtick-audit.txt
+diff-before-l7.txt
+dup-count.txt
+patch-out.txt
+patch-run-output.txt
+syntax-break-report.txt
+SYMBOL_MAP.json
+
+# Bundle experiments (production bundle is index-warlord-fix3.js)
+assets/index-warlord-fix3-live.js
+assets/index-warlord-hybrid.js
+assets/test-inject.js
+
+# GLB probes
+tmp-*.glb
+
+# Partial source imports (use import:baseline when needed)
+src/grudge-warlords/_baseline-ref/
+src/grudge-warlords/canvas/
