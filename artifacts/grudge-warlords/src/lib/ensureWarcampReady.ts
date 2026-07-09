@@ -1,3 +1,4 @@
+import { PREFAB_BY_ID } from "@workspace/game-content";
 import { useGame } from "../game/store";
 import { useRoster } from "../game/roster";
 import { useMeta, unlockFleetWarlord, applyCanonicalLoadoutToRoster } from "../game/metaProgression";
@@ -21,7 +22,10 @@ export function ensureWarcampReady(): void {
   const activePrefab = roster.prefabId;
   if (!meta.isCharacterUnlocked(activePrefab)) {
     const fallback = meta.starterPrefabId ?? activePrefab;
-    if (fallback) unlockFleetWarlord(fallback);
+    if (fallback && PREFAB_BY_ID[fallback]) {
+      unlockFleetWarlord(fallback);
+      if (fallback !== activePrefab) roster.setPrefab(fallback);
+    }
   }
 
   applyCanonicalLoadoutToRoster(

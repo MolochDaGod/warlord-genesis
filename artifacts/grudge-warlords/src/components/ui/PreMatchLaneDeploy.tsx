@@ -17,7 +17,10 @@ export function PreMatchLaneDeploy({ compact }: { compact?: boolean }) {
   const rangedOpts = useMemo(() => factionRangedIds(factionId), [factionId]);
 
   return (
-    <section className={`gw-prematch-lane${compact ? " gw-prematch-lane--compact" : ""}`}>
+    <section
+      id="lane-wave-troops"
+      className={`gw-prematch-lane${compact ? " gw-prematch-lane--compact" : ""}`}
+    >
       <div className="gw-prematch-lane-head">
         <span className="gw-cs-label">LANE WAVE TROOPS</span>
         {!compact && (

@@ -12,8 +12,9 @@ import { StarterPick } from "../components/ui/StarterPick";
 import { PackOpenOverlay } from "../components/ui/PackOpenOverlay";
 import { ICONS } from "../components/ui/icons";
 import { GRUDGE_FACTIONS, GRUDGE_FACTION_BY_ID } from "../engine/grudge6";
-import { useRoster, isLoadoutReady } from "../game/roster";
+import { useRoster } from "../game/roster";
 import { useMeta } from "../game/metaProgression";
+import { evaluateWarcampReady, useWarcampReady, warcampBlockMessage } from "../hooks/useWarcampReady";
 import { viewerUrl } from "../lib/grudgeViewer";
 import { getFleetEndpoints } from "../lib/grudgeOrigins";
 import { sailAethermoorUrl, GRUDGE_FLEET_URLS } from "../lib/fleetUrls";
@@ -42,10 +43,8 @@ export function Lobby() {
   const rangedId = useRoster((s) => s.rangedId);
   const setEnemyFaction = useRoster((s) => s.setEnemyFaction);
   const lockLoadout = useRoster((s) => s.lockLoadout);
-  const loadoutReady = isLoadoutReady(meleeId, rangedId, prefabId);
+  const { ready: warlordReady, blockReason } = useWarcampReady();
   const gbux = useMeta((s) => s.gbux);
-  const onboardingDone = useMeta((s) => s.onboardingDone);
-  const isCharacterUnlocked = useMeta((s) => s.isCharacterUnlocked);
   const syncGbuxFromAccount = useMeta((s) => s.syncGbuxFromAccount);
   const [tab, setTab] = useState<LobbyTab>("warcamp");
   const [fleet, setFleet] = useState<{ world: string | null; colyseus: string | null } | null>(null);
@@ -70,16 +69,11 @@ export function Lobby() {
   }, [user?.gbuxBalance, syncGbuxFromAccount]);
 
   const playerFaction = GRUDGE_FACTION_BY_ID[factionId];
-  const warlordReady = loadoutReady && isCharacterUnlocked(prefabId);
   const enemyFaction = GRUDGE_FACTION_BY_ID[enemyFactionId];
 
   const march = () => {
     ensureWarcampReady();
-    const r = useRoster.getState();
-    const meta = useMeta.getState();
-    if (!isLoadoutReady(r.meleeId, r.rangedId, r.prefabId) || !meta.isCharacterUnlocked(r.prefabId)) {
-      return;
-    }
+    if (!evaluateWarcampReady().ready) return;
     lockLoadout();
     startGame();
     navigate("/play");
@@ -220,7 +214,7 @@ export function Lobby() {
               </div>
             </div>
 
-            <PreMatchLaneDeploy compact />
+            {tab !== "warcamp" && <PreMatchLaneDeploy compact />}
 
             <div className="gw-mapsize">
               <span className="gw-mapsize-label">Opponent faction</span>
@@ -282,16 +276,11 @@ export function Lobby() {
             >
               MARCH TO WAR
             </button>
-            {!warlordReady && (
-              <span className="gw-deploy-hint">
-                {!onboardingDone
-                  ? "Choose your starter champion in the overlay above."
-                  : !isCharacterUnlocked(prefabId)
-                    ? "Recruit this warlord with 10 shards in the War Chest, or pick your unlocked starter."
-                    : !loadoutReady
-                      ? "Select an unlocked warlord in the Warcamp tab — canonical weapons apply automatically."
-                      : "Configure lane wave troops above, then march."}
-              </span>
+            {!warlordReady && blockReason && (
+              <span className="gw-deploy-hint">{warcampBlockMessage(blockReason)}</span>
+            )}
+            {warlordReady && (
+              <span className="gw-deploy-hint gw-deploy-hint--ok">Ready — lane troops configured, march when set.</span>
             )}
           </div>
 

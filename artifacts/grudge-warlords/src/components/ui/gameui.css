@@ -1523,6 +1523,9 @@ kbd {
   color: #c98a4a;
   text-align: center;
 }
+.gw-deploy-hint--ok {
+  color: #7ab87a;
+}
 .gw-controls-lobby { grid-template-columns: 1fr 1fr; font-size: 13px; gap: 8px 14px; margin: 0; }
 .gw-lobby .gw-mapsize {
   margin: 0;
