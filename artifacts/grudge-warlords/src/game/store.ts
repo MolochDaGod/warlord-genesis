@@ -18,9 +18,40 @@ import {
 import type { Faction } from "./config";
 import { EM } from "./entities";
 import { useCommand } from "./command";
-import { useRoster } from "./roster";
+import { isLoadoutReady, useRoster } from "./roster";
+import { useMeta } from "./metaProgression";
+import { configureMatchFactions } from "../engine/grudge6";
 import { computeLoadoutStats } from "./equipment";
 import type { MapSize } from "./mapgen";
+import {
+  DEFAULT_PRODUCTION_SPECS,
+  type ProductionSpecs,
+  type WarriorSpec,
+  type WorgeSpec,
+  type MageSpec,
+  type RangerSpec,
+  WARRIOR_SPECS,
+  WORGE_SPECS,
+  MAGE_SPECS,
+  RANGER_SPECS,
+} from "./productionSpecs";
+import {
+  computeHeroBonuses,
+  levelFromXp,
+  nextPendingPickLevel,
+  startingSkillId,
+  toPickOptions,
+  HERO_XP_KILL,
+  type HeroSkillBonuses,
+  type SkillPickOption,
+  EMPTY_HERO_BONUSES,
+} from "./heroSkillTree";
+import {
+  playerDefaultDeployment,
+  type LaneDeployment,
+  type LaneId,
+  type LanePick,
+} from "./laneDeployment";
 
 export type Phase = "menu" | "battle" | "victory" | "defeat";
 
@@ -87,9 +118,22 @@ interface GameState {
 
   /** Remaining cooldown (seconds) per hero ability; 0 means ready. */
   abilityCd: Record<AbilityId, number>;
+  /** Active combat weapon set (ranged vs melee) — drives the weapon-skill hotbar. */
+  heroActiveWeapon: "ranged" | "melee";
+  /** Per-skill-id recast timers for the equipped weapon's hotbar (seconds). */
+  weaponSkillCd: Record<string, number>;
+
+  /** Hero level (1–10), XP, and class skill picks — reset each match. */
+  heroLevel: number;
+  heroXp: number;
+  heroSkillPicks: string[];
+  heroBonuses: HeroSkillBonuses;
+  pendingSkillPick: { level: number; options: SkillPickOption[] } | null;
 
   /** Current tier (1..MAX_BUILDING_LEVEL) of each ally production building. */
   buildings: { barracks: number; archery: number };
+  /** Barracks / archery specialization picks (warrior, worge, mage, ranger). */
+  productionSpecs: ProductionSpecs;
 
   // --- HUD-reactive mirror of EM.match (written by MatchDirector each frame) ---
   /** Short label of the player's current attackable objective / next goal. */
@@ -117,6 +161,13 @@ interface GameState {
   comebackAlly: boolean;
   comebackEnemy: boolean;
 
+  /** Per-lane guard + wave creep picks (melee/ranged NPCs + 2M+1R waves). */
+  laneDeployment: LaneDeployment;
+  /** Current deployment round (increments each escalation period). */
+  deploymentRound: number;
+  /** True when a new round opened — highlights the deployment panel. */
+  deploymentHighlight: boolean;
+
   messages: FloatMsg[];
 
   // actions
@@ -138,6 +189,10 @@ interface GameState {
   tickAbilities: (dt: number) => void;
   /** Try to fire an ability; returns true (and starts its cooldown) if ready. */
   triggerAbility: (id: AbilityId) => boolean;
+  setHeroActiveWeapon: (mode: "ranged" | "melee") => void;
+  /** Start recast on a weapon skill (id from API matrix). */
+  startWeaponSkillCooldown: (skillId: string, cooldown: number) => void;
+  weaponSkillReady: (skillId: string) => boolean;
 
   setAmmo: (mag: number, reserve: number) => void;
   setReloading: (r: boolean) => void;
@@ -152,11 +207,29 @@ interface GameState {
   addScore: (n: number) => void;
   addKill: () => void;
 
+  addHeroXp: (n: number) => void;
+  pickHeroSkill: (skillId: string) => void;
+  recomputeHeroStats: () => void;
+
   /** Upgrade an ally production building one tier (spends credits). */
   upgradeBuilding: (kind: "barracks" | "archery") => boolean;
+  /** Pick a barracks or archery specialization (one-time per line). */
+  upgradeProductionSpec: (
+    line: keyof ProductionSpecs,
+    spec: WarriorSpec | WorgeSpec | MageSpec | RangerSpec,
+  ) => boolean;
 
   /** Buy the next ally tech tier (spends credits; strengthens the whole army). */
   upgradeTech: () => boolean;
+
+  /** Set one slot on a lane's deployment sheet. */
+  setLanePick: (lane: LaneId, key: keyof LanePick, typeId: string) => void;
+  /** Reset all lanes to faction defaults. */
+  resetLaneDeployment: () => void;
+  /** Acknowledge the new-round deployment prompt. */
+  dismissDeploymentHighlight: () => void;
+  /** Called by MatchDirector when a new deployment round begins. */
+  beginDeploymentRound: (round: number) => void;
 
   /** Change-guarded mirror of the EM.match HUD slice (written each frame). */
   syncMatchHud: (s: {
@@ -202,7 +275,15 @@ const initial = {
   heroDead: false,
   respawnTimer: 0,
   abilityCd: { dash: 0, slam: 0 } as Record<AbilityId, number>,
+  heroActiveWeapon: "ranged" as "ranged" | "melee",
+  weaponSkillCd: {} as Record<string, number>,
+  heroLevel: 1,
+  heroXp: 0,
+  heroSkillPicks: [] as string[],
+  heroBonuses: { ...EMPTY_HERO_BONUSES },
+  pendingSkillPick: null as { level: number; options: SkillPickOption[] } | null,
   buildings: { barracks: 1, archery: 1 },
+  productionSpecs: { ...DEFAULT_PRODUCTION_SPECS },
   objectiveLabel: "",
   enemyCoreOpen: false,
   allyCoreExposed: false,
@@ -216,6 +297,9 @@ const initial = {
   allyTech: 0,
   comebackAlly: false,
   comebackEnemy: false,
+  laneDeployment: playerDefaultDeployment(),
+  deploymentRound: 1,
+  deploymentHighlight: true,
   messages: [] as FloatMsg[],
 };
 
@@ -226,6 +310,11 @@ export const useGame = create<GameState>((set, get) => ({
   mapVersion: 0,
 
   startGame: () => {
+    const r = useRoster.getState();
+    const meta = useMeta.getState();
+    if (!isLoadoutReady(r.meleeId, r.rangedId, r.prefabId)) return;
+    if (!meta.isCharacterUnlocked(r.prefabId)) return;
+
     // Generate a fresh procedural battlefield at the chosen size.
     const size = get().mapSize;
     EM.newMatch(size);
@@ -234,28 +323,48 @@ export const useGame = create<GameState>((set, get) => ({
     useCommand.getState().resetCommand();
     // Apply the equipped loadout's derived stats (health / damage / defense)
     // on top of the base stats for this run.
-    const r = useRoster.getState();
+    configureMatchFactions(r.factionId, r.enemyFactionId);
     const ls = computeLoadoutStats(r.equipment, r.gearTier);
     const maxHealth = PLAYER.maxHealth + ls.bonusHp;
     // The hero deploys with its chosen ranged weapon active; size the ammo HUD
     // to that weapon (Q swaps to melee, which is ammo-free).
     const rw = RANGED_WEAPONS[r.rangedId] ?? RANGED_WEAPONS.rifle;
+    const keepBuildings = get().buildings;
+    const keepSpecs = get().productionSpecs;
+    const autoSkill = startingSkillId(r.classId);
+    const heroSkillPicks = autoSkill ? [autoSkill] : [];
+    const heroBonuses = computeHeroBonuses(r.classId, heroSkillPicks, 1);
+    const heroMaxHealth = maxHealth + heroBonuses.bonusHp;
     set({
       ...initial,
       mapSize: size,
       difficulty: get().difficulty,
       mapVersion: get().mapVersion + 1,
+      buildings: keepBuildings,
+      productionSpecs: keepSpecs,
       phase: "battle",
-      maxHealth,
-      health: maxHealth,
-      damageMult: ls.damageMult,
-      defense: ls.defense,
+      heroLevel: 1,
+      heroXp: 0,
+      heroSkillPicks,
+      heroBonuses,
+      pendingSkillPick: null,
+      laneDeployment: playerDefaultDeployment({
+        meleeGuard: r.laneMeleeHeroId,
+        rangedGuard: r.laneRangedHeroId,
+      }),
+      deploymentRound: 1,
+      deploymentHighlight: true,
+      maxHealth: heroMaxHealth,
+      health: heroMaxHealth,
+      damageMult: ls.damageMult * (1 + heroBonuses.damageMult),
+      defense: Math.min(0.6, ls.defense + heroBonuses.defense),
       magazine: rw.magazine,
       ammo: rw.magazine,
       reserve: rw.reserve,
       reloading: false,
     });
     get().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL", "good");
+    get().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)", "info");
   },
   reset: () => {
     const size = get().mapSize;
@@ -326,19 +435,36 @@ export const useGame = create<GameState>((set, get) => ({
 
   tickAbilities: (dt) => {
     const cd = get().abilityCd;
-    if (cd.dash <= 0 && cd.slam <= 0) return;
+    const wcd = get().weaponSkillCd;
+    let wChanged = false;
+    const nextWcd = { ...wcd };
+    for (const k of Object.keys(nextWcd)) {
+      if (nextWcd[k]! > 0) {
+        nextWcd[k] = Math.max(0, nextWcd[k]! - dt);
+        wChanged = true;
+      }
+    }
+    const dashSlam = cd.dash > 0 || cd.slam > 0;
+    if (!dashSlam && !wChanged) return;
     set({
-      abilityCd: {
-        dash: Math.max(0, cd.dash - dt),
-        slam: Math.max(0, cd.slam - dt),
-      },
+      abilityCd: dashSlam
+        ? { dash: Math.max(0, cd.dash - dt), slam: Math.max(0, cd.slam - dt) }
+        : cd,
+      weaponSkillCd: wChanged ? nextWcd : wcd,
     });
   },
+  setHeroActiveWeapon: (mode) => set({ heroActiveWeapon: mode, weaponSkillCd: {} }),
+  startWeaponSkillCooldown: (skillId, cooldown) => {
+    if (cooldown <= 0) return;
+    set({ weaponSkillCd: { ...get().weaponSkillCd, [skillId]: cooldown } });
+  },
+  weaponSkillReady: (skillId) => (get().weaponSkillCd[skillId] ?? 0) <= 0,
   triggerAbility: (id) => {
     const g = get();
     if (g.phase !== "battle" || g.heroDead) return false;
     if (g.abilityCd[id] > 0) return false;
-    set({ abilityCd: { ...g.abilityCd, [id]: ABILITIES[id].cooldown } });
+    const cdMult = id === "dash" ? g.heroBonuses.dashCooldownMult : g.heroBonuses.slamCooldownMult;
+    set({ abilityCd: { ...g.abilityCd, [id]: ABILITIES[id].cooldown * cdMult } });
     return true;
   },
 
@@ -370,7 +496,91 @@ export const useGame = create<GameState>((set, get) => ({
     return true;
   },
   addScore: (n) => set({ score: get().score + n }),
-  addKill: () => set({ kills: get().kills + 1 }),
+  addKill: () => {
+    set({ kills: get().kills + 1 });
+    get().addHeroXp(HERO_XP_KILL);
+  },
+
+  recomputeHeroStats: () => {
+    const g = get();
+    const r = useRoster.getState();
+    const ls = computeLoadoutStats(r.equipment, r.gearTier);
+    const bonuses = computeHeroBonuses(r.classId, g.heroSkillPicks, g.heroLevel);
+    const maxHealth = PLAYER.maxHealth + ls.bonusHp + bonuses.bonusHp;
+    let health = g.health;
+    if (!g.heroDead) {
+      if (maxHealth > g.maxHealth) health = Math.min(maxHealth, health + (maxHealth - g.maxHealth));
+      else health = Math.min(maxHealth, health);
+    }
+    set({
+      heroBonuses: bonuses,
+      maxHealth,
+      damageMult: ls.damageMult * (1 + bonuses.damageMult),
+      defense: Math.min(0.6, ls.defense + bonuses.defense),
+      health,
+    });
+  },
+
+  addHeroXp: (n) => {
+    if (get().phase !== "battle" || n <= 0) return;
+    const xp = get().heroXp + n;
+    const oldLevel = get().heroLevel;
+    const newLevel = levelFromXp(xp);
+    set({ heroXp: xp, heroLevel: newLevel });
+    if (newLevel > oldLevel) {
+      get().pushMessage(`HERO LEVEL ${newLevel}`, "good");
+      get().recomputeHeroStats();
+      const pl = nextPendingPickLevel(newLevel, get().heroSkillPicks);
+      if (pl !== null && !get().pendingSkillPick) {
+        const classId = useRoster.getState().classId;
+        set({ pendingSkillPick: { level: pl, options: toPickOptions(classId, pl) } });
+      }
+    }
+  },
+
+  pickHeroSkill: (skillId) => {
+    const pending = get().pendingSkillPick;
+    if (!pending) return;
+    const choice = pending.options.find((o) => o.id === skillId);
+    if (!choice) return;
+    const picks = [...get().heroSkillPicks, skillId];
+    set({ heroSkillPicks: picks, pendingSkillPick: null });
+    get().pushMessage(`${choice.label.toUpperCase()} — SKILL CHOSEN`, "good");
+    get().recomputeHeroStats();
+    const pl = nextPendingPickLevel(get().heroLevel, picks);
+    if (pl !== null) {
+      const classId = useRoster.getState().classId;
+      set({ pendingSkillPick: { level: pl, options: toPickOptions(classId, pl) } });
+    }
+  },
+
+  upgradeProductionSpec: (line, spec) => {
+    const specs = get().productionSpecs;
+    if (specs[line] !== "base") {
+      get().pushMessage(`${line.toUpperCase()} ALREADY SPECIALIZED`, "warn");
+      return false;
+    }
+    const table =
+      line === "warrior"
+        ? WARRIOR_SPECS
+        : line === "worge"
+          ? WORGE_SPECS
+          : line === "mage"
+            ? MAGE_SPECS
+            : RANGER_SPECS;
+    const def = table[spec as keyof typeof table];
+    if (!def || def.cost <= 0) return false;
+    if (get().credits < def.cost) {
+      get().pushMessage("NOT ENOUGH CREDITS", "warn");
+      return false;
+    }
+    set({
+      credits: get().credits - def.cost,
+      productionSpecs: { ...specs, [line]: spec },
+    });
+    get().pushMessage(`${def.label.toUpperCase()} — ${line.toUpperCase()} UPGRADED`, "good");
+    return true;
+  },
 
   upgradeBuilding: (kind) => {
     const lvl = get().buildings[kind];
@@ -389,6 +599,38 @@ export const useGame = create<GameState>((set, get) => ({
     });
     get().pushMessage(`${BUILDINGS[kind].name.toUpperCase()} UPGRADED TO TIER ${lvl + 1}`, "good");
     return true;
+  },
+
+  setLanePick: (lane, key, typeId) => {
+    const dep = get().laneDeployment;
+    set({
+      laneDeployment: {
+        ...dep,
+        lanes: {
+          ...dep.lanes,
+          [lane]: { ...dep.lanes[lane], [key]: typeId },
+        },
+      },
+    });
+  },
+
+  resetLaneDeployment: () => {
+    const r = useRoster.getState();
+    set({
+      laneDeployment: playerDefaultDeployment({
+        meleeGuard: r.laneMeleeHeroId,
+        rangedGuard: r.laneRangedHeroId,
+      }),
+    });
+    get().pushMessage("LANE WAVE CREEPS RESET TO FACTION DEFAULTS", "info");
+  },
+
+  dismissDeploymentHighlight: () => set({ deploymentHighlight: false }),
+
+  beginDeploymentRound: (round) => {
+    if (round <= get().deploymentRound) return;
+    set({ deploymentRound: round, deploymentHighlight: true });
+    get().pushMessage(`ROUND ${round} — ADJUST WAVE CREEPS PER LANE`, "info");
   },
 
   upgradeTech: () => {

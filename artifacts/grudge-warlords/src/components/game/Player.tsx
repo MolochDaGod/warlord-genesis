@@ -17,7 +17,7 @@ import { useGame } from "../../game/store";
 import { useCommand } from "../../game/command";
 import { EM, type TreeEntity } from "../../game/entities";
 import {
-  dealDamage,
+  heroDealDamage,
   isAttackable,
   isUnit,
   structRadius,
@@ -25,11 +25,18 @@ import {
   type CombatEntity,
 } from "../../game/combat";
 import { Controls } from "./controls";
-import { createAnimatedCharacter, type Animator, type ActionKey } from "../../game/anim";
+import type { ActionKey } from "../../game/anim";
 import type { WeaponClass } from "../../game/anim/types";
-import { useRoster, effectiveLook } from "../../game/roster";
-import { getPreset } from "../../game/anim/presets";
+import { useRoster } from "../../game/roster";
+import { Grudge6HeroRig, weaponClassToAnimPack } from "../../engine/grudge6HeroRig";
 import { useWeaponTuning } from "../../game/weaponTuning";
+import { resolveCameraOcclusion } from "../../game/cameraOcclusion";
+import {
+  apiWeaponForLoadout,
+  warlordSkillsForLoadout,
+  type WarlordWeaponSkill,
+} from "../../game/warlordWeaponSkills";
+import { applyWeaponSkillHit } from "../../game/weaponSkillCombat";
 
 const _dir = new THREE.Vector3();
 const _front = new THREE.Vector3();
@@ -50,6 +57,7 @@ const DASH_FOV_KICK = 10;
 const SHAKE_DECAY = 7;
 const _aim = new THREE.Vector3();
 const _camDir = new THREE.Vector3();
+const _camFinal = new THREE.Vector3();
 const _euler = new THREE.Euler(0, 0, 0, "YXZ");
 
 /** Distance from the capsule centre down to the hero's feet (root y = 0). */
@@ -126,7 +134,7 @@ function pickHitReaction(
 
 export function Player() {
   const body = useRef<RapierRigidBody>(null);
-  const { camera, gl } = useThree();
+  const { camera, gl, scene } = useThree();
   const [, getKeys] = useKeyboardControls<Controls>();
 
   const fireCooldown = useRef(0);
@@ -153,6 +161,8 @@ export function Player() {
   /** Smoothed model facing (eased toward the target yaw) for weighted turns. */
   const modelYaw = useRef(0);
   const zoom = useRef(1);
+  /** Smoothed 0..1 scale along pivot→desired after occlusion pulls the camera in. */
+  const camOcclFrac = useRef(1);
   // Numpad camera adjustments for the command (RTS) view: an orbit offset added
   // to commandYaw (4/6) and a tilt multiplier on the camera lift (8/2).
   const camYaw = useRef(0);
@@ -170,23 +180,21 @@ export function Player() {
   const curYaw = useRef(0);
   const curPitch = useRef(0);
 
-  const animatorRef = useRef<Animator | null>(null);
-  const [animator, setAnimator] = useState<Animator | null>(null);
+  const animatorRef = useRef<Grudge6HeroRig | null>(null);
+  const [animator, setAnimator] = useState<Grudge6HeroRig | null>(null);
+  const weaponSkillsRef = useRef<WarlordWeaponSkill[]>([]);
   const spawn0 = useMemo(() => heroSpawnPos(), []);
 
   const phase = useGame((s) => s.phase);
-  const heroId = useRoster((s) => s.heroId);
-  const custom = useRoster((s) => s.custom);
-  const customHat = custom.hat;
+  const raceId = useRoster((s) => s.raceId);
+  const classId = useRoster((s) => s.classId);
   const meleeId = useRoster((s) => s.meleeId);
   const rangedId = useRoster((s) => s.rangedId);
   const heroDead = useGame((s) => s.heroDead);
 
   useEffect(() => {
     let disposed = false;
-    let built: Animator | null = null;
-    const preset = getPreset(heroId);
-    // The hero carries the two chosen weapons; deploy with the ranged one active.
+    let built: Grudge6HeroRig | null = null;
     const rdef = RANGED_WEAPONS[rangedId] ?? RANGED_WEAPONS.rifle;
     const mdef = MELEE_WEAPONS_CFG[meleeId] ?? MELEE_WEAPONS_CFG.swordshield;
     rangedDef.current = rdef;
@@ -195,15 +203,10 @@ export function Player() {
     melee.current = false;
     blocking.current = false;
     EM.heroBlocking = false;
-    const classes = Array.from(
-      new Set<WeaponClass>(["unarmed", rdef.animClass, mdef.animClass]),
-    );
-    const look = effectiveLook(heroId, useRoster.getState().custom);
-    createAnimatedCharacter({
-      classes,
-      weapon: rdef.animClass,
-      height: preset.height,
-      look,
+    Grudge6HeroRig.forPlayer({
+      raceId,
+      classId,
+      animPack: weaponClassToAnimPack(rdef.animClass),
     })
       .then((a) => {
         if (disposed) {
@@ -214,16 +217,17 @@ export function Player() {
         a.root.traverse((o) => {
           o.castShadow = true;
         });
-        // Deploy with the ranged weapon active, mounting its real voxel model (if
-        // any) plus the persisted per-weapon tuning so the first frame is correct.
         const rtune = rdef.model ? useWeaponTuning.getState().tuning[rdef.model] : null;
-        a.setWeapon(rdef.animClass, true, rdef.model ?? null, rtune ?? null);
+        a.setWeaponFull(rdef.animClass, true, rdef.model ?? null, rtune ?? null);
         useWeaponTuning.getState().setActiveKey(rdef.model ?? null);
         animatorRef.current = a;
         setAnimator(a);
+        weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, "ranged");
+        void a.preloadWeaponSkills(weaponSkillsRef.current);
+        useGame.getState().setHeroActiveWeapon("ranged");
       })
       .catch((err) => {
-        console.warn("[grudge-warlords] failed to build hero", err);
+        console.warn("[grudge-warlords] failed to build GRUDGE6 hero", err);
       });
     return () => {
       disposed = true;
@@ -231,15 +235,12 @@ export function Player() {
       setAnimator(null);
       if (built) built.dispose();
     };
-  }, [heroId, customHat, meleeId, rangedId]);
+  }, [raceId, classId, meleeId, rangedId]);
 
-  // Apply colour-only customisation live (skin/outfit/eyes/headgear colour) without
-  // a rebuild. The Game canvas stays mounted across the menu, so edits made before
-  // deploying must reach the persistent hero; geometry changes (race / headgear
-  // type) are handled by the rebuild effect above.
   useEffect(() => {
-    animatorRef.current?.character.recolor(effectiveLook(heroId, custom));
-  }, [animator, heroId, custom]);
+    weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, activeMode.current);
+    void animatorRef.current?.preloadWeaponSkills(weaponSkillsRef.current);
+  }, [meleeId, rangedId, animator]);
 
   // Mouse fire (LMB) + shield guard (RMB, sword & shield only), combat only.
   useEffect(() => {
@@ -280,8 +281,11 @@ export function Player() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyR") startReload();
       if (e.code === "KeyQ") swapWeapon();
-      if (e.code === "KeyF") triggerDash();
-      if (e.code === "KeyE") triggerSlam();
+      if (e.code === "KeyC") triggerDash();
+      if (e.code === "KeyG") triggerSlam();
+      if (useCommand.getState().mode === "combat" && /^Digit[1-6]$/.test(e.code) && !e.repeat) {
+        castWeaponSkill(parseInt(e.code.slice(5), 10) - 1);
+      }
       // Tuning panel toggle (combat only) — P avoids every movement/order hotkey.
       if (e.code === "KeyP" && useCommand.getState().mode === "combat") {
         useWeaponTuning.getState().toggleEditor();
@@ -435,17 +439,20 @@ export function Player() {
     }
     const g = useGame.getState();
     const tune = useWeaponTuning.getState();
+    weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, mode);
+    void animatorRef.current?.preloadWeaponSkills(weaponSkillsRef.current);
+    g.setHeroActiveWeapon(mode);
     if (mode === "ranged") {
       const w = rangedDef.current;
       const t = w.model ? tune.tuning[w.model] : null;
-      a?.setWeapon(w.animClass, true, w.model ?? null, t ?? null);
+      a?.setWeaponFull(w.animClass, true, w.model ?? null, t ?? null);
       tune.setActiveKey(w.model ?? null);
       g.setWeaponAmmo(w.magazine, w.magazine, w.reserve);
       g.pushMessage(w.name.toUpperCase(), "info");
     } else {
       const m = meleeDef.current;
       const t = m.model ? tune.tuning[m.model] : null;
-      a?.setWeapon(m.animClass, true, m.model ?? null, t ?? null);
+      a?.setWeaponFull(m.animClass, true, m.model ?? null, t ?? null);
       tune.setActiveKey(m.model ?? null);
       g.pushMessage(m.name.toUpperCase(), "info");
     }
@@ -456,6 +463,28 @@ export function Player() {
     if (useGame.getState().phase !== "battle") return;
     if (useCommand.getState().mode !== "combat" || dead.current) return;
     setActive(activeMode.current === "ranged" ? "melee" : "ranged");
+  }
+
+  /** Fire a canonical weapon-skill (Digit1–6) — baked anim + crosshair-centered hit. */
+  function castWeaponSkill(slot: number) {
+    if (useCommand.getState().mode !== "combat" || dead.current) return;
+    const skill = weaponSkillsRef.current[slot];
+    if (!skill) return;
+    const g = useGame.getState();
+    if (!g.weaponSkillReady(skill.id)) return;
+    const a = animatorRef.current;
+    if (!a?.castWeaponSkill(skill)) return;
+    g.startWeaponSkillCooldown(skill.id, skill.cooldown);
+    camera.getWorldDirection(_aim);
+    _aim.normalize();
+    applyWeaponSkillHit(
+      skill,
+      camera.position,
+      _aim,
+      apiWeaponForLoadout(meleeId, rangedId, activeMode.current),
+      g.damageMult,
+    );
+    g.pushMessage(skill.label.toUpperCase(), "info");
   }
 
   // Resolve one hitscan pellet along `_ray` for ranged weapon `w` and draw its
@@ -474,7 +503,7 @@ export function Player() {
       }
     };
     for (const u of EM.units) {
-      if (!u.alive || u.faction !== "enemy") continue;
+      if (!u.alive || (u.faction !== "enemy" && u.faction !== "neutral")) continue;
       consider(u, 0.9 * u.def.scale);
     }
     for (const s of EM.structures) {
@@ -509,7 +538,7 @@ export function Player() {
       const ty = isUnit(ent) ? ent.pos.y + 0.4 * ent.def.scale : ent.pos.y + 1.4;
       const target = ent.pos.clone().setY(ty);
       tracer(target);
-      dealDamage(ent, w.damage * dmgMult * EM.factionDmgMult("ally"));
+      heroDealDamage(ent, w.damage * dmgMult * EM.factionDmgMult("ally"));
     } else if (bestTree !== null) {
       const tr = bestTree as TreeEntity;
       tracer(tr.pos.clone().setY(tr.pos.y + 1.4 * tr.scale));
@@ -531,7 +560,7 @@ export function Player() {
       if (_hitPoint.distanceTo(pos) <= radius) dist = proj;
     };
     for (const u of EM.units) {
-      if (!u.alive || u.faction !== "enemy") continue;
+      if (!u.alive || (u.faction !== "enemy" && u.faction !== "neutral")) continue;
       scan(u.pos, 0.9 * u.def.scale);
     }
     for (const s of EM.structures) {
@@ -620,7 +649,7 @@ export function Player() {
 
     const dmgMult = useGame.getState().damageMult * EM.factionDmgMult("ally");
     const origin = new THREE.Vector3(EM.playerPos.x, EM.playerPos.y + 1, EM.playerPos.z);
-    meleeConeHit(origin, _ray, m.reach, m.halfAngle, m.damage * dmgMult, "ally", m.color);
+    meleeConeHit(origin, _ray, m.reach, m.halfAngle, m.damage * dmgMult, "ally", m.color, true);
 
     if (m.style === "jab") {
       EM.addMuzzleFlash(_muz);
@@ -698,7 +727,7 @@ export function Player() {
     rollDir.current.copy(_dash);
     rollTimer.current = ROLL_DURATION;
     rollCd.current = ROLL_COOLDOWN;
-    animatorRef.current?.roll(dir);
+    animatorRef.current?.roll(_dash);
     const o = new THREE.Vector3(EM.playerPos.x, 0.3, EM.playerPos.z);
     for (let k = 0; k < 6; k++) EM.addEmber(o.clone(), ABILITIES.dash.color);
   }
@@ -707,14 +736,16 @@ export function Player() {
   // shared faction-aware shockwave system (damages enemies only, each once).
   function triggerSlam() {
     if (useCommand.getState().mode !== "combat" || dead.current) return;
-    if (!useGame.getState().triggerAbility("slam")) return;
+    const g = useGame.getState();
+    if (!g.triggerAbility("slam")) return;
     animatorRef.current?.attack();
     const center = new THREE.Vector3(EM.playerPos.x, 0.1, EM.playerPos.z);
+    const slamMult = g.heroBonuses.slamDamageMult;
     EM.addShockwave({
       pos: center,
       maxRadius: SLAM.shockRadius,
       duration: SLAM.shockDuration,
-      damage: SLAM.shockDamage,
+      damage: SLAM.shockDamage * g.damageMult * slamMult * EM.factionDmgMult("ally"),
       color: ABILITIES.slam.color,
       faction: "ally",
     });
@@ -961,14 +992,30 @@ export function Player() {
       // (pitch included) around the head pivot. Pitching down lifts the camera
       // up-and-back so the hero never blocks downward aim — the crosshair can sweep
       // the entire lower half of the screen, the way a third-person shooter should.
+      _side.set(1, 0, 0).applyQuaternion(camera.quaternion);
+      _side.y = 0;
+      if (_side.lengthSq() > 1e-6) _side.normalize();
       camera.getWorldDirection(_camDir).normalize();
       _camTarget
         .copy(_head)
         .addScaledVector(_camDir, -COMBAT_DIST * zoom.current)
         .addScaledVector(_side, COMBAT_SHOULDER);
+      // Pull the camera in when trees / walls / ridges block the pivot→camera ray
+      // so the view and crosshair aim stay stable instead of clipping through geo.
+      const occluded = resolveCameraOcclusion(scene, _head, _camTarget, animatorRef.current?.root ?? null);
+      const fullLen = _head.distanceTo(_camTarget);
+      const safeLen = _head.distanceTo(occluded);
+      const wantFrac = fullLen > 1e-4 ? THREE.MathUtils.clamp(safeLen / fullLen, 0.22, 1) : 1;
+      const occlEase = entering ? 1 : 1 - Math.exp(-22 * dt);
+      camOcclFrac.current += (wantFrac - camOcclFrac.current) * occlEase;
+      _camFinal.copy(_head).lerp(_camTarget, camOcclFrac.current);
       // Snap into place on entry, then ease for a smooth-but-tight follow.
-      if (entering) camera.position.copy(_camTarget);
-      else camera.position.lerp(_camTarget, 1 - Math.exp(-PLAYER.camFollow * dt));
+      if (entering) {
+        camOcclFrac.current = wantFrac;
+        camera.position.copy(_camFinal);
+      } else {
+        camera.position.lerp(_camFinal, 1 - Math.exp(-PLAYER.camFollow * dt));
+      }
 
       // Subtle FOV kick while sprinting (and a stronger one mid-dash) so speed reads.
       const wantFov = (sprint ? PLAYER.sprintFov : PLAYER.fov) + (dashing ? DASH_FOV_KICK : 0);
@@ -1011,12 +1058,13 @@ export function Player() {
 
     fireCooldown.current -= dt;
     if (playing && !dead.current && mode === "combat" && firing.current && fireCooldown.current <= 0) {
+      const atkSpd = 1 + g.heroBonuses.attackSpeedMult;
       if (melee.current) {
         meleeSwing();
-        fireCooldown.current = meleeDef.current.swingRate;
+        fireCooldown.current = meleeDef.current.swingRate / atkSpd;
       } else {
         fire();
-        fireCooldown.current = rangedDef.current.fireRate;
+        fireCooldown.current = rangedDef.current.fireRate / atkSpd;
       }
     }
   });

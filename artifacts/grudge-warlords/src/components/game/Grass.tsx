@@ -6,12 +6,12 @@ import { EM } from "../../game/entities";
 // Capped blade count for the whole field. Blades far from the camera are shrunk
 // to nothing in the vertex shader (radius cull), so density only "costs" near
 // the hero while the instance count stays fixed.
-const COUNT = 7000;
-const CULL_NEAR = 26;
-const CULL_FAR = 34;
-const RIDGE_SKIP = 1.0; // skip terrain above this height (ridges read as bare rock)
-const BASE_CLEAR = 12; // keep grass off the Citadel footprints
-const PATH_CLEAR = 3.4; // keep grass off the bare lane / cut-through corridors
+const COUNT = 21000;
+const CULL_NEAR = 42;
+const CULL_FAR = 58;
+const RIDGE_SKIP = 1.2; // skip terrain above this height (ridges read as bare rock)
+const BASE_CLEAR = 36; // keep grass off the Citadel footprints
+const PATH_CLEAR = 4.2; // keep grass off the bare lane / cut-through corridors
 
 const _m = new THREE.Matrix4();
 const _p = new THREE.Vector3();

@@ -10,6 +10,8 @@ import {
 } from "../../game/equipment";
 import { RANGED_WEAPONS, MELEE_WEAPONS_CFG } from "../../game/config";
 import { getTierColor } from "../../lib/grudgeData";
+import { canonicalWeaponsForPrefab, meleeDisplayName } from "../../game/canonicalLoadout";
+import { useMeta } from "../../game/metaProgression";
 
 const RANGED_LIST = Object.values(RANGED_WEAPONS);
 const MELEE_LIST = Object.values(MELEE_WEAPONS_CFG);
@@ -20,15 +22,22 @@ export function Loadout() {
   const equip = useRoster((s) => s.equip);
   const unequip = useRoster((s) => s.unequip);
   const setGearTier = useRoster((s) => s.setGearTier);
+  const prefabId = useRoster((s) => s.prefabId);
   const meleeId = useRoster((s) => s.meleeId);
   const rangedId = useRoster((s) => s.rangedId);
   const setMelee = useRoster((s) => s.setMelee);
   const setRanged = useRoster((s) => s.setRanged);
+  const maxGearTier = useMeta((s) => s.maxGearTierForPrefab(prefabId));
+  const canonical = canonicalWeaponsForPrefab(prefabId);
 
   const [items, setItems] = useState<LoadoutItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeSlot, setActiveSlot] = useState<SlotId>("weapon");
+
+  useEffect(() => {
+    if (gearTier > maxGearTier) setGearTier(maxGearTier);
+  }, [gearTier, maxGearTier, setGearTier]);
 
   useEffect(() => {
     let cancelled = false;
@@ -62,9 +71,9 @@ export function Loadout() {
   return (
     <div className="gw-lo">
       <div className="gw-lo-head">
-        <span className="gw-lo-title">CARRIED WEAPONS</span>
+        <span className="gw-lo-title">EQUIP BEFORE THE ROUND</span>
         <span className="gw-lo-tier-label" style={{ opacity: 0.7 }}>
-          Q SWAPS IN BATTLE
+          CANONICAL KIT LOCKED · Q SWAPS IN BATTLE · UPGRADE CARD FOR HIGHER TIERS
         </span>
       </div>
       <div className="gw-lo-weapons">
@@ -74,10 +83,13 @@ export function Loadout() {
             {MELEE_LIST.map((w) => (
               <button
                 key={w.id}
-                className={`gw-lo-wbtn${w.id === meleeId ? " is-equipped" : ""}`}
-                onClick={() => setMelee(w.id)}
+                className={`gw-lo-wbtn${w.id === meleeId ? " is-equipped" : ""}${w.id !== canonical.melee ? " is-locked" : ""}`}
+                onClick={() => w.id === canonical.melee && setMelee(w.id)}
+                disabled={w.id !== canonical.melee}
               >
-                <span className="gw-lo-item-name">{w.name}</span>
+                <span className="gw-lo-item-name">
+                  {w.id === canonical.melee ? meleeDisplayName(prefabId, w.id) : w.name}
+                </span>
                 <span className="gw-lo-item-stats">
                   <span className="gw-stat-dmg">{w.damage} DMG</span>
                   {w.block && <span className="gw-stat-def">BLOCK</span>}
@@ -93,8 +105,9 @@ export function Loadout() {
             {RANGED_LIST.map((w) => (
               <button
                 key={w.id}
-                className={`gw-lo-wbtn${w.id === rangedId ? " is-equipped" : ""}`}
-                onClick={() => setRanged(w.id)}
+                className={`gw-lo-wbtn${w.id === rangedId ? " is-equipped" : ""}${w.id !== canonical.ranged ? " is-locked" : ""}`}
+                onClick={() => w.id === canonical.ranged && setRanged(w.id)}
+                disabled={w.id !== canonical.ranged}
               >
                 <span className="gw-lo-item-name">{w.name}</span>
                 <span className="gw-lo-item-stats">
@@ -112,14 +125,14 @@ export function Loadout() {
         <span className="gw-lo-title">WAR GEAR</span>
         <div className="gw-lo-tier">
           <span className="gw-lo-tier-label" style={{ color: tier.hex }}>
-            TIER {gearTier} · {tier.label}
+            TIER {gearTier} · {tier.label} (max T{maxGearTier} from card)
           </span>
           <input
             type="range"
             min={1}
-            max={8}
+            max={maxGearTier}
             step={1}
-            value={gearTier}
+            value={Math.min(gearTier, maxGearTier)}
             onChange={(e) => setGearTier(Number(e.target.value))}
             style={{ accentColor: tier.hex }}
           />

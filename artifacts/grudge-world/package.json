@@ -1,0 +1,34 @@
+{
+  "name": "@workspace/grudge-world",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --config vite.config.ts --host 0.0.0.0",
+    "build": "vite build --config vite.config.ts",
+    "serve": "vite preview --config vite.config.ts --host 0.0.0.0",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "link:ti-models": "node scripts/link-ti-models.mjs"
+  },
+  "devDependencies": {
+    "@react-three/drei": "^10.7.7",
+    "@react-three/fiber": "^9.6.1",
+    "@tailwindcss/vite": "catalog:",
+    "@types/node": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
+    "@types/three": "^0.184.1",
+    "@vitejs/plugin-react": "catalog:",
+    "@workspace/game-content": "workspace:*",
+    "@workspace/world-content": "workspace:*",
+    "@workspace/r3f-fleet": "workspace:*",
+    "lucide-react": "catalog:",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "react-router-dom": "^7.18.0",
+    "tailwindcss": "catalog:",
+    "three": "^0.184.0",
+    "vite": "catalog:",
+    "zustand": "^5.0.14"
+  }
+}

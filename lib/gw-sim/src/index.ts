@@ -7,4 +7,6 @@ export * from "./pathfind";
 export * from "./config";
 export * from "./types";
 export * from "./map";
+export * from "./mode";
+export * from "./ai";
 export * from "./sim";

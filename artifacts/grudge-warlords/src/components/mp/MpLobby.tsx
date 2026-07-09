@@ -97,7 +97,7 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
           <StatusPill />
         </div>
         <p className="mp-sub">
-          Quick match into a 1v1 duel or 2v2 clash, or open a private war room and invite by code.
+          Quick match into 1v1, 2v2, or 3v3 clashes, or open a private war room and invite by code.
         </p>
 
         <div className="mp-grid">
@@ -110,6 +110,9 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
               <button className="gw-btn" style={{ flex: 1 }} onClick={() => mpQuickplay("2v2")}>
                 2 v 2
               </button>
+              <button className="gw-btn" style={{ flex: 1 }} onClick={() => mpQuickplay("3v3")}>
+                3 v 3
+              </button>
             </div>
             <h3 style={{ marginTop: 18 }}>Create War Room</h3>
             <div className="mp-row">
@@ -118,6 +121,9 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
               </button>
               <button className="gw-btn gw-btn-ghost" style={{ flex: 1 }} onClick={() => mpCreateRoom("2v2")}>
                 NEW 2v2
+              </button>
+              <button className="gw-btn gw-btn-ghost" style={{ flex: 1 }} onClick={() => mpCreateRoom("3v3")}>
+                NEW 3v3
               </button>
             </div>
             <p className="mp-sub" style={{ marginBottom: 0, fontSize: 12 }}>

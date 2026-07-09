@@ -1,10 +1,17 @@
 import { useEffect, useMemo, useRef } from "react";
-import { Canvas, useFrame, useThree, type ThreeEvent } from "@react-three/fiber";
+import { Canvas, useFrame, useThree, type RootState, type ThreeEvent } from "@react-three/fiber";
+import { AdaptiveDpr } from "@react-three/drei";
+import {
+  attachWebGLContextGuard,
+  fleetMpCanvasProps,
+  withFleetCanvasProps,
+} from "@workspace/r3f-fleet";
+import { CanvasErrorBoundary } from "../game/CanvasFallback";
 import * as THREE from "three";
 import { generateMap } from "@workspace/gw-sim";
 import type { MatchInfo } from "../../net/mpStore";
 import { runtime } from "../../net/runtime";
-import { mpAttackMove, mpMove } from "../../net/connection";
+import { mpAttackMove, mpMove, mpStop } from "../../net/connection";
 import { Terrain } from "./scene/Terrain";
 import { Entities } from "./scene/Entities";
 
@@ -64,16 +71,35 @@ export function MatchPvP({ match }: { match: MatchInfo }) {
   const map = useMemo(() => generateMap(match.seed, match.mode), [match.seed, match.mode]);
   // Fallback camera anchor: our own core, so the view is sensible before the hero spawns.
   const fallbackZ = map.cores[match.team].z;
+  const fogNear = Math.max(80, match.mapSize.l * 0.32);
+  const fogFar = Math.max(220, match.mapSize.l * 0.88);
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.repeat) return;
+      if (e.key === "s" || e.key === "S") mpStop();
+    };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, []);
 
   return (
+    <CanvasErrorBoundary>
     <Canvas
-      shadows
-      camera={{ position: [0, CAM_HEIGHT, fallbackZ + (match.team === 0 ? -CAM_DIST : CAM_DIST)], fov: 50 }}
-      onContextMenu={(e) => e.preventDefault()}
-      style={{ position: "absolute", inset: 0 }}
+      {...withFleetCanvasProps(fleetMpCanvasProps, {
+        camera: {
+          position: [0, CAM_HEIGHT, fallbackZ + (match.team === 0 ? -CAM_DIST : CAM_DIST)],
+          fov: 50,
+        },
+        onContextMenu: (e: MouseEvent) => e.preventDefault(),
+        style: { position: "absolute", inset: 0 },
+        onCreated: (state: RootState) =>
+          attachWebGLContextGuard(state.gl.domElement, "grudge-mp"),
+      })}
     >
+      <AdaptiveDpr pixelated />
       <color attach="background" args={["#10141c"]} />
-      <fog attach="fog" args={["#10141c", 80, 220]} />
+      <fog attach="fog" args={["#10141c", fogNear, fogFar]} />
       <hemisphereLight args={["#ccd6ff", "#26301d", 0.8]} />
       <directionalLight position={[40, 70, 20]} intensity={1.4} castShadow />
       <Terrain map={map} />
@@ -81,5 +107,6 @@ export function MatchPvP({ match }: { match: MatchInfo }) {
       <GroundPicker size={match.mapSize} />
       <CameraRig team={match.team} fallbackZ={fallbackZ} />
     </Canvas>
+    </CanvasErrorBoundary>
   );
 }

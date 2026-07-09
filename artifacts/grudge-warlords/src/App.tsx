@@ -6,10 +6,13 @@ import { Play } from "./pages/Play";
 import { MultiplayerPage } from "./components/mp/MultiplayerPage";
 import { GrudgeHub } from "./components/ui/GrudgeHub";
 import { useSession } from "./game/session";
+import { startProfileSync } from "./lib/profileSync";
+import { DEPLOY_PATH } from "./lib/deployRoutes";
 import "./components/ui/gameui.css";
 
 function App() {
   useEffect(() => {
+    startProfileSync();
     void useSession.getState().restore();
   }, []);
 
@@ -18,7 +21,8 @@ function App() {
       <div className="gw-root">
         <Routes>
           <Route path="/" element={<Intro />} />
-          <Route path="/lobby" element={<Lobby />} />
+          <Route path="/lobby" element={<Navigate to={DEPLOY_PATH} replace />} />
+          <Route path="/deploy" element={<Lobby />} />
           <Route path="/play" element={<Play />} />
           <Route path="/mp" element={<MultiplayerPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

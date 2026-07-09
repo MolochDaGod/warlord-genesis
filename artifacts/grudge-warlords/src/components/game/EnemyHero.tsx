@@ -4,8 +4,7 @@ import * as THREE from "three";
 import { EM, type StructureEntity, type UnitEntity } from "../../game/entities";
 import { useGame } from "../../game/store";
 import { ENEMY_HERO, DIFFICULTY, type DifficultyDef } from "../../game/config";
-import { getPreset } from "../../game/anim/presets";
-import { createAnimatedCharacter, Animator } from "../../game/anim";
+import { Grudge6HeroRig } from "../../engine/grudge6HeroRig";
 import { findPath } from "../../game/pathfind";
 import {
   type CombatEntity,
@@ -45,7 +44,7 @@ const _flow = { x: 0, z: 0 };
  */
 export function EnemyHero() {
   const { camera } = useThree();
-  const animatorRef = useRef<Animator | null>(null);
+  const animatorRef = useRef<Grudge6HeroRig | null>(null);
   const [ready, setReady] = useState(false);
   const barRef = useRef<THREE.Group>(null);
   const fillRef = useRef<THREE.Mesh>(null);
@@ -203,7 +202,7 @@ export function EnemyHero() {
 
   // Target head-height for the floating HP bar: the scaled rig height plus
   // clearance, so the boss-tier silhouette and its bar/crown stay aligned.
-  const headY = useRef(getPreset(ENEMY_HERO.presetId).height * ENEMY_HERO.rigScale + 1.0);
+  const headY = useRef(2.35 + 1.0);
 
   // Soft radial glow sprite texture for the vertical column of dread.
   const glowTex = useMemo(() => {
@@ -223,21 +222,12 @@ export function EnemyHero() {
   }, []);
   useEffect(() => () => glowTex.dispose(), [glowTex]);
 
-  // Build the procedural animator once; reuse it across matches. The look is the
-  // warlord override (not the preset creep look) and the rig is scaled up so the
-  // rival hero towers over regular troops.
+  // GRUDGE6 Bip001 warlord — enemy faction worge with gear preset from viewer CDN.
   useEffect(() => {
     let cancelled = false;
-    const preset = getPreset(ENEMY_HERO.presetId);
-    createAnimatedCharacter({
-      classes: preset.classes,
-      weapon: preset.weapon,
-      height: preset.height,
-      look: ENEMY_HERO.look,
-    }).then((a) => {
+    Grudge6HeroRig.forEnemyWarlord("#d65a47").then((a) => {
       if (cancelled) return;
       a.root.visible = false;
-      a.root.scale.setScalar(ENEMY_HERO.rigScale);
       animatorRef.current = a;
       setReady(true);
     });

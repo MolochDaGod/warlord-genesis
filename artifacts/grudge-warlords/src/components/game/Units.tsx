@@ -2,7 +2,10 @@ import { useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EM, type UnitEntity } from "../../game/entities";
-import { AI_LANE, ARCHER_SHELLS, PROJECTILES, type ProjectileModel } from "../../game/config";
+import { AI_DEFEND, AI_LANE, ARCHER_SHELLS, NEUTRAL_CAMPS, PROJECTILES, type ProjectileModel } from "../../game/config";
+import { campById } from "../../game/neutralCamps";
+import type { UnitSkillId } from "../../game/skillRuntime";
+import { heroNeedsDefense, threatNearHero, tickUnitSkills, trySkillOnAttack } from "../../game/skillRuntime";
 import { findPath } from "../../game/pathfind";
 import { useGame } from "../../game/store";
 import {
@@ -170,7 +173,7 @@ function laneStaging(u: UnitEntity, dt: number): THREE.Vector3 | null {
 }
 
 function engage(u: UnitEntity, t: CombatEntity): Decision {
-  const reach = u.def.attackRange + (isUnit(t) ? t.def.radius : structRadius(t.kind));
+  const reach = u.def.attackRange * u.specRangeMult + (isUnit(t) ? t.def.radius : structRadius(t.kind));
   if (distXZ(u.pos, t.pos.x, t.pos.z) <= reach) return { moveTo: null, target: t, hero: false };
   return { moveTo: t.pos, target: t, hero: false };
 }
@@ -217,9 +220,57 @@ function clearPath(u: UnitEntity) {
   u.pathFor = null;
 }
 
+/** Neutral camp defenders: aggro intruders but leash back to the camp fire. */
+function decideNeutral(u: UnitEntity, heroAlive: boolean): Decision {
+  const camp = campById(u.campId);
+  const ax = camp?.x ?? u.anchor.x;
+  const az = camp?.z ?? u.anchor.z;
+  const range = u.def.aggroRange * u.specRangeMult;
+  const leash = NEUTRAL_CAMPS.leashRadius;
+
+  if (heroAlive) {
+    const heroD = distXZ(u.pos, EM.playerPos.x, EM.playerPos.z);
+    if (heroD <= range) {
+      const reach = u.def.attackRange * u.specRangeMult + 0.7;
+      if (heroD <= reach) return { moveTo: null, target: null, hero: true };
+      return { moveTo: EM.playerPos, target: null, hero: true };
+    }
+  }
+
+  let t = acquire(u, range);
+  if (t && camp) {
+    const foeNearCamp = distXZ(t.pos, ax, az);
+    if (foeNearCamp > leash + range * 0.5) {
+      u.targetId = null;
+      t = null;
+    }
+  }
+  if (t) return engage(u, t);
+
+  if (distXZ(u.pos, ax, az) > 2.2) {
+    return { moveTo: _tmp.set(ax, 0, az), target: null, hero: false };
+  }
+  return NO_OP;
+}
+
 /** Per-unit AI: where to move and what (if anything) to attack this frame. */
 function decide(u: UnitEntity, heroAlive: boolean, dt: number): Decision {
-  const range = u.def.aggroRange;
+  if (u.faction === "neutral") return decideNeutral(u, heroAlive);
+
+  const range = u.def.aggroRange * u.specRangeMult;
+  const defend = u.faction === "ally" && heroNeedsDefense(heroAlive);
+  const nearHero = heroAlive && distXZ(u.pos, EM.playerPos.x, EM.playerPos.z) <= AI_DEFEND.radius;
+
+  if (defend && nearHero && u.skills.includes("defendWarlord")) {
+    const t = threatNearHero(u, range);
+    if (t) return engage(u, t);
+    return { moveTo: EM.playerPos, target: null, hero: false };
+  }
+
+  if (defend && nearHero) {
+    const t = threatNearHero(u, range) ?? acquirePriority(u, range);
+    if (t) return engage(u, t);
+  }
 
   // Enemy units opportunistically swarm the hero when nearby.
   let heroD = Infinity;
@@ -287,16 +338,18 @@ function decide(u: UnitEntity, heroAlive: boolean, dt: number): Decision {
 }
 
 function rangedShell(u: UnitEntity): ProjectileModel {
-  return u.faction === "ally"
-    ? ARCHER_SHELLS[(Math.random() * ARCHER_SHELLS.length) | 0]
-    : "wizard";
+  if (u.faction === "ally") return ARCHER_SHELLS[(Math.random() * ARCHER_SHELLS.length) | 0];
+  if (u.faction === "neutral") return "fire";
+  return "wizard";
 }
 
 function performAttack(u: UnitEntity, d: Decision, g: ReturnType<typeof useGame.getState>) {
   const from = u.pos.clone().setY(u.pos.y + 1.1 * u.def.scale);
   // Difficulty scales enemy outgoing damage (ally units keep dmgMult = 1);
   // army-wide buffs (relic + ally tech) scale both sides via factionDmgMult.
-  const dmg = u.def.damage * u.dmgMult * EM.factionDmgMult(u.faction);
+  let dmg = u.def.damage * u.dmgMult * EM.factionDmgMult(u.faction);
+  if (d.target && isUnit(d.target)) dmg = trySkillOnAttack(u, dmg, d.target);
+  else if (!d.hero && d.target) dmg = trySkillOnAttack(u, dmg, d.target);
   if (d.hero) {
     const to = EM.playerPos.clone();
     if (u.def.ranged) {
@@ -383,7 +436,8 @@ export function Units() {
         u.slowTimer -= dt;
         if (u.slowTimer <= 0) u.slowFactor = 1;
       }
-      const speed = u.def.speed * u.slowFactor;
+      tickUnitSkills(u, dt, heroAlive);
+      const speed = u.def.speed * u.slowFactor * u.specSpeedMult;
 
       if (d.moveTo) {
         _dir.set(d.moveTo.x - u.pos.x, 0, d.moveTo.z - u.pos.z);
@@ -444,8 +498,13 @@ export function Units() {
       u.attackTimer -= dt;
       if (!movingNow && (d.target || d.hero) && u.attackTimer <= 0) {
         performAttack(u, d, g);
-        u.attackTimer = u.def.attackCooldown;
+        u.attackTimer = u.def.attackCooldown * u.specAttackRateMult;
         u.swing = 1;
+        u.locomotion = "attack";
+      } else if (movingNow) {
+        u.locomotion = "run";
+      } else {
+        u.locomotion = u.swing > 0.05 ? "attack" : "idle";
       }
       u.swing = Math.max(0, u.swing - dt * 4);
       u.hitFlash = Math.max(0, u.hitFlash - dt);
@@ -615,7 +674,7 @@ export function Units() {
           const barColor = u.faction === "ally" ? "#7ee37e" : "#ff6b6b";
           return (
             <group key={u.id} ref={setRef(u.id)} position={[u.pos.x, 0, u.pos.z]}>
-              <UnitMesh def={u.def} faction={u.faction} />
+              <UnitMesh def={u.def} faction={u.faction} unitId={u.id} isLaneGuard={u.isLaneGuard} />
               <group name="hpbar" position={[0, headY, 0]}>
                 <mesh position={[0, 0, -0.02]}>
                   <planeGeometry args={[1.2, 0.22]} />

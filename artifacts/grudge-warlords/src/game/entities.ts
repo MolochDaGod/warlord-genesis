@@ -1,7 +1,10 @@
 import * as THREE from "three";
 import type { Faction, ProjectileModel, StructureKind, UnitDef } from "./config";
+import type { UnitSkillId } from "./productionSpecs";
 import { ALLY_TECH, PROJECTILES, RELIC, STRUCT, TREE, UNIT_TYPES } from "./config";
+import { resolveUnitDef } from "../engine/grudge6";
 import { generateMap, randomSeed, type GameMap, type MapSize } from "./mapgen";
+import { spawnMapCamps, type NeutralCampState } from "./neutralCamps";
 
 /** Order the player can issue to selected commandable units. */
 export type OrderKind = "idle" | "move" | "attackMove" | "hold" | "stop";
@@ -34,6 +37,8 @@ export interface UnitEntity {
    * rendering, so Units.tsx skips it in every simulation + render pass.
    */
   isHero: boolean;
+  /** GRUDGE6 lane guard champion — Bip001 viewer hero, not a KayKit creep mob. */
+  isLaneGuard: boolean;
   // Order state.
   order: OrderKind;
   dest: THREE.Vector3 | null;
@@ -51,6 +56,20 @@ export interface UnitEntity {
   pathIdx: number;
   /** Identifies which dest the current `path` was computed for. */
   pathFor: THREE.Vector3 | null;
+  /** Production specialization label (Paladin, Frost Mage, …). */
+  specLabel?: string;
+  /** Active skills granted by production upgrades. */
+  skills: UnitSkillId[];
+  /** Per-skill cooldown timers (seconds until ready). */
+  skillCd: Partial<Record<UnitSkillId, number>>;
+  /** Runtime stat multipliers from specialization. */
+  specSpeedMult: number;
+  specRangeMult: number;
+  specAttackRateMult: number;
+  /** Locomotion hint for the skinned mesh (idle / run / attack). */
+  locomotion: "idle" | "run" | "attack";
+  /** Neutral jungle camp this defender belongs to (neutral faction only). */
+  campId?: number;
 }
 
 export interface StructureEntity {
@@ -294,6 +313,8 @@ export interface MatchState {
   comeback: { ally: number; enemy: number };
   relic: RelicState;
   ai: AIState;
+  /** Neutral jungle camps on this battlefield. */
+  camps: NeutralCampState[];
 }
 
 function freshMatchState(): MatchState {
@@ -316,6 +337,7 @@ function freshMatchState(): MatchState {
       owner: null,
     },
     ai: { treasury: 0, focusLane: -1, defendStructureId: null, reactionTimer: 0, pushTimer: 0 },
+    camps: [],
   };
 }
 
@@ -480,8 +502,10 @@ class EntityManager {
     for (const t of m.towers) {
       const s = this.addStructure(t.faction, "tower", t.x, t.z, { lane: t.lane, tier: t.tier });
       // Record the objective-ladder references for O(1) gating + AI lookups.
-      const gate = this.match.gate[t.faction][t.lane];
-      if (gate) gate[t.tier] = s;
+      if (t.faction === "ally" || t.faction === "enemy") {
+        const gate = this.match.gate[t.faction][t.lane];
+        if (gate) gate[t.tier] = s;
+      }
     }
     // Park the relic at the walkable centre of the map for the mid-game objective.
     const rc = m.grid.nearestWalkable(0, 0);
@@ -503,6 +527,7 @@ class EntityManager {
       this.trees.push(ent);
       this.setBlockedCircle(sp.x, sp.z, TREE.blockRadius * sp.scale, true);
     }
+    spawnMapCamps(this.map.camps);
   }
 
   /** Apply damage to a tree; on death clear its footprint and spawn debris. */
@@ -568,9 +593,21 @@ class EntityManager {
       dmgMult?: number;
       /** Marks this as the enemy warlord (EnemyHero.tsx owns its sim/render). */
       isHero?: boolean;
+      /** Deployed lane guard (GRUDGE6 Bip001 hero); creeps stay on KayKit faction mobs. */
+      isLaneGuard?: boolean;
+      specLabel?: string;
+      skills?: UnitSkillId[];
+      specSpeedMult?: number;
+      specRangeMult?: number;
+      specAttackRateMult?: number;
+      campId?: number;
     } = {},
   ): UnitEntity {
-    const def = UNIT_TYPES[typeId];
+    const def = UNIT_TYPES[typeId] ?? resolveUnitDef(typeId);
+    if (!def) throw new Error(`Unknown unit type: ${typeId}`);
+    const speedMult = opts.specSpeedMult ?? 1;
+    const rangeMult = opts.specRangeMult ?? 1;
+    const rateMult = opts.specAttackRateMult ?? 1;
     const maxHp = Math.round(def.hp * (opts.hpMult ?? 1));
     const ent: UnitEntity = {
       id: this.id(),
@@ -580,7 +617,7 @@ class EntityManager {
       maxHp,
       pos: new THREE.Vector3(x, 0, z),
       vel: new THREE.Vector3(),
-      yaw: faction === "ally" ? Math.PI : 0,
+      yaw: faction === "ally" ? Math.PI : faction === "enemy" ? 0 : Math.random() * Math.PI * 2,
       attackTimer: 0,
       hitFlash: 0,
       swing: 0,
@@ -591,6 +628,7 @@ class EntityManager {
       commandable: opts.commandable ?? false,
       dmgMult: opts.dmgMult ?? 1,
       isHero: opts.isHero ?? false,
+      isLaneGuard: opts.isLaneGuard ?? false,
       order: "idle",
       dest: null,
       anchor: new THREE.Vector3(x, 0, z),
@@ -602,6 +640,14 @@ class EntityManager {
       path: null,
       pathIdx: 0,
       pathFor: null,
+      specLabel: opts.specLabel,
+      skills: opts.skills ?? [],
+      skillCd: {},
+      specSpeedMult: speedMult,
+      specRangeMult: rangeMult,
+      specAttackRateMult: rateMult,
+      locomotion: "idle",
+      campId: opts.campId,
     };
     this.units.push(ent);
     return ent;
@@ -857,6 +903,7 @@ class EntityManager {
    * apply army-wide (units, structures, warlord, hero) without per-entity state.
    */
   factionDmgMult(faction: Faction): number {
+    if (faction === "neutral") return 1;
     const b = this.match.buff[faction];
     const buffMult = b.timer > 0 ? b.mult : 1;
     return buffMult * (faction === "ally" ? this.allyTechDmgMult() : 1);

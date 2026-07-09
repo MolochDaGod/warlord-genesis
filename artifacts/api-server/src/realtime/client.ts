@@ -14,7 +14,7 @@ export class Client {
   /** The seat slot inside that room. */
   slot = -1;
   /** Mode this client is queued for, if waiting in quickplay. */
-  queuedMode: "1v1" | "2v2" | null = null;
+  queuedMode: "1v1" | "2v2" | "3v3" | null = null;
 
   constructor(ws: WebSocket, name: string) {
     this.id = `c${(++counter).toString(36)}${Date.now().toString(36).slice(-4)}`;

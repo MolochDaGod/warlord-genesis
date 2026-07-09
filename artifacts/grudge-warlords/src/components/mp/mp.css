@@ -215,6 +215,12 @@
   gap: 4px;
   margin-right: 8px;
 }
+.mp-lane-label {
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: rgba(239, 226, 194, 0.55);
+}
 .mp-lane-pick button {
   font-size: 11px;
 }

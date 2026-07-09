@@ -5,10 +5,91 @@ import { useWeaponTuning, type TuningField } from "../../game/weaponTuning";
 import { getPreset, isMeleeWeapon } from "../../game/anim/presets";
 import { EM } from "../../game/entities";
 import { ABILITIES, DIFFICULTY, type AbilityId } from "../../game/config";
+import { MAX_HERO_LEVEL, xpBar } from "../../game/heroSkillTree";
+import { warlordSkillsForLoadout } from "../../game/warlordWeaponSkills";
+import { CLASS_BY_ID } from "@workspace/game-content";
+import type { MeleeWeaponId, RangedWeaponId } from "../../game/config";
 import { Shop } from "./Shop";
+import { LaneDeployment } from "./LaneDeployment";
+import { HeroUpgradePanel } from "./HeroUpgradePanel";
+import { ProductionBuildingPanel } from "./ProductionBuildingPanel";
+import { BuildBar } from "./BuildBar";
 import { PortraitFrame, BarFrame } from "./UnitFrame";
 
 const ABILITY_ORDER: AbilityId[] = ["dash", "slam"];
+
+/** Level-up skill picker — class-branched, resets each match. */
+function SkillTreePicker() {
+  const pending = useGame((s) => s.pendingSkillPick);
+  const pickHeroSkill = useGame((s) => s.pickHeroSkill);
+  const classId = useRoster((s) => s.classId);
+  if (!pending) return null;
+  const cls = CLASS_BY_ID[classId];
+  return (
+    <div className="gw-skilltree-overlay">
+      <div className="gw-skilltree">
+        <div className="gw-skilltree-head">
+          <span className="gw-skilltree-title">Level {pending.level} — Choose a Skill</span>
+          <span className="gw-skilltree-class" style={{ color: cls.color }}>
+            {cls.name}
+          </span>
+        </div>
+        <div className="gw-skilltree-options">
+          {pending.options.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              className="gw-skilltree-opt"
+              style={{ borderColor: opt.color }}
+              onClick={() => pickHeroSkill(opt.id)}
+            >
+              <span className="gw-skilltree-icon" style={{ color: opt.color }}>
+                {opt.icon ?? "◆"}
+              </span>
+              <span className="gw-skilltree-name">{opt.label}</span>
+              <span className="gw-skilltree-desc">{opt.description}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/** Canonical GRUDGE6 weapon-skill hotbar (Digit1–6 / API matrix). */
+function WeaponSkillsBar() {
+  const weaponSkillCd = useGame((s) => s.weaponSkillCd);
+  const activeWeapon = useGame((s) => s.heroActiveWeapon);
+  const meleeId = useRoster((s) => s.meleeId) as MeleeWeaponId;
+  const rangedId = useRoster((s) => s.rangedId) as RangedWeaponId;
+  const skills = warlordSkillsForLoadout(meleeId, rangedId, activeWeapon);
+  if (!skills.length) return null;
+  return (
+    <div className="gw-weapon-skills">
+      {skills.map((sk) => {
+        const cd = weaponSkillCd[sk.id] ?? 0;
+        const ready = cd <= 0;
+        const pct = ready || sk.cooldown <= 0 ? 0 : (cd / sk.cooldown) * 100;
+        return (
+          <div
+            key={sk.id}
+            className={`gw-weapon-skill ${ready ? "is-ready" : "is-cooling"}`}
+            title={`${sk.label} — ${sk.damage} dmg · ${sk.description}`}
+          >
+            <div className="gw-weapon-skill-icon">
+              <span className="gw-weapon-skill-key">{sk.keyLabel}</span>
+              <span className="gw-weapon-skill-cool" style={{ height: `${pct}%` }} />
+              {!ready && sk.cooldown > 0 && (
+                <span className="gw-weapon-skill-timer">{Math.ceil(cd)}</span>
+              )}
+            </div>
+            <span className="gw-weapon-skill-name">{sk.label}</span>
+          </div>
+        );
+      })}
+    </div>
+  );
+}
 
 /** Hero ability bar: shows each skill's hotkey, name, and live cooldown sweep. */
 function SkillsBar() {
@@ -52,7 +133,7 @@ const ORDERS: { key: string; label: string }[] = [
   { key: "M", label: "Move" },
   { key: "H", label: "Hold" },
   { key: "S", label: "Stop" },
-  { key: "B", label: "Build" },
+  { key: "1–5", label: "Fortify" },
 ];
 
 /** Aggregate the live selection into per-type counts for the selection panel. */
@@ -191,7 +272,11 @@ export function HUD() {
   const credits = useGame((s) => s.credits);
   const score = useGame((s) => s.score);
   const kills = useGame((s) => s.kills);
+  const heroLevel = useGame((s) => s.heroLevel);
+  const heroXp = useGame((s) => s.heroXp);
+  const classId = useRoster((s) => s.classId);
   const heroId = useRoster((s) => s.heroId);
+  const xp = xpBar(heroLevel, heroXp);
   const heroPreset = getPreset(heroId);
   const heroMelee = isMeleeWeapon(heroPreset.weapon);
   const allyCoreHp = useGame((s) => s.allyCoreHp);
@@ -218,11 +303,13 @@ export function HUD() {
 
       <Marquee />
 
+      <SkillTreePicker />
+
       {armedBuild && mode === "command" && (
         <div className="gw-build-banner">
           <span className="gw-build-label">Placing</span>
           <span className="gw-build-name">{armedBuild.ref.toUpperCase()}</span>
-          <span className="gw-build-hint">Click terrain · Esc cancel · B another build</span>
+          <span className="gw-build-hint">Click terrain · Esc cancel · 1–5 switch build</span>
         </div>
       )}
 
@@ -298,12 +385,18 @@ export function HUD() {
       <div className="gw-bottom-left">
         <PortraitFrame
           variant="sm"
-          crest="#e7c873"
-          level={String(kills)}
-          label="Hero Vigor"
+          crest={CLASS_BY_ID[classId].color}
+          level={String(heroLevel)}
+          label={`Hero Lv ${heroLevel}/${MAX_HERO_LEVEL}`}
           value={String(Math.ceil(health))}
           pct={(health / maxHealth) * 100}
           fill={health > maxHealth * 0.35 ? "green" : "orange"}
+        />
+        <BarFrame
+          label={heroLevel >= MAX_HERO_LEVEL ? "MAX LEVEL" : "Experience"}
+          value={heroLevel >= MAX_HERO_LEVEL ? "◆" : `${xp.cur} / ${xp.need}`}
+          pct={xp.pct}
+          fill="orange"
         />
         {mode === "command" && (
           <div className="gw-orders">
@@ -318,7 +411,12 @@ export function HUD() {
       </div>
 
       {/* Hero ability cooldowns (combat only) */}
-      {mode === "combat" && <SkillsBar />}
+      {mode === "combat" && (
+        <>
+          <WeaponSkillsBar />
+          <SkillsBar />
+        </>
+      )}
 
       {/* Weapon placement tuner (combat only, toggled with P) */}
       {mode === "combat" && <WeaponTuningPanel />}
@@ -339,7 +437,10 @@ export function HUD() {
         <span className="gw-sub">{kills} SLAIN</span>
       </div>
 
-      {/* Shop */}
+      <HeroUpgradePanel />
+      <ProductionBuildingPanel />
+      <LaneDeployment />
+      <BuildBar />
       <Shop />
     </div>
   );

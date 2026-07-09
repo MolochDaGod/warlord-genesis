@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { SHOP, STRUCT_DEFS, type UnitKey } from "@workspace/gw-sim";
 import { useMp } from "../../net/mpStore";
-import { mpSummon } from "../../net/connection";
+import { mpRally, mpSummon } from "../../net/connection";
 
 const LANES = ["West", "Center", "East"];
 
@@ -64,11 +64,24 @@ export function MpHud() {
 
       <div className="mp-shop pe">
         <div className="mp-lane-pick">
+          <span className="mp-lane-label">Summon lane</span>
           {LANES.map((name, i) => (
             <button
               key={name}
               className={`gw-btn gw-btn-mini ${lane === i ? "" : "gw-btn-ghost"}`}
               onClick={() => setLane(i)}
+            >
+              {name}
+            </button>
+          ))}
+        </div>
+        <div className="mp-lane-pick">
+          <span className="mp-lane-label">Rally allies</span>
+          {LANES.map((name, i) => (
+            <button
+              key={`rally-${name}`}
+              className="gw-btn gw-btn-mini gw-btn-ghost"
+              onClick={() => mpRally(i)}
             >
               {name}
             </button>
@@ -88,7 +101,7 @@ export function MpHud() {
       </div>
 
       <div className="mp-hint">
-        Left-click: move · Right-click: attack-move · Summon units down the chosen lane.
+        Left-click: move · Right-click: attack-move · S: stop · Rally allies to a lane · Summon down the chosen lane.
       </div>
     </div>
   );

@@ -1,5 +1,6 @@
 import {
   MAP_SIZES,
+  modeCapacity,
   Sim,
   TICK_HZ,
   type GameMode,
@@ -45,7 +46,7 @@ export class Room {
   constructor(id: string, mode: GameMode, host: RoomHost) {
     this.id = id;
     this.mode = mode;
-    this.capacity = mode === "1v1" ? 2 : 4;
+    this.capacity = modeCapacity(mode);
     this.host = host;
     const half = this.capacity / 2;
     this.seats = [];

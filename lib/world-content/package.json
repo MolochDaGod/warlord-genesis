@@ -1,0 +1,15 @@
+{
+  "name": "@workspace/world-content",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "sync:ti": "node scripts/sync-from-tactical-infinity.mjs",
+    "sync:ti:pull": "node scripts/sync-from-tactical-infinity.mjs --pull",
+    "build": "tsc -p tsconfig.json --force"
+  }
+}

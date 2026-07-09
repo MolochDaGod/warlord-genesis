@@ -15,11 +15,14 @@ import {
 } from "./config";
 import { mulberry32, type Rng } from "./rng";
 import { dist, dist2 } from "./vec";
+import { planBotTurn, lanePressures, type BotTickInput } from "./ai";
 import { generateMap, type SimMap } from "./map";
+import { heroSpawnOffsetX, modeCapacity, teamSize } from "./mode";
 import type {
   Intent,
   MatchPhase,
   NetPlayer,
+  NetProjectile,
   NetStruct,
   NetUnit,
   Snapshot,
@@ -61,8 +64,23 @@ interface SimStruct {
   mhp: number;
   x: number;
   z: number;
+  lane: number;
   cd: number;
   alive: boolean;
+}
+
+interface SimProjectile {
+  id: number;
+  team: Team;
+  x: number;
+  z: number;
+  tx: number;
+  tz: number;
+  speed: number;
+  damage: number;
+  targetId: number;
+  ownerSlot: number;
+  ttl: number;
 }
 
 interface SimPlayer {
@@ -101,6 +119,7 @@ export class Sim {
   players: SimPlayer[] = [];
   private units: SimUnit[] = [];
   private structs: SimStruct[] = [];
+  private projectiles: SimProjectile[] = [];
   private waveTimer = 0;
   private incomeAcc = 0;
 
@@ -132,10 +151,10 @@ export class Sim {
     // Cores + towers per team.
     for (const team of [0, 1] as Team[]) {
       const core = this.map.cores[team];
-      this.addStruct(team, "core", core.x, core.z);
-      for (const tw of this.map.towers[team]) {
-        this.addStruct(team, "tower", tw.x, tw.z);
-      }
+      this.addStruct(team, "core", core.x, core.z, -1);
+      this.map.towers[team].forEach((tw, lane) => {
+        this.addStruct(team, "tower", tw.x, tw.z, lane);
+      });
     }
 
     // Spawn each player's hero at their team base.
@@ -144,7 +163,7 @@ export class Sim {
 
   // --- construction helpers ---
 
-  private addStruct(team: Team, key: StructKey, x: number, z: number) {
+  private addStruct(team: Team, key: StructKey, x: number, z: number, lane: number) {
     const def = STRUCT_DEFS[key];
     this.structs.push({
       id: this.nextId++,
@@ -155,16 +174,21 @@ export class Sim {
       mhp: def.hp,
       x,
       z,
+      lane,
       cd: 0,
       alive: true,
     });
   }
 
+  private teamSlot(p: SimPlayer): number {
+    const half = teamSize(this.mode);
+    return p.team === 0 ? p.slot : p.slot - half;
+  }
+
   private spawnHero(p: SimPlayer) {
     const s = this.map.heroSpawn[p.team];
     const def = UNIT_DEFS.hero;
-    // Fan heroes out a little so 2v2 teammates don't overlap at spawn.
-    const off = p.slot % 2 === 0 ? -2.5 : 2.5;
+    const off = heroSpawnOffsetX(this.teamSlot(p), this.mode);
     const u: SimUnit = {
       id: this.nextId++,
       team: p.team,
@@ -318,6 +342,7 @@ export class Sim {
     p.credits -= cost;
     p.summonCount++;
     const lane = Math.max(0, Math.min(2, laneIn | 0));
+    p.rallyLane = lane;
     const spawn = this.map.heroSpawn[p.team];
     const jitterX = (this.rng() - 0.5) * 3;
     const jitterZ = (this.rng() - 0.5) * 2;
@@ -366,6 +391,7 @@ export class Sim {
     }
 
     this.updateUnits(dt);
+    this.updateProjectiles(dt);
     this.updateStructs(dt);
     this.separate();
     if (!predict) this.cull();
@@ -413,7 +439,7 @@ export class Sim {
       yaw: nu.y,
       ownerSlot: nu.o,
       isHero: nu.h,
-      lane: 1,
+      lane: nu.l ?? 1,
       order: nu.h ? "idle" : "lanePush",
       destX: nu.x,
       destZ: nu.z,
@@ -433,13 +459,29 @@ export class Sim {
       mhp: ns.mhp,
       x: ns.x,
       z: ns.z,
+      lane: 1,
       cd: 0,
       alive: true,
+    }));
+
+    this.projectiles = (snap.projectiles ?? []).map((np) => ({
+      id: np.id,
+      team: np.t,
+      x: np.x,
+      z: np.z,
+      tx: np.tx,
+      tz: np.tz,
+      speed: 28,
+      damage: 0,
+      targetId: -1,
+      ownerSlot: -1,
+      ttl: 0.35,
     }));
 
     let maxId = 0;
     for (const u of this.units) if (u.id > maxId) maxId = u.id;
     for (const s of this.structs) if (s.id > maxId) maxId = s.id;
+    for (const p of this.projectiles) if (p.id > maxId) maxId = p.id;
     this.nextId = maxId + 1;
   }
 
@@ -505,13 +547,20 @@ export class Sim {
         const d = dist(u.x, u.z, tx, tz);
         const reach = u.def.attackRange + sizeOf(target);
         if (d <= reach) {
-          // In range: face + attack on cooldown.
           u.yaw = Math.atan2(tx - u.x, tz - u.z);
           if (u.cd <= 0) {
-            this.dealDamage(u, target);
+            if (u.def.ranged) {
+              this.fireProjectile(u, target);
+            } else {
+              this.dealDamage(u, target);
+            }
             u.cd = u.def.attackCooldown;
             u.attacking = 1;
           }
+          continue;
+        }
+        if (u.def.ranged && d <= u.def.attackRange * 1.15) {
+          u.yaw = Math.atan2(tx - u.x, tz - u.z);
           continue;
         }
         if (u.isHero && u.order === "move") {
@@ -589,21 +638,35 @@ export class Sim {
     return false;
   }
 
+  private laneStagingHold(u: SimUnit): boolean {
+    if (u.ownerSlot >= 0 || u.isHero) return false;
+    const base = this.map.heroSpawn[u.team];
+    if (dist(u.x, u.z, base.x, base.z) > 14) return false;
+    let count = 0;
+    for (const o of this.units) {
+      if (!o.alive || o.team !== u.team || o.lane !== u.lane || o.ownerSlot >= 0) continue;
+      if (dist(o.x, o.z, base.x, base.z) < 16) count++;
+    }
+    return count < 4;
+  }
+
   private followFlow(u: SimUnit, dt: number) {
+    if (this.laneStagingHold(u)) return;
+
     const enemyCoreTeam: Team = u.team === 0 ? 1 : 0;
-    const flow = this.map.flowToCore[enemyCoreTeam];
+    const laneFlow = this.map.flowToCoreByLane[u.team][u.lane];
+    const flow = laneFlow ?? this.map.flowToCore[enemyCoreTeam];
     const dir = flow.sampleDir(u.x, u.z);
     if (!dir) {
       const core = this.map.cores[enemyCoreTeam];
       this.moveToward(u, core.x, core.z, dt);
       return;
     }
-    // Bias toward the unit's assigned lane x so waves spread across the map.
     const laneTargetX = this.map.laneX[u.lane]!;
-    const bias = Math.max(-1, Math.min(1, (laneTargetX - u.x) * 0.04));
+    const bias = Math.max(-1, Math.min(1, (laneTargetX - u.x) * 0.05));
     const stepLen = u.def.speed * dt;
     let nx = u.x + (dir.x + bias) * stepLen;
-    let nz = u.z + dir.z * stepLen;
+    let nz = u.z + (dir.z + bias * 0.25) * stepLen;
     if (!this.map.grid.walkable(this.map.grid.cellX(nx), this.map.grid.cellZ(nz))) {
       const wp = this.map.grid.nearestWalkable(nx, nz);
       nx = wp.x;
@@ -612,6 +675,50 @@ export class Sim {
     u.yaw = Math.atan2(nx - u.x, nz - u.z);
     u.x = nx;
     u.z = nz;
+  }
+
+  private fireProjectile(attacker: SimUnit, target: SimUnit | SimStruct) {
+    this.projectiles.push({
+      id: this.nextId++,
+      team: attacker.team,
+      x: attacker.x,
+      z: attacker.z,
+      tx: target.x,
+      tz: target.z,
+      speed: 32,
+      damage: attacker.def.damage,
+      targetId: target.id,
+      ownerSlot: attacker.ownerSlot,
+      ttl: 1.2,
+    });
+  }
+
+  private updateProjectiles(dt: number) {
+    for (let i = this.projectiles.length - 1; i >= 0; i--) {
+      const p = this.projectiles[i]!;
+      p.ttl -= dt;
+      const dx = p.tx - p.x;
+      const dz = p.tz - p.z;
+      const d = Math.hypot(dx, dz);
+      const step = p.speed * dt;
+      if (d <= step || d < 0.15) {
+        const target = this.getUnitOrStruct(p.targetId);
+        if (target && target.alive && target.team !== p.team) {
+          target.hp -= p.damage;
+          if ("ownerSlot" in target) {
+            (target as SimUnit).lastHitBy = p.ownerSlot;
+          }
+          if (target.hp <= 0) {
+            this.killEntity(target, p.ownerSlot, false);
+          }
+        }
+        this.projectiles.splice(i, 1);
+        continue;
+      }
+      p.x += (dx / d) * step;
+      p.z += (dz / d) * step;
+      if (p.ttl <= 0) this.projectiles.splice(i, 1);
+    }
   }
 
   private dealDamage(attacker: SimUnit, target: SimUnit | SimStruct) {
@@ -672,9 +779,19 @@ export class Sim {
         }
       }
       if (best) {
-        best.hp -= s.def.damage;
-        best.lastHitBy = -1;
-        if (best.hp <= 0) this.killEntity(best, -1, false);
+        this.projectiles.push({
+          id: this.nextId++,
+          team: s.team,
+          x: s.x,
+          z: s.z,
+          tx: best.x,
+          tz: best.z,
+          speed: 40,
+          damage: s.def.damage,
+          targetId: best.id,
+          ownerSlot: -1,
+          ttl: 1.5,
+        });
         s.cd = s.def.fireRate;
       }
     }
@@ -729,36 +846,54 @@ export class Sim {
     }
   }
 
-  // --- simple bot AI (opponent fill + disconnect takeover) ---
+  // --- bot AI (ally fill + enemy fill + disconnect takeover) ---
+
+  private structLaneHp(team: Team, lane: number): number {
+    const s = this.structs.find((st) => st.alive && st.team === team && st.key === "tower" && st.lane === lane);
+    return s?.hp ?? 0;
+  }
+
+  private humanTeammate(p: SimPlayer): SimPlayer | undefined {
+    return this.players.find((q) => q.team === p.team && !q.bot && q.connected);
+  }
 
   private runBots() {
     for (const p of this.players) {
       if (!p.bot) continue;
       p.botTimer -= DT;
       if (p.botTimer > 0) continue;
-      p.botTimer = 1.5;
+      p.botTimer = 1.2;
 
-      // Summon along a rotating lane when affordable.
-      const choices: ("footman" | "archer" | "knight")[] = [
-        "footman",
-        "archer",
-        "knight",
-      ];
-      const pick = choices[Math.floor(this.rng() * choices.length)]!;
-      if (p.credits >= COST[pick]) {
-        this.trySummon(p, pick, (this.tick >> 5) % 3);
-      }
-
-      // Drive the hero: attack-move toward the enemy core or nearest threat.
       const h = this.hero(p);
-      if (h) {
-        const enemyCoreTeam: Team = p.team === 0 ? 1 : 0;
-        const threat = this.nearestEnemyToPoint(p.team, h.x, h.z, 22);
-        const tgt = threat ?? this.map.cores[enemyCoreTeam];
-        h.order = "attackMove";
-        const wp = this.map.grid.nearestWalkable(tgt.x, tgt.z);
-        h.destX = wp.x;
-        h.destZ = wp.z;
+      const human = this.humanTeammate(p);
+      const humanHero = human ? this.hero(human) : undefined;
+      const pressures = lanePressures(this.map, p.team, (t, lane) => this.structLaneHp(t, lane));
+      const threat = h ? this.nearestEnemyToPoint(p.team, h.x, h.z, 24) : undefined;
+
+      const input: BotTickInput = {
+        slot: p.slot,
+        team: p.team,
+        bot: true,
+        credits: p.credits,
+        rallyLane: p.rallyLane,
+        heroAlive: !!h,
+        heroX: h?.x ?? 0,
+        heroZ: h?.z ?? 0,
+        allySupport: !!human,
+        humanRallyLane: human?.rallyLane ?? 1,
+        humanHeroX: humanHero?.x ?? 0,
+        humanHeroZ: humanHero?.z ?? 0,
+        hasHumanHero: !!humanHero,
+      };
+
+      const plan = planBotTurn(input, this.map, this.mode, this.tick, this.rng, pressures, threat);
+
+      if (plan.setRallyLane !== undefined) p.rallyLane = plan.setRallyLane;
+      if (plan.summon) this.trySummon(p, plan.summon.unit, plan.summon.lane);
+      if (plan.hero && h) {
+        h.order = plan.hero.order;
+        h.destX = plan.hero.destX;
+        h.destZ = plan.hero.destZ;
       }
     }
   }
@@ -800,8 +935,17 @@ export class Sim {
         o: u.ownerSlot,
         h: u.isHero,
         a: u.attacking,
+        l: u.lane,
       });
     }
+    const projectiles: NetProjectile[] = this.projectiles.map((p) => ({
+      id: p.id,
+      t: p.team,
+      x: round2(p.x),
+      z: round2(p.z),
+      tx: round2(p.tx),
+      tz: round2(p.tz),
+    }));
     const structs: NetStruct[] = [];
     for (const s of this.structs) {
       if (!s.alive) continue;
@@ -834,6 +978,7 @@ export class Sim {
       players,
       units,
       structs,
+      projectiles,
     };
   }
 }

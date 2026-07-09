@@ -18,3 +18,5 @@
 //   export type Post = typeof postsTable.$inferSelect;
 
 export * from "./grudgeUsers";
+export * from "./gameProfiles";
+export * from "./matchResults";

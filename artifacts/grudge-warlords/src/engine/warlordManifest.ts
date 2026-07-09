@@ -52,6 +52,9 @@ export const WARLORD_MANIFEST = {
       rtsIcons: `${ASSET_CDN}/grudge-nexus/icons/skills/`,
       bakedAnims: `${ASSET_CDN}/anims/baked/`,
       raceModels: `${ASSET_CDN}/models/grudge6/races/`,
+      /** Craftpix map towers — human/medieval, elf/elven, orc (faction-themed atlases). */
+      mapTowers: `${ASSET_CDN}/models/maps/`,
+      mapTowerAtlases: `${ASSET_CDN}/models/maps/`,
     },
     d1: {
       characters: "/api/characters",

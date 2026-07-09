@@ -2,6 +2,8 @@ import * as THREE from "three";
 import { EM, type StructureEntity, type UnitEntity } from "./entities";
 import { type Faction, type StructureKind, MOMENTUM, AI_MACRO, AI_LANE } from "./config";
 import { useGame } from "./store";
+import { HERO_XP_TOWER } from "./heroSkillTree";
+import { onNeutralKilled } from "./neutralCamps";
 
 export type CombatEntity = UnitEntity | StructureEntity;
 
@@ -22,6 +24,7 @@ export function isAttackable(s: StructureEntity): boolean {
   if (s.kind !== "tower") return true;
   if (s.tier === "outer") return true;
   if (s.tier === "inner") {
+    if (s.faction !== "ally" && s.faction !== "enemy") return true;
     const gate = EM.match.gate[s.faction][s.lane];
     const outer = gate?.outer ?? null;
     return !outer || !outer.alive;
@@ -31,6 +34,7 @@ export function isAttackable(s: StructureEntity): boolean {
 
 /** True once any of this faction's lanes has both its towers razed. */
 export function laneBroken(faction: Faction): boolean {
+  if (faction !== "ally" && faction !== "enemy") return false;
   for (const gate of EM.match.gate[faction]) {
     const outerDead = !gate.outer || !gate.outer.alive;
     const innerDead = !gate.inner || !gate.inner.alive;
@@ -63,6 +67,13 @@ export function distXZ(a: THREE.Vector3, bx: number, bz: number): number {
   return Math.hypot(dx, dz);
 }
 
+/** True when `attacker` may engage `target` (lane PvP + neutral jungle). */
+export function isHostile(attacker: Faction, target: Faction): boolean {
+  if (attacker === target) return false;
+  if (attacker === "neutral" || target === "neutral") return true;
+  return attacker !== target;
+}
+
 /** Nearest opposing entity within range; enemy units are preferred over buildings. */
 export function findTarget(
   faction: Faction,
@@ -73,7 +84,7 @@ export function findTarget(
   let best: CombatEntity | null = null;
   let bestD = range * range;
   for (const o of EM.units) {
-    if (!o.alive || o.faction === faction) continue;
+    if (!o.alive || !isHostile(faction, o.faction)) continue;
     const dx = x - o.pos.x;
     const dz = z - o.pos.z;
     const dd = dx * dx + dz * dz;
@@ -84,6 +95,41 @@ export function findTarget(
   }
   if (best) return best;
   bestD = range * range;
+  if (faction !== "neutral") {
+    for (const s of EM.structures) {
+      if (!s.alive || s.faction === faction || !isAttackable(s)) continue;
+      const dx = x - s.pos.x;
+      const dz = z - s.pos.z;
+      const dd = dx * dx + dz * dz;
+      if (dd < bestD) {
+        bestD = dd;
+        best = s;
+      }
+    }
+  }
+  return best;
+}
+
+/** Structure turret target pick — ignores neutral jungle mobs. */
+export function findStructureTarget(
+  faction: Faction,
+  x: number,
+  z: number,
+  range: number,
+): CombatEntity | null {
+  let best: CombatEntity | null = null;
+  let bestD = range * range;
+  for (const o of EM.units) {
+    if (!o.alive || o.faction === "neutral" || !isHostile(faction, o.faction)) continue;
+    const dx = x - o.pos.x;
+    const dz = z - o.pos.z;
+    const dd = dx * dx + dz * dz;
+    if (dd < bestD) {
+      bestD = dd;
+      best = o;
+    }
+  }
+  if (best) return best;
   for (const s of EM.structures) {
     if (!s.alive || s.faction === faction || !isAttackable(s)) continue;
     const dx = x - s.pos.x;
@@ -123,7 +169,7 @@ export function findPriorityTarget(u: UnitEntity, range: number): CombatEntity |
   let best: UnitEntity | null = null;
   let bestScore = -Infinity;
   for (const o of EM.units) {
-    if (!o.alive || o.faction === u.faction) continue;
+    if (!o.alive || !isHostile(u.faction, o.faction)) continue;
     const dx = u.pos.x - o.pos.x;
     const dz = u.pos.z - o.pos.z;
     const dd = dx * dx + dz * dz;
@@ -184,6 +230,20 @@ export function entityById(id: number): CombatEntity | null {
   return null;
 }
 
+/** Hero attack: applies execute bonus and life steal from the skill tree. */
+export function heroDealDamage(target: CombatEntity, baseDmg: number, sparkColor = "#ffce6b"): number {
+  let dmg = baseDmg;
+  const g = useGame.getState();
+  const b = g.heroBonuses;
+  if (isUnit(target)) {
+    const frac = target.hp / target.def.hp;
+    if (frac <= 0.3 && b.executeBonus > 0) dmg *= 1 + b.executeBonus;
+  }
+  dealDamage(target, dmg, sparkColor);
+  if (b.lifeSteal > 0 && dmg > 0) g.healPlayer(dmg * b.lifeSteal);
+  return dmg;
+}
+
 /** Apply damage and resolve death (rewards, sparks). Cores never despawn. */
 export function dealDamage(target: CombatEntity, dmg: number, sparkColor = "#ffce6b"): void {
   if (!target.alive) return;
@@ -229,6 +289,8 @@ export function dealDamage(target: CombatEntity, dmg: number, sparkColor = "#ffc
       g.addCredits(reward);
       g.addScore(reward);
       g.addKill();
+    } else if (target.faction === "neutral") {
+      onNeutralKilled(target);
     }
   } else {
     EM.addImpact(target.pos.clone().setY(1.2));
@@ -238,6 +300,7 @@ export function dealDamage(target: CombatEntity, dmg: number, sparkColor = "#ffc
       const reward = Math.round(70 * EM.match.comeback.ally);
       g.addCredits(reward);
       g.addScore(reward);
+      g.addHeroXp(HERO_XP_TOWER);
       g.pushMessage("ENEMY TOWER RAZED", "good");
     }
   }
@@ -377,6 +440,7 @@ export function meleeConeHit(
   damage: number,
   faction: Faction,
   color: string,
+  fromHero = false,
 ): void {
   const cos = Math.cos(halfAngle);
   const inCone = (px: number, pz: number, radius: number): boolean => {
@@ -387,13 +451,16 @@ export function meleeConeHit(
     _cone.multiplyScalar(1 / d);
     return _cone.x * dir.x + _cone.z * dir.z >= cos;
   };
+  const hit = fromHero
+    ? (t: CombatEntity) => heroDealDamage(t, damage, color)
+    : (t: CombatEntity) => dealDamage(t, damage, color);
   for (const u of EM.units) {
     if (!u.alive || u.faction === faction) continue;
-    if (inCone(u.pos.x, u.pos.z, 0.9 * u.def.scale)) dealDamage(u, damage, color);
+    if (inCone(u.pos.x, u.pos.z, 0.9 * u.def.scale)) hit(u);
   }
   for (const b of EM.structures) {
     if (!b.alive || b.faction === faction) continue;
-    if (inCone(b.pos.x, b.pos.z, structRadius(b.kind))) dealDamage(b, damage, color);
+    if (inCone(b.pos.x, b.pos.z, structRadius(b.kind))) hit(b);
   }
   for (const tr of EM.trees) {
     if (!tr.alive) continue;

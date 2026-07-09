@@ -5,17 +5,30 @@ import { useGame } from "../../game/store";
 import {
   ECONOMY,
   DIFFICULTY,
-  BUILDINGS,
   MATCH,
   MOMENTUM,
   RELIC,
   COMEBACK,
   AI_MACRO,
-  type BuildingLevel,
   type DifficultyDef,
   type Faction,
 } from "../../game/config";
+import { enemyEliteType, enemyGrudgeFaction, resolveUnitDef } from "../../engine/grudge6";
+import {
+  defaultLaneDeployment,
+  type LaneDeployment,
+  type LaneId,
+  waveTypesForLane,
+} from "../../game/laneDeployment";
+import {
+  applySpecToSpawn,
+  archeryRecipe,
+  barracksRecipe,
+  spawnTypeForWave,
+  specModifiersFor,
+} from "../../game/productionSpecs";
 import { countUnitsNear, entityById, isUnit, laneBroken } from "../../game/combat";
+import { tickCampRespawn } from "../../game/neutralCamps";
 
 /**
  * Headless match loop: passive income, hero respawn, time-based wave escalation,
@@ -37,6 +50,8 @@ export function MatchDirector() {
   const enemyPushCount = useRef(0);
   const bldTimer = useRef<{ barracks: number; archery: number }>({ barracks: 10, archery: 12 });
   const lastPhase = useRef<string>("menu");
+  const deploymentRoundRef = useRef(0);
+  const championsSpawnedRound = useRef(0);
 
   useFrame((_, dtRaw) => {
     const dt = Math.min(0.05, dtRaw);
@@ -52,6 +67,8 @@ export function MatchDirector() {
       enemyTimer.current = 4;
       enemyPushCount.current = 0;
       bldTimer.current = { barracks: 10, archery: 12 };
+      deploymentRoundRef.current = 0;
+      championsSpawnedRound.current = 0;
       lastPhase.current = "battle";
     }
 
@@ -80,6 +97,18 @@ export function MatchDirector() {
     updateRelic(dt, g);
     // Reactive enemy AI macro (treasury accrual, focus, on-demand spends).
     updateAiMacro(dt, diff, g);
+    tickCampRespawn(dt);
+
+    const round = Math.floor(m.clock / MATCH.escalationPeriod) + 1;
+    if (round > deploymentRoundRef.current) {
+      deploymentRoundRef.current = round;
+      g.beginDeploymentRound(round);
+    }
+    if (round > championsSpawnedRound.current) {
+      championsSpawnedRound.current = round;
+      spawnLaneChampions("ally", g.laneDeployment, round);
+      spawnLaneChampions("enemy", defaultLaneDeployment(enemyGrudgeFaction()), round);
+    }
 
     // Ally reinforcements — fixed base cadence, escalation + momentum scaled.
     allyTimer.current -= dt;
@@ -93,9 +122,10 @@ export function MatchDirector() {
     (["barracks", "archery"] as const).forEach((kind) => {
       bldTimer.current[kind] -= dt;
       if (bldTimer.current[kind] <= 0) {
-        const def = BUILDINGS[kind].levels[g.buildings[kind] - 1] ?? BUILDINGS[kind].levels[0];
-        bldTimer.current[kind] = def.interval;
-        spawnBuildingCreeps(kind, def);
+        const lvl = g.buildings[kind];
+        const recipe = kind === "barracks" ? barracksRecipe(lvl, g.productionSpecs) : archeryRecipe(lvl, g.productionSpecs);
+        bldTimer.current[kind] = recipe.interval;
+        spawnBuildingCreeps(kind, recipe, g.productionSpecs);
       }
     });
 
@@ -108,7 +138,8 @@ export function MatchDirector() {
       const elite = enemyPushCount.current % diff.enemyEliteEveryNthPush === 0;
       if (elite) {
         spawnEnemyElite(diff);
-        g.pushMessage("AN OGRE MARCHES ON YOUR LANE", "warn");
+        const eliteName = resolveUnitDef(enemyEliteType())?.name?.toUpperCase() ?? "ELITE";
+        g.pushMessage(`${eliteName} MARCHES ON YOUR LANE`, "warn");
       } else {
         g.pushMessage("ENEMY REINFORCEMENTS INCOMING", "warn");
       }
@@ -138,9 +169,6 @@ export function MatchDirector() {
   return null;
 }
 
-const ALLY_CREEPS = ["militia", "militia", "archer"];
-const ENEMY_CREEPS = ["grunt", "grunt", "raider"];
-
 // --- Escalation -------------------------------------------------------------
 
 /** Time-based stat multiplier (HP + damage) applied to BOTH factions' creeps. */
@@ -157,12 +185,14 @@ function escalationExtraCreeps(): number {
 
 /** Per-lane momentum stat bonus for the winning side (1 = none). */
 function momentumStat(side: Faction, lane: number): number {
+  if (side !== "ally" && side !== "enemy") return 1;
   const mom = EM.match.momentum[side][lane] ?? 0;
   return 1 + mom * MOMENTUM.statPerBreach;
 }
 
 /** Per-lane momentum extra creeps for the winning side. */
 function momentumCreeps(side: Faction, lane: number): number {
+  if (side !== "ally" && side !== "enemy") return 0;
   const mom = EM.match.momentum[side][lane] ?? 0;
   return mom * MOMENTUM.creepPerBreach;
 }
@@ -170,26 +200,24 @@ function momentumCreeps(side: Faction, lane: number): number {
 // --- Spawns -----------------------------------------------------------------
 
 /**
- * Spawn the player faction's baseline lane reinforcements. Lanes with an ally
- * production building are covered by that building instead, so the baseline push
- * only covers the remaining lanes (the centre). Escalation + ally momentum +
- * tech HP scale the wave.
+ * Spawn the player faction's baseline lane reinforcements on every lane (standard
+ * and large maps). Each push sends 3 melee + 2 ranged KayKit creeps per lane,
+ * scaled by escalation + ally momentum + tech HP.
  */
 function spawnAllyPush() {
+  const g = useGame.getState();
   const stat = escalationStat();
   const extra = escalationExtraCreeps();
   const techHp = EM.allyTechHpMult();
-  const producedLanes = new Set(
-    EM.map.buildings.filter((b) => b.faction === "ally").map((b) => b.lane),
-  );
   for (const lane of EM.map.lanes) {
-    if (producedLanes.has(lane.id)) continue;
     const mStat = stat * momentumStat("ally", lane.id);
     const count = ECONOMY.creepsPerLane + extra + momentumCreeps("ally", lane.id);
+    const pick = g.laneDeployment.lanes[lane.id as LaneId];
+    const types = waveTypesForLane(pick, count);
     const start = lane.pts[0];
     for (let i = 0; i < count; i++) {
-      const jitter = (i - 1) * 1.4;
-      EM.spawnUnit("ally", ALLY_CREEPS[i] ?? "militia", start.x + jitter, start.z, {
+      const jitter = (i - (count - 1) / 2) * 1.4;
+      EM.spawnUnit("ally", types[i] ?? pick.meleeCreep, start.x + jitter, start.z, {
         commandable: false,
         lane: lane.id,
         hpMult: mStat * techHp,
@@ -201,15 +229,18 @@ function spawnAllyPush() {
 
 /** Spawn the enemy faction's lane assault: difficulty + escalation + momentum. */
 function spawnEnemyPush(diff: DifficultyDef) {
+  const enemyDep = defaultLaneDeployment(enemyGrudgeFaction());
   const stat = escalationStat();
   const extra = escalationExtraCreeps();
   for (const lane of EM.map.lanes) {
     const mStat = stat * momentumStat("enemy", lane.id);
     const count = diff.enemyCreepsPerLane + extra + momentumCreeps("enemy", lane.id);
+    const pick = enemyDep.lanes[lane.id as LaneId];
+    const types = waveTypesForLane(pick, count);
     const end = lane.pts[lane.pts.length - 1];
     for (let i = 0; i < count; i++) {
-      const jitter = (i - 1) * 1.4;
-      EM.spawnUnit("enemy", ENEMY_CREEPS[i] ?? "grunt", end.x + jitter, end.z, {
+      const jitter = (i - (count - 1) / 2) * 1.4;
+      EM.spawnUnit("enemy", types[i] ?? pick.meleeCreep, end.x + jitter, end.z, {
         commandable: false,
         lane: lane.id,
         hpMult: diff.enemyHpMult * mStat,
@@ -219,20 +250,71 @@ function spawnEnemyPush(diff: DifficultyDef) {
   }
 }
 
+/** Spawn lane guard champions (1 melee + 1 ranged GRUDGE6 NPC per lane per round). */
+function spawnLaneChampions(side: Faction, dep: LaneDeployment, round: number) {
+  const stat = escalationStat() * (1 + (round - 1) * 0.04);
+  const techHp = side === "ally" ? EM.allyTechHpMult() : 1;
+  const hpMult = 1.7 * stat * techHp;
+  const dmgMult = 1.5 * stat;
+  const { meleeGuard, rangedGuard } = dep.heroes;
+  for (const lane of EM.map.lanes) {
+    const anchor = side === "ally" ? lane.pts[0] : lane.pts[lane.pts.length - 1];
+    const label = `R${round} Guard`;
+    EM.spawnUnit(side, meleeGuard, anchor.x - 2.2, anchor.z, {
+      commandable: false,
+      isLaneGuard: true,
+      lane: lane.id,
+      hpMult,
+      dmgMult,
+      specLabel: label,
+    });
+    EM.spawnUnit(side, rangedGuard, anchor.x + 2.2, anchor.z, {
+      commandable: false,
+      isLaneGuard: true,
+      lane: lane.id,
+      hpMult: hpMult * 0.92,
+      dmgMult,
+      specLabel: label,
+    });
+  }
+}
+
 /** Spawn one wave from an ally production building down its own lane. */
-function spawnBuildingCreeps(kind: "barracks" | "archery", def: BuildingLevel) {
+function spawnBuildingCreeps(
+  kind: "barracks" | "archery",
+  recipe: ReturnType<typeof barracksRecipe>,
+  specs: import("../../game/productionSpecs").ProductionSpecs,
+) {
   const b = EM.map.buildings.find((x) => x.faction === "ally" && x.kind === kind);
   if (!b) return;
   const mStat = escalationStat() * momentumStat("ally", b.lane);
   const techHp = EM.allyTechHpMult();
-  for (let i = 0; i < def.count; i++) {
-    const jitter = (i - (def.count - 1) / 2) * 1.4;
-    EM.spawnUnit("ally", def.type, b.x + jitter, b.z, {
-      commandable: false,
-      lane: b.lane,
-      hpMult: def.statMult * mStat * techHp,
-      dmgMult: def.statMult * mStat,
-    });
+  // Spawn at the lane mouth (walkable) — building GLBs may sit on a ridge shoulder.
+  const lane = EM.map.lanes[b.lane];
+  const spawn = lane ? lane.pts[0] : { x: b.x, z: b.z };
+  let idx = 0;
+  for (const wave of recipe.waves) {
+    const spec = specModifiersFor(specs, wave.specKey);
+    const typeId = spawnTypeForWave(wave);
+    for (let n = 0; n < wave.count; n++) {
+      const jitter = (idx - (recipe.waves.reduce((a, w) => a + w.count, 0) - 1) / 2) * 1.4;
+      const applied = applySpecToSpawn(
+        { hpMult: recipe.tierStatMult * mStat * techHp, dmgMult: recipe.tierStatMult * mStat },
+        spec,
+      );
+      EM.spawnUnit("ally", typeId, spawn.x + jitter, spawn.z, {
+        commandable: false,
+        lane: b.lane,
+        hpMult: applied.hpMult,
+        dmgMult: applied.dmgMult,
+        specLabel: applied.specLabel,
+        skills: applied.skills,
+        specSpeedMult: spec.speedMult,
+        specRangeMult: spec.rangeMult,
+        specAttackRateMult: spec.attackRateMult,
+      });
+      idx++;
+    }
   }
 }
 
@@ -241,7 +323,7 @@ function spawnEnemyElite(diff: DifficultyDef) {
   const lane = EM.map.lanes[1]; // center
   const stat = escalationStat() * momentumStat("enemy", lane.id);
   const end = lane.pts[lane.pts.length - 1];
-  EM.spawnUnit("enemy", "ogre", end.x, end.z, {
+  EM.spawnUnit("enemy", enemyEliteType(), end.x, end.z, {
     commandable: false,
     lane: lane.id,
     hpMult: diff.enemyHpMult * stat,
@@ -251,12 +333,15 @@ function spawnEnemyElite(diff: DifficultyDef) {
 
 /** Spawn an on-demand enemy defensive squad clustered at a threatened structure. */
 function spawnEnemyDefenders(at: StructureEntity, count: number, diff: DifficultyDef) {
+  const enemyDep = defaultLaneDeployment(enemyGrudgeFaction());
+  const pick = enemyDep.lanes[(at.lane >= 0 ? at.lane : 1) as LaneId];
+  const types = waveTypesForLane(pick, count);
   const stat = escalationStat();
   for (let i = 0; i < count; i++) {
     const ang = (i / Math.max(1, count)) * Math.PI * 2;
     const ox = Math.cos(ang) * 3;
     const oz = Math.sin(ang) * 3;
-    EM.spawnUnit("enemy", ENEMY_CREEPS[i % ENEMY_CREEPS.length] ?? "grunt", at.pos.x + ox, at.pos.z + oz, {
+    EM.spawnUnit("enemy", types[i] ?? pick.meleeCreep, at.pos.x + ox, at.pos.z + oz, {
       commandable: false,
       lane: at.lane >= 0 ? at.lane : 1,
       hpMult: diff.enemyHpMult * stat,
@@ -269,11 +354,14 @@ function spawnEnemyDefenders(at: StructureEntity, count: number, diff: Difficult
 function spawnEnemyFocusPush(lane: number, count: number, diff: DifficultyDef) {
   const laneDef = EM.map.lanes[lane];
   if (!laneDef) return;
+  const enemyDep = defaultLaneDeployment(enemyGrudgeFaction());
+  const pick = enemyDep.lanes[lane as LaneId];
+  const types = waveTypesForLane(pick, count);
   const stat = escalationStat() * momentumStat("enemy", lane);
   const end = laneDef.pts[laneDef.pts.length - 1];
   for (let i = 0; i < count; i++) {
     const jitter = (i - (count - 1) / 2) * 1.4;
-    EM.spawnUnit("enemy", ENEMY_CREEPS[i % ENEMY_CREEPS.length] ?? "grunt", end.x + jitter, end.z, {
+    EM.spawnUnit("enemy", types[i] ?? pick.meleeCreep, end.x + jitter, end.z, {
       commandable: false,
       lane,
       hpMult: diff.enemyHpMult * stat,
@@ -361,6 +449,7 @@ function claimRelic(faction: Faction, g: ReturnType<typeof useGame.getState>) {
   r.progress = 0;
   r.capturer = null;
   r.owner = faction;
+  if (faction !== "ally" && faction !== "enemy") return;
   const buff = EM.match.buff[faction];
   buff.mult = RELIC.buffDmgMult;
   buff.timer = RELIC.buffDuration;

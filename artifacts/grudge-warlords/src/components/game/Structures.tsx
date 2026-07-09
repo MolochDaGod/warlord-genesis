@@ -4,12 +4,24 @@ import * as THREE from "three";
 import { EM, type StructureEntity } from "../../game/entities";
 import { PROJECTILES, STRUCT_PROJECTILE } from "../../game/config";
 import { useGame } from "../../game/store";
-import { dealDamage, distXZ, findTarget } from "../../game/combat";
+import { dealDamage, distXZ, findStructureTarget } from "../../game/combat";
+import { playerGrudgeFaction, enemyGrudgeFaction } from "../../engine/grudge6";
+import { towerPackForFactionTier, type TowerPack, type TowerTier } from "../../engine/towerAssets";
+import { bootEngine, getEngine } from "../../engine/boot";
+import { TowerModel, preloadTowers } from "./TowerModel";
+
+preloadTowers(getEngine().cdnReachable);
+bootEngine().then((s) => preloadTowers(s.cdnReachable));
 
 const _from = new THREE.Vector3();
 const _to = new THREE.Vector3();
 
 const FACTION_ACCENT: Record<string, string> = { ally: "#e0b252", enemy: "#c0392b" };
+
+function towerPackForSide(faction: string, tier: TowerTier): TowerPack {
+  const id = faction === "ally" ? playerGrudgeFaction() : enemyGrudgeFaction();
+  return towerPackForFactionTier(id, tier);
+}
 
 /** Muzzle flash tint + size per turret archetype so shots read at a glance. */
 const TURRET_MUZZLE: Partial<Record<StructureEntity["kind"], { color: string; size: number }>> = {
@@ -59,21 +71,6 @@ function StructureMesh({ kind, faction }: { kind: StructureEntity["kind"]; facti
             <boxGeometry args={[0.7, 3.2, 0.7]} />
           </mesh>
         ))}
-      </group>
-    );
-  }
-  if (kind === "tower") {
-    return (
-      <group>
-        <mesh material={stone} position={[0, 2, 0]} castShadow receiveShadow>
-          <cylinderGeometry args={[1.3, 1.7, 4, 7]} />
-        </mesh>
-        <mesh material={trim} position={[0, 4.2, 0]}>
-          <cylinderGeometry args={[1.5, 1.5, 0.6, 7]} />
-        </mesh>
-        <mesh material={dark} position={[0, 4.9, 0]} castShadow>
-          <coneGeometry args={[1.5, 1.4, 7]} />
-        </mesh>
       </group>
     );
   }
@@ -169,7 +166,7 @@ export function Structures() {
       s.underAttack = Math.max(0, s.underAttack - dt);
       if (s.kind === "barrier" || s.range <= 0) continue;
 
-      const target = findTarget(s.faction, s.pos.x, s.pos.z, s.range);
+      const target = findStructureTarget(s.faction, s.pos.x, s.pos.z, s.range);
       let aimX: number | null = null;
       let aimZ: number | null = null;
       let fireHero = false;
@@ -275,11 +272,18 @@ export function Structures() {
         .filter((s) => s.alive)
         .map((s) => {
           const barY =
-            s.kind === "tower" ? 6.2 : s.kind === "mage" ? 4.4 : s.kind === "barrier" ? 2.4 : 2.1;
+            s.kind === "tower" ? 7.8 : s.kind === "mage" ? 4.4 : s.kind === "barrier" ? 2.4 : 2.1;
           const barColor = s.faction === "ally" ? "#7ee37e" : "#ff6b6b";
           return (
             <group key={s.id} ref={setRef(s.id)} position={[s.pos.x, s.pos.y, s.pos.z]} rotation={[0, s.yaw, 0]}>
-              <StructureMesh kind={s.kind} faction={s.faction} />
+              {s.kind === "tower" ? (
+                <TowerModel
+                  pack={towerPackForSide(s.faction, s.tier ?? "outer")}
+                  tier={s.tier ?? "outer"}
+                />
+              ) : (
+                <StructureMesh kind={s.kind} faction={s.faction} />
+              )}
               {s.kind !== "core" && (
                 <group name="hpbar" position={[0, barY, 0]}>
                   <mesh position={[0, 0, -0.02]}>

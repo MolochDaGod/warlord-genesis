@@ -1,0 +1,232 @@
+{
+  "source": "https://grudge-heros.puter.site",
+  "syncedAt": "2026-06-29T13:22:26.138Z",
+  "note": "Add WebM showcase clips to public/media/heroes/videos/{codexId}.webm then re-run.",
+  "heroes": [
+    {
+      "codexId": "human_warrior",
+      "name": "Sir Aldric Valorheart",
+      "prefabMatch": "human_warrior",
+      "portrait": "/media/heroes/portraits/human_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/human_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "human_worg",
+      "name": "Gareth Moonshadow",
+      "prefabMatch": "human_worg",
+      "portrait": "/media/heroes/portraits/human_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/human_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "human_mage",
+      "name": "Archmage Elara Brightspire",
+      "prefabMatch": "human_mage",
+      "portrait": "/media/heroes/portraits/human_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/human_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "human_ranger",
+      "name": "Kael Shadowblade",
+      "prefabMatch": "human_ranger",
+      "portrait": "/media/heroes/portraits/human_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/human_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "barbarian_warrior",
+      "name": "Ulfgar Bonecrusher",
+      "prefabMatch": "barbarian_warrior",
+      "portrait": "/media/heroes/portraits/barbarian_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/barbarian_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "barbarian_worg",
+      "name": "Hrothgar Fangborn",
+      "prefabMatch": "barbarian_worg",
+      "portrait": "/media/heroes/portraits/barbarian_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/barbarian_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "barbarian_mage",
+      "name": "Volka Stormborn",
+      "prefabMatch": "barbarian_mage",
+      "portrait": "/media/heroes/portraits/barbarian_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/barbarian_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "barbarian_ranger",
+      "name": "Svala Windrider",
+      "prefabMatch": "barbarian_ranger",
+      "portrait": "/media/heroes/portraits/barbarian_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/barbarian_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "dwarf_warrior",
+      "name": "Thane Ironshield",
+      "prefabMatch": "dwarf_warrior",
+      "portrait": "/media/heroes/portraits/dwarf_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/dwarf_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "dwarf_worg",
+      "name": "Bromm Earthshaker",
+      "prefabMatch": "dwarf_worg",
+      "portrait": "/media/heroes/portraits/dwarf_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/dwarf_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "dwarf_mage",
+      "name": "Runa Forgekeeper",
+      "prefabMatch": "dwarf_mage",
+      "portrait": "/media/heroes/portraits/dwarf_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/dwarf_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "dwarf_ranger",
+      "name": "Durin Tunnelwatcher",
+      "prefabMatch": "dwarf_ranger",
+      "portrait": "/media/heroes/portraits/dwarf_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/dwarf_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "elf_warrior",
+      "name": "Thalion Bladedancer",
+      "prefabMatch": "elf_warrior",
+      "portrait": "/media/heroes/portraits/elf_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/elf_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "elf_worg",
+      "name": "Sylara Wildheart",
+      "prefabMatch": "elf_worg",
+      "portrait": "/media/heroes/portraits/elf_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/elf_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "elf_mage",
+      "name": "Lyra Stormweaver",
+      "prefabMatch": "elf_mage",
+      "portrait": "/media/heroes/portraits/elf_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/elf_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "elf_ranger",
+      "name": "Aelindra Swiftbow",
+      "prefabMatch": "elf_ranger",
+      "portrait": "/media/heroes/portraits/elf_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/elf_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "orc_warrior",
+      "name": "Grommash Ironjaw",
+      "prefabMatch": "orc_warrior",
+      "portrait": "/media/heroes/portraits/orc_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/orc_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "orc_worg",
+      "name": "Fenris Bloodfang",
+      "prefabMatch": "orc_worg",
+      "portrait": "/media/heroes/portraits/orc_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/orc_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "orc_mage",
+      "name": "Zul'jin the Hexmaster",
+      "prefabMatch": "orc_mage",
+      "portrait": "/media/heroes/portraits/orc_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/orc_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "orc_ranger",
+      "name": "Razak Deadeye",
+      "prefabMatch": "orc_ranger",
+      "portrait": "/media/heroes/portraits/orc_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/orc_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "undead_warrior",
+      "name": "Lord Malachar",
+      "prefabMatch": "undead_warrior",
+      "portrait": "/media/heroes/portraits/undead_warrior.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/undead_warrior.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "undead_worg",
+      "name": "The Ghoulfather",
+      "prefabMatch": "undead_worg",
+      "portrait": "/media/heroes/portraits/undead_worg.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/undead_worg.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "undead_mage",
+      "name": "Necromancer Vexis",
+      "prefabMatch": "undead_mage",
+      "portrait": "/media/heroes/portraits/undead_mage.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/undead_mage.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "undead_ranger",
+      "name": "Shade Whisper",
+      "prefabMatch": "undead_ranger",
+      "portrait": "/media/heroes/portraits/undead_ranger.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/undead_ranger.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    },
+    {
+      "codexId": "pirate_king",
+      "name": "Racalvin the Pirate King",
+      "prefabMatch": "pirate_king",
+      "portrait": "/media/heroes/portraits/pirate_king.png",
+      "portraitLocal": true,
+      "video": "/media/heroes/videos/pirate_king.webm",
+      "codexUrl": "https://grudge-heros.puter.site/"
+    }
+  ]
+}

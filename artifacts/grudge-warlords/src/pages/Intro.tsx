@@ -5,6 +5,7 @@ import { useSession } from "../game/session";
 import { ICONS } from "../components/ui/icons";
 import { bootEngine, getEngine } from "../engine/boot";
 import { WARLORD_MANIFEST } from "../engine/warlordManifest";
+import { DEPLOY_PATH } from "../lib/deployRoutes";
 
 const PIPELINE_BADGES = [
   { id: "r2", label: "Cloudflare R2", detail: "Units · textures · baked anims" },
@@ -78,7 +79,7 @@ export function Intro() {
           </div>
         </div>
 
-        <button className="gw-btn gw-intro-cta" onClick={() => navigate("/lobby")}>
+        <button className="gw-btn gw-intro-cta" onClick={() => navigate(DEPLOY_PATH)}>
           ENTER THE WARCAMP
         </button>
         <button

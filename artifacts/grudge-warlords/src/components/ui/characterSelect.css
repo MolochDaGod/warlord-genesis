@@ -13,6 +13,119 @@
   font-weight: 700;
 }
 
+.gw-cs-factions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  justify-content: center;
+  width: 100%;
+  max-width: 640px;
+}
+
+.gw-cs-faction {
+  flex: 1 1 160px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(120, 150, 200, 0.22);
+  background: rgba(14, 20, 32, 0.75);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.gw-cs-faction.is-active {
+  border-color: var(--cs-accent, #5aa0ff);
+  box-shadow: 0 0 0 1px var(--cs-accent, #5aa0ff);
+}
+
+.gw-cs-faction-name {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  color: #e8eef8;
+}
+
+.gw-cs-faction-motto {
+  font-size: 10px;
+  color: #8fa3c4;
+}
+
+.gw-cs-races,
+.gw-cs-classes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.gw-cs-race-btn,
+.gw-cs-class {
+  padding: 6px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 150, 200, 0.22);
+  background: rgba(18, 26, 40, 0.72);
+  color: #cdd8ec;
+  font-size: 11px;
+  cursor: pointer;
+  text-transform: capitalize;
+}
+
+.gw-cs-race-btn.is-active,
+.gw-cs-class.is-active {
+  border-color: var(--cs-accent, #5aa0ff);
+  color: #fff;
+}
+
+.gw-cs-class {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 72px;
+}
+
+.gw-cs-class-name {
+  font-weight: 700;
+  letter-spacing: 0.04em;
+}
+
+.gw-cs-class-role {
+  font-size: 9px;
+  opacity: 0.7;
+}
+
+.gw-cs-grudge-id {
+  font-family: ui-monospace, monospace;
+  font-size: 12px;
+  letter-spacing: 0.08em;
+  color: #e0b252;
+  margin-top: 4px;
+}
+
+.gw-cs-unarmed-tag {
+  color: #a8b8d0;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+}
+
+.gw-cs-mesh-count {
+  font-size: 10px;
+  color: #7f93b4;
+  margin-top: 4px;
+}
+
+.gw-cs-mesh-count a {
+  color: #5aa0ff;
+}
+
+.gw-cs-hero-title {
+  font-size: 11px;
+  color: #9aafc8;
+  font-style: italic;
+}
+
 .gw-cs-race {
   font-size: 10px;
   letter-spacing: 0.14em;
@@ -746,8 +859,296 @@
   box-shadow: 0 0 12px rgba(224, 178, 82, 0.35);
 }
 
+.gw-cs-lane-guards {
+  width: 100%;
+  max-width: 640px;
+  padding: 12px 14px;
+  border: 1px solid rgba(127, 147, 180, 0.25);
+  border-radius: 8px;
+  background: rgba(12, 18, 28, 0.55);
+}
+
+.gw-cs-lane-hint {
+  margin: 6px 0 10px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9aadc8;
+  text-align: center;
+}
+
+.gw-cs-lane-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.gw-cs-lane-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 11px;
+  color: #7f93b4;
+}
+
+.gw-cs-lane-field select {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid rgba(127, 147, 180, 0.35);
+  background: rgba(8, 12, 20, 0.9);
+  color: #e8eef8;
+  font-size: 12px;
+}
+
+/* ===== Lobby v2 — canonical GRUDGE6 roster ===== */
+.gw-cs-v2 {
+  align-items: stretch;
+  width: 100%;
+  gap: 16px;
+}
+
+.gw-cs-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+}
+
+.gw-cs-heading {
+  margin: 0;
+  font-family: "Cinzel Decorative", serif;
+  font-size: clamp(22px, 3vw, 30px);
+  letter-spacing: 0.06em;
+  color: #f1e6cf;
+}
+
+.gw-cs-sub {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #9a8f7a;
+  max-width: 520px;
+}
+
+.gw-cs-sub a {
+  color: #e0b252;
+}
+
+.gw-cs-body {
+  display: grid;
+  grid-template-columns: minmax(260px, 300px) 1fr;
+  gap: 18px;
+  width: 100%;
+  align-items: start;
+}
+
+.gw-cs-preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gw-warlord-preview {
+  position: relative;
+  width: 100%;
+  height: 320px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 178, 82, 0.28);
+  background: radial-gradient(120% 80% at 50% 10%, rgba(80, 50, 30, 0.35), #0e0a08 70%);
+}
+
+.gw-warlord-preview canvas {
+  width: 100% !important;
+  height: 100% !important;
+}
+
+.gw-warlord-preview-plate {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  width: 180px;
+  height: 22px;
+  transform: translateX(-50%);
+  background: radial-gradient(50% 100% at 50% 50%, rgba(0, 0, 0, 0.55), transparent 70%);
+  pointer-events: none;
+}
+
+.gw-cs-hero-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.gw-cs-mesh-pill {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+  border-radius: 10px;
+  border: 1px solid rgba(224, 178, 82, 0.35);
+  color: #d9c189;
+}
+
+.gw-cs-hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.gw-cs-viewer-btn {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  padding: 8px 16px;
+  border-radius: 6px;
+  color: #160d0b;
+  background: linear-gradient(180deg, #e0b252, #c79338);
+  text-decoration: none;
+  transition: box-shadow 0.12s ease;
+}
+
+.gw-cs-viewer-btn:hover {
+  box-shadow: 0 0 18px rgba(224, 178, 82, 0.45);
+}
+
+.gw-cs-roster {
+  min-width: 0;
+}
+
+.gw-cs-roster-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(148px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+
+.gw-cs-roster-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 10px 11px;
+  border-radius: 10px;
+  border: 1px solid rgba(224, 178, 82, 0.18);
+  background: rgba(22, 13, 11, 0.72);
+  cursor: pointer;
+  text-align: left;
+  color: #f3dcc4;
+  transition: border-color 0.12s ease, transform 0.1s ease, box-shadow 0.12s ease;
+}
+
+.gw-cs-roster-card:hover {
+  border-color: var(--cs-accent, #e0b252);
+  transform: translateY(-2px);
+}
+
+.gw-cs-roster-card.is-active {
+  border-color: var(--cs-accent, #e0b252);
+  box-shadow: 0 0 0 1px var(--cs-accent), 0 8px 20px rgba(0, 0, 0, 0.35);
+}
+
+.gw-cs-roster-stars {
+  font-size: 10px;
+  color: #e0b252;
+  letter-spacing: 1px;
+}
+
+.gw-cs-roster-name {
+  font-family: "Cinzel Decorative", serif;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.25;
+}
+
+.gw-cs-roster-class {
+  font-size: 10px;
+  color: #b89a7c;
+  text-transform: capitalize;
+}
+
+.gw-cs-roster-gear {
+  font-size: 10px;
+  color: var(--cs-accent, #e0b252);
+  font-weight: 600;
+}
+
+.gw-cs-lane-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.gw-cs-lane-col {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.gw-cs-lane-col-title {
+  font-size: 10px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #e0b252;
+  font-weight: 700;
+}
+
+.gw-cs-lane-card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 2px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(16, 9, 8, 0.65);
+  cursor: pointer;
+  text-align: left;
+  color: #f3dcc4;
+  transition: border-color 0.12s ease;
+}
+
+.gw-cs-lane-card:hover {
+  border-color: var(--cs-accent, #e0b252);
+}
+
+.gw-cs-lane-card.is-active {
+  border-color: var(--cs-accent, #e0b252);
+  box-shadow: inset 0 0 0 1px var(--cs-accent);
+}
+
+.gw-cs-lane-card-name {
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.gw-cs-lane-card-gear {
+  font-size: 10px;
+  color: var(--cs-accent, #b89a7c);
+}
+
+@media (max-width: 900px) {
+  .gw-cs-body {
+    grid-template-columns: 1fr;
+  }
+  .gw-warlord-preview {
+    height: 280px;
+  }
+}
+
 @media (max-width: 640px) {
   .gw-lo-body {
+    grid-template-columns: 1fr;
+  }
+  .gw-cs-lane-picks,
+  .gw-cs-lane-grid {
     grid-template-columns: 1fr;
   }
 }

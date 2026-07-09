@@ -4,9 +4,20 @@
   "buildCommand": "BASE_PATH=/ PORT=5173 pnpm --filter @workspace/grudge-warlords run build",
   "outputDirectory": "artifacts/grudge-warlords/dist/public",
   "framework": null,
+  "build": {
+    "env": {
+      "VITE_WORLD_URL": "https://water.grudge-studio.com",
+      "VITE_ASSETS_CDN_URL": "https://assets.grudge-studio.com"
+    }
+  },
   "rewrites": [
+    { "source": "/api/characters", "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters" },
+    { "source": "/api/characters/:path*", "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters/:path*" },
+    { "source": "/api/auth/:path*", "destination": "https://id.grudge-studio.com/api/auth/:path*" },
     { "source": "/assets/(.*)", "destination": "https://assets.grudge-studio.com/assets/$1" },
     { "source": "/anims/(.*)", "destination": "https://assets.grudge-studio.com/anims/$1" },
+    { "source": "/models-glb/(.*)", "destination": "https://assets.grudge-studio.com/models-glb/$1" },
+    { "source": "/models/(.*)", "destination": "https://assets.grudge-studio.com/models/$1" },
     { "source": "/(.*)", "destination": "/index.html" }
   ],
   "headers": [

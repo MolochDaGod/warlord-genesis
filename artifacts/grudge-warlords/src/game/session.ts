@@ -10,6 +10,8 @@ import {
   restoreGrudgeStudio,
   logoutGrudgeStudio,
 } from "../lib/grudgeStudio";
+import { hydrateMetaFromServer } from "../lib/profileSync";
+import { hydrateRosterFromFleet } from "../lib/fleetCharacterHydrate";
 
 interface SessionState {
   user: GrudgeUser | null;
@@ -30,6 +32,8 @@ async function run(
   set({ loading: true, error: null });
   try {
     const user = await fn();
+    await hydrateMetaFromServer();
+    await hydrateRosterFromFleet();
     set({ user, loading: false });
   } catch (err) {
     set({
@@ -50,10 +54,16 @@ export const useSession = create<SessionState>((set) => ({
       // Prefer a stored Grudge Studio session; fall back to a server guest cookie.
       const studio = await restoreGrudgeStudio();
       if (studio) {
+        await hydrateMetaFromServer();
+        await hydrateRosterFromFleet();
         set({ user: studio, loading: false });
         return;
       }
       const user = await getMe();
+      if (user) {
+        await hydrateMetaFromServer();
+        await hydrateRosterFromFleet();
+      }
       set({ user, loading: false });
     } catch {
       set({ user: null, loading: false });

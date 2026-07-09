@@ -10,6 +10,8 @@ servers:
 tags:
   - name: health
     description: Health operations
+  - name: profiles
+    description: Per-game player profiles
 paths:
   /healthz:
     get:
@@ -24,6 +26,69 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+  /games/{gameId}/profile:
+    get:
+      operationId: getGameProfile
+      tags: [profiles]
+      summary: Load per-game profile
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameProfile"
+    patch:
+      operationId: patchGameProfile
+      tags: [profiles]
+      summary: Save per-game profile
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/GameProfilePatch"
+      responses:
+        "200":
+          description: Updated profile
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GameProfile"
+  /games/{gameId}/matches:
+    post:
+      operationId: recordMatch
+      tags: [profiles]
+      summary: Record match result and apply rewards
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MatchRecord"
+      responses:
+        "200":
+          description: Match recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MatchRecordResponse"
 components:
   schemas:
     HealthStatus:
@@ -33,4 +98,56 @@ components:
           type: string
       required:
         - status
+    GameProfile:
+      type: object
+      properties:
+        gameId:
+          type: string
+        currency:
+          type: integer
+        meta:
+          type: object
+        updatedAt:
+          type: string
+      required:
+        - gameId
+        - currency
+        - meta
+        - updatedAt
+    GameProfilePatch:
+      type: object
+      properties:
+        currency:
+          type: integer
+        meta:
+          type: object
+    MatchRecord:
+      type: object
+      properties:
+        won:
+          type: boolean
+        rewardGbux:
+          type: integer
+        seed:
+          type: integer
+        mode:
+          type: string
+        score:
+          type: integer
+        meta:
+          type: object
+        matchMeta:
+          type: object
+      required:
+        - won
+    MatchRecordResponse:
+      type: object
+      properties:
+        ok:
+          type: boolean
+        profile:
+          $ref: "#/components/schemas/GameProfile"
+      required:
+        - ok
+        - profile
 

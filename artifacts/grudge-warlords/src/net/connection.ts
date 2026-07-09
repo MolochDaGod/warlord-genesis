@@ -191,6 +191,11 @@ export function mpSummon(unit: UnitKey, lane: number) {
   intent({ k: "summon", unit, lane });
 }
 
+/** Tell ally bots which lane to reinforce (also sets your rally lane). */
+export function mpRally(lane: number) {
+  intent({ k: "rally", lane });
+}
+
 /** Re-send the current display name (used right before queueing). */
 export function mpHello(name: string) {
   send({ t: "hello", name });

@@ -21,7 +21,7 @@
 // ---------------------------------------------------------------------------
 
 import * as THREE from "three";
-import { TREE, type Faction } from "./config";
+import { NEUTRAL_CAMPS, TREE, type CampTier, type Faction } from "./config";
 import { WalkGrid, FlowField } from "./pathfind";
 
 export type MapSize = "standard" | "large";
@@ -32,6 +32,13 @@ export interface TreeSpot {
   z: number;
   scale: number;
   rot: number;
+}
+
+/** Neutral jungle camp anchor (defenders spawn around this point). */
+export interface CampPlacement {
+  x: number;
+  z: number;
+  tier: CampTier;
 }
 
 export interface MapSizeDef {
@@ -48,24 +55,44 @@ export interface MapSizeDef {
   corner: boolean;
 }
 
+/** Linear scale vs the original 80×130 / 200×325 MOBA sizes (3× = Dota-scale jungle). */
+export const WORLD_SCALE = 3;
+
 export const MAP_SIZES: Record<MapSize, MapSizeDef> = {
-  standard: { label: "Standard", width: 64, length: 104, cutthroughPairs: 0, corner: false },
-  large: { label: "Large", width: 160, length: 260, cutthroughPairs: 3, corner: true },
+  standard: {
+    label: "Standard",
+    width: 80 * WORLD_SCALE,
+    length: 130 * WORLD_SCALE,
+    cutthroughPairs: 0,
+    corner: false,
+  },
+  large: {
+    label: "Large",
+    width: 200 * WORLD_SCALE,
+    length: 325 * WORLD_SCALE,
+    cutthroughPairs: 5,
+    corner: true,
+  },
 };
 
 export const MAP_SIZE_ORDER: MapSize[] = ["standard", "large"];
 
-// Terrain shaping constants (world units).
+// Terrain shaping constants (world units). Spatial offsets scale with WORLD_SCALE;
+// lane corridor width stays readable at MOBA unit scale.
 const HM_CELL = 1.7; // heightmap + pathfinding cell size
 const CORRIDOR_HALF = 5; // half-width of a flat walkable lane corridor
-const RAMP = 6; // distance over which ridges rise to full height
-const RIDGE_HEIGHT = 3.6; // peak divider height
-const BASE_RADIUS = 15; // flat clearing radius around each Citadel
+const RAMP = 6 * WORLD_SCALE; // distance over which ridges rise to full height
+const RIDGE_HEIGHT = 5.2; // taller jungle dividers on large battlefields
+const BASE_RADIUS = 15 * WORLD_SCALE; // flat clearing radius around each Citadel
 const WALK_PAD = 1.2; // walkable extends slightly past the flat corridor
 const WALL_HEIGHT = 3;
-const BUILDING_OFFSET = 8; // production building offset clear of the lane corridor
-const CORNER_INSET = 18; // core distance from each wall (corner layout)
-const LANE_INSET = 12; // edge-lane corridor distance from the walls (corner layout)
+const BUILDING_OFFSET = 8 * WORLD_SCALE; // production building offset clear of lane
+const CORNER_INSET = 18 * WORLD_SCALE; // core distance from each wall (corner layout)
+const LANE_INSET = 12 * WORLD_SCALE; // edge-lane corridor distance from walls (corner)
+const CORE_INSET = 12 * WORLD_SCALE; // end-to-end core distance from map end
+const LANE_END_INSET = 4 * WORLD_SCALE; // lane polyline stops short of cores
+const LANE_WALL_INSET = 11 * WORLD_SCALE; // side-lane bow toward walls (end-to-end)
+const LANE_INNER_INSET = 7 * WORLD_SCALE; // side-lane X near cores (end-to-end)
 
 export interface LanePathData {
   id: number;
@@ -131,6 +158,8 @@ export interface GameMap {
   cutthroughs: Cutthrough[];
   /** Scattered destructible trees (ridge cover + jungle-trail edges). */
   trees: TreeSpot[];
+  /** Neutral jungle camps (off-lane PvE rewards). */
+  camps: CampPlacement[];
 
   grid: WalkGrid;
   /** Field over the FULL walkable grid (hero / commandable A* fallbacks + crowd ordering). */
@@ -192,10 +221,10 @@ interface LaneDef2 {
 function buildLanes(width: number, length: number): LaneDef2[] {
   const halfW = width / 2;
   const halfL = length / 2;
-  const coreZ = halfL - 12;
-  const endZ = coreZ - 4; // lane endpoints just outside the cores
-  const outer = halfW - 11; // how far side lanes bow toward the walls
-  const inner = 7; // side-lane endpoint X near the cores
+  const coreZ = halfL - CORE_INSET;
+  const endZ = coreZ - LANE_END_INSET;
+  const outer = halfW - LANE_WALL_INSET;
+  const inner = LANE_INNER_INSET;
 
   const center: [number, number][] = [
     [0, endZ],
@@ -331,7 +360,7 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   const halfW = width / 2;
   const rnd = mulberry32(seed);
 
-  const coreZ = halfL - 12; // end-to-end core Z; unused on the corner layout
+  const coreZ = halfL - CORE_INSET; // end-to-end core Z; unused on the corner layout
 
   const laneDefs = corner ? buildCornerLanes(width, length) : buildLanes(width, length);
   const midPts = laneDefs[1].pts2;
@@ -406,7 +435,7 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   };
 
   // Value-noise lookup (smooth) for natural ridge variation.
-  const noiseGrid = 7;
+  const noiseGrid = Math.max(7, Math.round(7 * Math.sqrt(WORLD_SCALE)));
   const noise = new Float32Array((noiseGrid + 1) * (noiseGrid + 1));
   for (let i = 0; i < noise.length; i++) noise[i] = rnd();
   const sampleNoise = (x: number, z: number): number => {
@@ -571,7 +600,15 @@ export function generateMap(seed: number, size: MapSize): GameMap {
           nx = -nx;
           nz = -nz;
         }
-        buildings.push({ faction, kind, lane: laneId, level: 1, x: px + nx * BUILDING_OFFSET, z: pz + nz * BUILDING_OFFSET });
+        // Offset toward the wall, then snap onto the nearest walkable shoulder so
+        // production spawns and pathfinding stay on the lane grid (raw offset lands
+        // on ridges on the corner layout).
+        const snap = grid.nearestWalkable(
+          px + nx * BUILDING_OFFSET,
+          pz + nz * BUILDING_OFFSET,
+          8 + 6 * WORLD_SCALE,
+        );
+        buildings.push({ faction, kind, lane: laneId, level: 1, x: snap.x, z: snap.z });
       }
     };
     placeCorner("barracks", 0);
@@ -584,7 +621,8 @@ export function generateMap(seed: number, size: MapSize): GameMap {
       for (const faction of ["ally", "enemy"] as const) {
         const z = faction === "ally" ? buildingZ : -buildingZ;
         const [lx] = sampleAtZ(pts, z);
-        buildings.push({ faction, kind, lane: laneId, level: 1, x: lx + side * BUILDING_OFFSET, z });
+        const snap = grid.nearestWalkable(lx + side * BUILDING_OFFSET, z, 8 + 6 * WORLD_SCALE);
+        buildings.push({ faction, kind, lane: laneId, level: 1, x: snap.x, z: snap.z });
       }
     };
     placeBuilding("barracks", 0, -1);
@@ -619,30 +657,34 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   {
     const trnd = mulberry32((seed ^ 0x7a3bc1) >>> 0);
     const target = large ? TREE.countLarge : TREE.countStandard;
-    const minGap = 2.4;
+    const minGap = TREE.minSpacing;
+    const coreClear = BASE_RADIUS + 4;
     let attempts = 0;
-    while (trees.length < target && attempts < target * 50) {
+    while (trees.length < target && attempts < target * 120) {
       attempts++;
-      const x = (trnd() - 0.5) * (width - 6);
-      const z = (trnd() - 0.5) * (length - 6);
-      if (Math.hypot(x - allyCore.x, z - allyCore.z) < 15) continue;
-      if (Math.hypot(x - enemyCore.x, z - enemyCore.z) < 15) continue;
+      const margin = 8 * WORLD_SCALE;
+      const x = (trnd() - 0.5) * (width - margin);
+      const z = (trnd() - 0.5) * (length - margin);
+      if (Math.hypot(x - allyCore.x, z - allyCore.z) < coreClear) continue;
+      if (Math.hypot(x - enemyCore.x, z - enemyCore.z) < coreClear) continue;
       const h = heightAt(x, z);
       const dW = featureDist(x, z);
-      // Ridge cover: elevated ground safely off the corridors.
-      const onRidge = h > 1.4 && dW > CORRIDOR_HALF + 1.2;
+      // Ridge + deep-jungle cover: spread across elevated/off-lane terrain (Dota-style).
+      const inJungle = dW > CORRIDOR_HALF + 1.8 && dW < 14 * WORLD_SCALE;
+      const onRidge = h > 0.75 && inJungle;
+      const shallowJungle = h <= 0.75 && inJungle && dW > CORRIDOR_HALF + 3;
       // Jungle-trail edges: flat ground flanking a cut-through (large maps only).
       let trail = false;
       if (large && !onRidge) {
         for (const c of cutthroughs) {
           const dc = distToSeg(x, z, c.a.x, c.a.z, c.b.x, c.b.z);
-          if (dc > 1.8 && dc < 4.5) {
+          if (dc > 2 && dc < 6 + 3 * WORLD_SCALE) {
             trail = true;
             break;
           }
         }
       }
-      if (!onRidge && !trail) continue;
+      if (!onRidge && !shallowJungle && !trail) continue;
       let tooClose = false;
       for (const t of trees) {
         if (Math.hypot(t.x - x, t.z - z) < minGap) {
@@ -651,7 +693,99 @@ export function generateMap(seed: number, size: MapSize): GameMap {
         }
       }
       if (tooClose) continue;
-      trees.push({ x, z, scale: 0.8 + trnd() * 0.9, rot: trnd() * Math.PI * 2 });
+      trees.push({ x, z, scale: 0.85 + trnd() * 1.1, rot: trnd() * Math.PI * 2 });
+    }
+  }
+
+  // Neutral jungle camps: walkable pockets off the lane spine (corridor shoulders
+  // and cut-through crossings). Prior logic required "deep jungle" or "on ridge"
+  // but ridges are never walkable, so procedural placement never succeeded.
+  const camps: CampPlacement[] = [];
+  {
+    const crnd = mulberry32((seed ^ 0xc4a9e5) >>> 0);
+    const target = large ? NEUTRAL_CAMPS.countLarge : NEUTRAL_CAMPS.countStandard;
+    const tierPlan: CampTier[] = large
+      ? [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3]
+      : [1, 1, 1, 1, 2, 2, 2, 3, 3];
+    const campMinCore = 26 * WORLD_SCALE;
+    const campMinGap = large ? 22 * WORLD_SCALE : 16 * WORLD_SCALE;
+
+    const tryPlaceCamp = (x: number, z: number, tier: CampTier): boolean => {
+      if (camps.length >= target) return false;
+      if (Math.hypot(x - allyCore.x, z - allyCore.z) < campMinCore) return false;
+      if (Math.hypot(x - enemyCore.x, z - enemyCore.z) < campMinCore) return false;
+      const snap = grid.nearestWalkable(x, z, 8 + 6 * WORLD_SCALE);
+      if (!grid.isWalkableWorld(snap.x, snap.z)) return false;
+      const dPath = featureDist(snap.x, snap.z);
+      // Off the lane centreline but still on a walkable corridor / crossing shoulder.
+      if (dPath < CORRIDOR_HALF + 1.0 || dPath > CORRIDOR_HALF + WALK_PAD) return false;
+      for (const c of camps) {
+        if (Math.hypot(c.x - snap.x, c.z - snap.z) < campMinGap) return false;
+      }
+      camps.push({ x: snap.x, z: snap.z, tier });
+      return true;
+    };
+
+    let attempts = 0;
+    while (camps.length < target && attempts < target * 140) {
+      attempts++;
+      const x = (crnd() - 0.5) * (width - 14);
+      const z = (crnd() - 0.5) * (length - 14);
+      tryPlaceCamp(x, z, tierPlan[camps.length] ?? 1);
+    }
+
+    // Cut-through midpoints are reliable jungle crossings on large corner maps.
+    for (const cut of cutthroughs) {
+      tryPlaceCamp((cut.a.x + cut.b.x) / 2, (cut.a.z + cut.b.z) / 2, tierPlan[camps.length] ?? 1);
+    }
+
+    // Dota-style pull camps: side lanes at several arc fractions into the jungle shoulder.
+    for (const laneId of [0, 2]) {
+      const fractions = corner ? [0.22, 0.38, 0.55, 0.72] : [0.3, 0.45, 0.58, 0.72];
+      for (const f of fractions) {
+        const [lx, lz] = sampleAtFraction(laneDefs[laneId].pts2, f);
+        const side = (laneId === 0 ? 1 : -1) * (3.8 * WORLD_SCALE);
+        tryPlaceCamp(lx + side, lz, tierPlan[camps.length] ?? 1);
+        // Corner maps: mirror camps toward map centre (between-lane jungle quadrants).
+        if (corner) {
+          tryPlaceCamp(lx * 0.55, lz * 0.55, tierPlan[camps.length] ?? 1);
+        }
+      }
+    }
+
+    // Mid-lane pull camps (hard camp / ancient pockets off the diagonal).
+    if (corner) {
+      for (const f of [0.32, 0.68]) {
+        const [mx, mz] = sampleAtFraction(laneDefs[1].pts2, f);
+        const [tx, tz] = tangentAtFraction(laneDefs[1].pts2, f);
+        const perpX = -tz;
+        const perpZ = tx;
+        const off = 5.5 * WORLD_SCALE;
+        tryPlaceCamp(mx + perpX * off, mz + perpZ * off, tierPlan[camps.length] ?? 2);
+        tryPlaceCamp(mx - perpX * off, mz - perpZ * off, tierPlan[camps.length] ?? 2);
+      }
+    }
+
+    // Guaranteed fallbacks if procedural placement came up short.
+    const fallbacks: CampPlacement[] = corner
+      ? [
+          { x: -width * 0.22, z: -length * 0.08, tier: 1 },
+          { x: width * 0.22, z: length * 0.08, tier: 2 },
+          { x: -width * 0.1, z: length * 0.18, tier: 1 },
+          { x: width * 0.1, z: -length * 0.18, tier: 2 },
+          { x: 0, z: 0, tier: 3 },
+        ]
+      : [
+          { x: -width * 0.28, z: 0, tier: 2 },
+          { x: width * 0.28, z: 0, tier: 2 },
+          { x: 0, z: -length * 0.12, tier: 1 },
+          { x: -width * 0.18, z: length * 0.14, tier: 1 },
+          { x: width * 0.18, z: -length * 0.14, tier: 3 },
+        ];
+    for (const fb of fallbacks) {
+      if (camps.length >= target) break;
+      const snap = grid.nearestWalkable(fb.x, fb.z, 14);
+      tryPlaceCamp(snap.x, snap.z, tierPlan[camps.length] ?? fb.tier);
     }
   }
 
@@ -676,6 +810,7 @@ export function generateMap(seed: number, size: MapSize): GameMap {
     enemyHeroSpawn,
     cutthroughs,
     trees,
+    camps,
     grid,
     flowToEnemyCore,
     flowToAllyCore,

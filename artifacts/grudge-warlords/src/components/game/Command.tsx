@@ -5,7 +5,7 @@ import { EM } from "../../game/entities";
 import { Terrain } from "../../engine/terrain";
 import { useCommand } from "../../game/command";
 import { useGame } from "../../game/store";
-import { SHOP_BUILDS } from "../../game/config";
+import { activateBuildHotkey } from "../../game/buildActions";
 import { structRadius } from "../../game/combat";
 
 /** Friendly names shown in the "… RAISED" toast for each buildable structure. */
@@ -53,9 +53,9 @@ function canPlace(x: number, z: number): boolean {
 /**
  * RTS pointer + keyboard control (command mode). Left-click / drag selects your
  * units; right-click issues a smart move/attack; A/M/H/S issue explicit orders
- * at the cursor; B arms a cannon turret; Shift+1-5 assign control groups and 1-5
- * recall them. When a build is armed, the cursor shows a ghost and left-click
- * places it (with a collision/affordability check).
+ * at the cursor; 1–5 arm fortify slots (cannon/ballista/mage/barrier/repair);
+ * Shift+1–5 assign control groups; Ctrl+1–5 recall them. When a build is armed,
+ * the cursor shows a ghost and left-click places it.
  */
 export function CommandLayer() {
   const { camera, gl } = useThree();
@@ -238,11 +238,6 @@ export function CommandLayer() {
         case "KeyS":
           cmd.issueOrder("stop");
           break;
-        case "KeyB": {
-          const cannon = SHOP_BUILDS.find((b) => b.ref === "cannon");
-          if (cannon) cmd.setBuild({ ref: "cannon", cost: cannon.cost });
-          break;
-        }
         case "Escape":
           cmd.setBuild(null);
           cmd.setSelection([]);
@@ -252,7 +247,8 @@ export function CommandLayer() {
             const n = parseInt(e.code.slice(5), 10) - 1;
             if (n >= 0 && n <= 4) {
               if (e.shiftKey) cmd.assignGroup(n);
-              else cmd.recallGroup(n);
+              else if (e.ctrlKey) cmd.recallGroup(n);
+              else activateBuildHotkey(n);
             }
           }
       }

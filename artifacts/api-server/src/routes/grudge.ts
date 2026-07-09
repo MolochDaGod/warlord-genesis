@@ -1,21 +1,19 @@
-import {
-  Router,
-  type IRouter,
-  type Request,
-  type Response,
-  type NextFunction,
-} from "express";
+import { Router, type IRouter } from "express";
 import { createHash, randomUUID } from "node:crypto";
-import { eq } from "drizzle-orm";
 import { db, grudgeUsersTable, type GrudgeUserRow } from "@workspace/db";
+import {
+  SESSION_COOKIE,
+  setSessionCookie,
+  readUserId,
+  findUserById,
+  requireFirstParty,
+} from "../lib/session";
 
 // Puter is the primary identity provider. The client signs in with Puter and
 // posts its `authToken`; we verify it against Puter's API and then own the
 // account (and its derived Grudge ID) in our own database. The signed
 // `gw_grudge` cookie holds our local user id — never a third-party token.
 const PUTER_API = "https://api.puter.com";
-const OUR_COOKIE = "gw_grudge";
-const COOKIE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 const STARTING_GBUX_PLAYER = 1000;
 const STARTING_GBUX_GUEST = 250;
@@ -73,46 +71,6 @@ function toGrudgeUser(row: GrudgeUserRow, isNew = false) {
     role: row.role,
     isNew,
   };
-}
-
-function setSessionCookie(res: Response, userId: number) {
-  res.cookie(OUR_COOKIE, String(userId), {
-    httpOnly: true,
-    signed: true,
-    sameSite: "lax",
-    secure: process.env["NODE_ENV"] === "production",
-    maxAge: COOKIE_MAX_AGE_MS,
-    path: "/",
-  });
-}
-
-function readUserId(req: Request): number | null {
-  const signed = req.signedCookies as Record<string, string> | undefined;
-  const raw = signed?.[OUR_COOKIE];
-  if (!raw) return null;
-  const id = Number(raw);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
-
-async function findById(id: number): Promise<GrudgeUserRow | null> {
-  const rows = await db
-    .select()
-    .from(grudgeUsersTable)
-    .where(eq(grudgeUsersTable.id, id))
-    .limit(1);
-  return rows[0] ?? null;
-}
-
-// CSRF defense for state-changing auth routes. Only first-party fetch can set a
-// custom request header; a cross-site HTML form cannot, and our sameSite=lax
-// session cookie is not sent on cross-site requests. Together these block
-// login/session-forcing (an attacker forcing a victim into a chosen account).
-function requireFirstParty(req: Request, res: Response, next: NextFunction) {
-  if (req.get("x-grudge-client") !== "web") {
-    res.status(403).json({ error: "Forbidden" });
-    return;
-  }
-  next();
 }
 
 // Sign in (or register) with a verified Puter identity.
@@ -208,9 +166,9 @@ router.get("/grudge/auth/me", async (req, res) => {
     return;
   }
   try {
-    const row = await findById(userId);
+    const row = await findUserById(userId);
     if (!row) {
-      res.clearCookie(OUR_COOKIE, { path: "/" });
+      res.clearCookie(SESSION_COOKIE, { path: "/" });
       res.status(401).json({ error: "Not authenticated" });
       return;
     }
@@ -222,7 +180,7 @@ router.get("/grudge/auth/me", async (req, res) => {
 });
 
 router.post("/grudge/auth/logout", requireFirstParty, (_req, res) => {
-  res.clearCookie(OUR_COOKIE, { path: "/" });
+  res.clearCookie(SESSION_COOKIE, { path: "/" });
   res.json({ ok: true });
 });
 

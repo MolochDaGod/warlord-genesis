@@ -4,7 +4,7 @@
 import type { StructKey, UnitKey } from "./config";
 
 export type Team = 0 | 1;
-export type GameMode = "1v1" | "2v2";
+export type GameMode = "1v1" | "2v2" | "3v3";
 
 export type MatchPhase = "playing" | "ended";
 
@@ -26,6 +26,19 @@ export interface NetUnit {
   h: boolean;
   /** 1 while actively attacking this tick (drives swing FX), else 0 */
   a: number;
+  /** assigned lane 0..2 (creeps / summons) */
+  l: number;
+}
+
+/** Short-lived ranged attack bolt for client FX + delayed hit verification. */
+export interface NetProjectile {
+  id: number;
+  t: Team;
+  x: number;
+  z: number;
+  /** target world position */
+  tx: number;
+  tz: number;
 }
 
 export interface NetStruct {
@@ -60,6 +73,7 @@ export interface Snapshot {
   players: NetPlayer[];
   units: NetUnit[];
   structs: NetStruct[];
+  projectiles: NetProjectile[];
 }
 
 // --- Player intents (client -> server, applied authoritatively) ---

@@ -1,13 +1,14 @@
-import type {
-  ClientMessage,
-  GameMode,
-  RoomInfo,
+import {
+  modeCapacity,
+  type ClientMessage,
+  type GameMode,
+  type RoomInfo,
 } from "@workspace/gw-sim";
 import { logger } from "../lib/logger";
 import { Client } from "./client";
 import { Room, type RoomHost } from "./room";
 
-const MODES: GameMode[] = ["1v1", "2v2"];
+const MODES: GameMode[] = ["1v1", "2v2", "3v3"];
 
 function roomCode(): string {
   return Math.random().toString(36).slice(2, 7).toUpperCase();
@@ -17,7 +18,7 @@ function roomCode(): string {
 export class Lobby implements RoomHost {
   private clients = new Set<Client>();
   private rooms = new Map<string, Room>();
-  private queues: Record<GameMode, Client[]> = { "1v1": [], "2v2": [] };
+  private queues: Record<GameMode, Client[]> = { "1v1": [], "2v2": [], "3v3": [] };
 
   addClient(client: Client) {
     this.clients.add(client);
@@ -68,7 +69,7 @@ export class Lobby implements RoomHost {
         client.queuedMode = msg.mode;
         this.tryMatch(msg.mode);
         if (client.queuedMode) {
-          const cap = msg.mode === "1v1" ? 2 : 4;
+          const cap = modeCapacity(msg.mode);
           client.send({
             t: "queued",
             mode: msg.mode,
@@ -105,7 +106,7 @@ export class Lobby implements RoomHost {
   // --- matchmaking ---
 
   private tryMatch(mode: GameMode) {
-    const cap = mode === "1v1" ? 2 : 4;
+    const cap = modeCapacity(mode);
     const q = this.queues[mode];
     while (q.length >= cap) {
       const group = q.splice(0, cap);

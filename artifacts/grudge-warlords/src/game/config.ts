@@ -7,10 +7,24 @@
 // live here.
 // ---------------------------------------------------------------------------
 
+import type { ClassId, PrefabRaceId } from "@workspace/game-content";
 import type { WeaponClass } from "./anim/types";
 import type { WeaponModelKey } from "./anim/weaponModels";
 
-export type Faction = "ally" | "enemy";
+export type Faction = "ally" | "enemy" | "neutral";
+
+/** GRUDGE 6 identity carried on lane units spawned from faction rosters. */
+export interface GrudgeUnitMeta {
+  raceId: PrefabRaceId;
+  classId: ClassId;
+  prefabId?: string;
+  apiWeapon?: string;
+  repoRaceId: string;
+  grudgeId: string;
+  animPack: string;
+  visibleMeshes: string[];
+  skinTint?: string;
+}
 
 // The battlefield is now generated procedurally per match — see `mapgen.ts` for
 // bounds, lanes, terrain, and placements. The old static `MAP`/`LANES` tables
@@ -246,8 +260,8 @@ export const ABILITIES: Record<
   AbilityId,
   { name: string; key: string; cooldown: number; color: string }
 > = {
-  dash: { name: "Warstride", key: "F", cooldown: 6, color: "#9fd8ff" },
-  slam: { name: "Warstomp", key: "E", cooldown: 11, color: "#ffb066" },
+  dash: { name: "Warstride", key: "C", cooldown: 6, color: "#9fd8ff" },
+  slam: { name: "Warstomp", key: "G", cooldown: 11, color: "#ffb066" },
 };
 
 // Tunables specific to each ability's effect.
@@ -266,7 +280,19 @@ export const SLAM = {
 // per spawned entity. `mesh` selects a procedural model (see UnitMesh).
 // ---------------------------------------------------------------------------
 
-export type UnitMeshKind = "footman" | "archer" | "knight" | "grunt" | "raider" | "ogre";
+export type UnitMeshKind =
+  | "footman"
+  | "archer"
+  | "knight"
+  | "grunt"
+  | "raider"
+  | "ogre"
+  | "skeleton_warrior"
+  | "skeleton_mage"
+  | "kaykit_barbarian"
+  | "kaykit_rogue_hooded"
+  | "kaykit_knight"
+  | "kaykit_ranger";
 
 export interface UnitDef {
   id: string;
@@ -289,6 +315,8 @@ export interface UnitDef {
   mesh: UnitMeshKind;
   /** Credits + score granted to the player when an enemy of this type dies. */
   reward: number;
+  /** GRUDGE 6 mesh preset + viewer id when spawned from a faction roster. */
+  grudge?: GrudgeUnitMeta;
 }
 
 export const UNIT_TYPES: Record<string, UnitDef> = {
@@ -481,6 +509,128 @@ export const UNIT_TYPES: Record<string, UnitDef> = {
     mesh: "ogre",
     reward: 70,
   },
+  // --- Neutral jungle camp defenders ---
+  jungle_wolf: {
+    id: "jungle_wolf",
+    name: "Jungle Wolf",
+    hp: 72,
+    speed: 6.2,
+    damage: 14,
+    attackRange: 2.2,
+    attackCooldown: 0.75,
+    aggroRange: 12,
+    ranged: false,
+    radius: 0.46,
+    scale: 0.82,
+    color: "#5a6a4a",
+    accent: "#a8c878",
+    mesh: "grunt",
+    reward: 28,
+  },
+  jungle_raider: {
+    id: "jungle_raider",
+    name: "Bandit Archer",
+    hp: 88,
+    speed: 5,
+    damage: 18,
+    attackRange: 14,
+    attackCooldown: 1.2,
+    aggroRange: 16,
+    ranged: true,
+    radius: 0.48,
+    scale: 0.9,
+    color: "#6a5a3a",
+    accent: "#d4b86a",
+    mesh: "raider",
+    reward: 34,
+  },
+  jungle_brute: {
+    id: "jungle_brute",
+    name: "Jungle Brute",
+    hp: 210,
+    speed: 4.2,
+    damage: 22,
+    attackRange: 2.5,
+    attackCooldown: 1.05,
+    aggroRange: 10,
+    ranged: false,
+    radius: 0.62,
+    scale: 1.12,
+    color: "#4a5a38",
+    accent: "#8eb86a",
+    mesh: "footman",
+    reward: 42,
+  },
+  jungle_shaman: {
+    id: "jungle_shaman",
+    name: "Grove Shaman",
+    hp: 120,
+    speed: 4.6,
+    damage: 24,
+    attackRange: 15,
+    attackCooldown: 1.35,
+    aggroRange: 17,
+    ranged: true,
+    radius: 0.52,
+    scale: 0.98,
+    color: "#3a6a48",
+    accent: "#7ee8a0",
+    mesh: "raider",
+    reward: 48,
+  },
+};
+
+// ---------------------------------------------------------------------------
+// Neutral jungle camps — MOBA-style PvE pockets off the lanes. Clearing a camp
+// grants credits, score, and hero XP; the whole camp pays a bonus bounty.
+// ---------------------------------------------------------------------------
+
+export type CampTier = 1 | 2 | 3;
+
+export interface NeutralCampTierDef {
+  label: string;
+  /** Unit spawns: type id + count. */
+  spawns: { typeId: string; count: number }[];
+  /** Bonus credits when every defender in the camp is slain. */
+  clearBonus: number;
+  /** Bonus hero XP on full clear. */
+  clearXp: number;
+}
+
+export const NEUTRAL_CAMPS = {
+  /** How far neutral defenders chase before leashing home. */
+  leashRadius: 48,
+  /** Seconds before a cleared camp repopulates. */
+  respawnDelay: 120,
+  /** Camps placed per map size (Dota-scale jungle density on 3× maps). */
+  countStandard: 9,
+  countLarge: 15,
+  tiers: {
+    1: {
+      label: "Wolf Den",
+      spawns: [{ typeId: "jungle_wolf", count: 2 }],
+      clearBonus: 50,
+      clearXp: 70,
+    },
+    2: {
+      label: "Bandit Camp",
+      spawns: [
+        { typeId: "jungle_raider", count: 2 },
+        { typeId: "jungle_brute", count: 1 },
+      ],
+      clearBonus: 90,
+      clearXp: 110,
+    },
+    3: {
+      label: "Ancient Grove",
+      spawns: [
+        { typeId: "jungle_shaman", count: 1 },
+        { typeId: "jungle_brute", count: 2 },
+      ],
+      clearBonus: 140,
+      clearXp: 160,
+    },
+  } satisfies Record<CampTier, NeutralCampTierDef>,
 };
 
 // ---------------------------------------------------------------------------
@@ -519,12 +669,14 @@ export const STRUCT: Record<StructureKind, StructureStats> = {
 export const TREE = {
   hp: 50,
   /** Trunk collider + foliage visual radius. */
-  radius: 0.7,
+  radius: 0.85,
   /** Grid cells within this radius are marked non-walkable for unit pathing. */
-  blockRadius: 1.1,
-  /** Tree count per map size. */
-  countStandard: 46,
-  countLarge: 150,
+  blockRadius: 1.75,
+  /** Tree count per map size — spread across 3× jungle (wider min spacing). */
+  countStandard: 720,
+  countLarge: 2400,
+  /** Minimum trunk spacing so forests read as spread canopy, not solid wall. */
+  minSpacing: 4.2,
   trunk: "#4a3526",
   foliage: "#3f6b39",
   foliageAlt: "#4f7d3a",
@@ -578,8 +730,8 @@ export const ECONOMY = {
   incomePerSec: 7,
   /** Seconds between AI creep pushes per side. */
   creepInterval: 24,
-  /** Creeps spawned per lane each push. */
-  creepsPerLane: 3,
+  /** Base creeps per lane each push (3 melee + 2 ranged; extras from escalation). */
+  creepsPerLane: 5,
   /** Enemy elite (ogre) every Nth creep push. */
   eliteEveryNthPush: 3,
 };
@@ -689,7 +841,7 @@ export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
     blurb: "Forgiving foes for learning the ropes.",
     enemyHpMult: 0.75,
     enemyDmgMult: 0.7,
-    enemyCreepsPerLane: 2,
+    enemyCreepsPerLane: 5,
     enemyCreepInterval: 30,
     enemyEliteEveryNthPush: 4,
     heroAggroMult: 0.8,
@@ -711,7 +863,7 @@ export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
     blurb: "A fair, balanced campaign.",
     enemyHpMult: 1,
     enemyDmgMult: 1,
-    enemyCreepsPerLane: 3,
+    enemyCreepsPerLane: 5,
     enemyCreepInterval: 24,
     enemyEliteEveryNthPush: 3,
     heroAggroMult: 1,
@@ -733,7 +885,7 @@ export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
     blurb: "Tougher armies that strike hard.",
     enemyHpMult: 1.3,
     enemyDmgMult: 1.25,
-    enemyCreepsPerLane: 3,
+    enemyCreepsPerLane: 5,
     enemyCreepInterval: 19,
     enemyEliteEveryNthPush: 3,
     heroAggroMult: 1.25,
@@ -755,7 +907,7 @@ export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
     blurb: "Relentless, overwhelming, unforgiving.",
     enemyHpMult: 1.7,
     enemyDmgMult: 1.6,
-    enemyCreepsPerLane: 4,
+    enemyCreepsPerLane: 5,
     enemyCreepInterval: 15,
     enemyEliteEveryNthPush: 2,
     heroAggroMult: 1.5,
@@ -1067,6 +1219,14 @@ export const AI_MACRO = {
 // smarter targets than pure nearest — finishing wounded foes and the enemies
 // actually attacking them instead of blindly aggroing into a tower.
 // ---------------------------------------------------------------------------
+
+/** Ally units peel to protect the warlord when foes close in. */
+export const AI_DEFEND = {
+  /** Radius within which a unit considers defending the hero. */
+  radius: 20,
+  /** Enemies this close to the hero trigger a defend response. */
+  threatRadius: 11,
+} as const;
 
 export const AI_LANE = {
   /** Friendly units nearby (within `waveRadius`) needed to commit to a tower dive. */

@@ -10,10 +10,16 @@
       "path": "./lib/gw-sim"
     },
     {
+      "path": "./lib/grudge-engine"
+    },
+    {
       "path": "./lib/api-client-react"
     },
     {
       "path": "./lib/api-zod"
+    },
+    {
+      "path": "./lib/world-content"
     }
   ]
 }

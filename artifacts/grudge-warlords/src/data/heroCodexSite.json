@@ -1,0 +1,1712 @@
+{
+  "source": "https://grudge-heros.puter.site/",
+  "fetchedAt": "2026-06-29T12:32:57.854Z",
+  "count": 25,
+  "heroes": [
+    {
+      "id": "human_warrior",
+      "name": "Sir Aldric Valorheart",
+      "title": "The Iron Bastion",
+      "race": "Human",
+      "className": "Warrior",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Common",
+      "portrait": "sprites/entities/units/human/human_warrior.png",
+      "lore": "Born in the fortified city of Valorheim, Aldric rose through the ranks of the Crusade militia to become its most decorated champion. His unbreakable will and mastery of sword and shield have turned the tide of countless battles against the Legion.",
+      "backstory": "Orphaned during the First Grudge War, young Aldric was raised by the Temple Knights. He forged his first blade at age twelve and took his oath at sixteen. Now he leads the vanguard of every Crusade offensive, his golden armor a beacon of hope.",
+      "quote": "\"The shield breaks before the will does.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Become immune to all damage for a short duration",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "+25% attack power temporary boost",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "+15% defense to all nearby allies",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "+40% all stats, increased size",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Adaptable",
+          "effect": "+5% XP gain"
+        },
+        {
+          "name": "Diplomatic",
+          "effect": "+10% gold from quests"
+        }
+      ],
+      "strengths": [
+        "Highest armor and block chance",
+        "Invincibility ultimate",
+        "Flexible tank or DPS builds"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No magic or healing",
+        "Slow movement speed"
+      ],
+      "combatStyle": "Melee Sword & Shield",
+      "weapons": "Sword + Kite Shield",
+      "alignment": "Lawful Good",
+      "difficulty": "Beginner",
+      "flavorText": "Where Aldric stands, the line holds.",
+      "loadoutShort": "Sword + Shield"
+    },
+    {
+      "id": "human_worg",
+      "name": "Gareth Moonshadow",
+      "title": "The Twilight Stalker",
+      "race": "Human",
+      "className": "Worg",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/human/human_paladin.png",
+      "lore": "Gareth was a simple huntsman until a dire wolf spirit bonded with his soul during a blood moon ritual. Now he walks between the worlds of man and beast, his primal fury tempered by human discipline.",
+      "backstory": "Once captain of the Crusade rangers, Gareth ventured too deep into the Darkwood seeking a cure for a plague. There, the ancient Wolf Spirit Fenrath chose him as vessel. He returned changed, his eyes gleaming amber in the dark.",
+      "quote": "\"The beast within is not my curse. It is my salvation.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "+50% defense, +30% max HP, reduced speed",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "+30% attack speed and damage",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "+20% attack, +40% speed, +15% crit",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "+40% all stats, +50% max HP, summon pack",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Adaptable",
+          "effect": "+5% XP gain"
+        },
+        {
+          "name": "Diplomatic",
+          "effect": "+10% gold from quests"
+        }
+      ],
+      "strengths": [
+        "Multiple combat forms",
+        "Pack summons for numbers advantage",
+        "Strong self-buffs and frenzy"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No healing spells",
+        "Form-dependent abilities"
+      ],
+      "combatStyle": "Melee Hybrid · Holy Tome",
+      "weapons": "Dagger + Holy Tome (off-hand)",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Advanced",
+      "flavorText": "In the space between howl and silence, death waits.",
+      "loadoutShort": "Dagger · Holy Tome"
+    },
+    {
+      "id": "human_mage",
+      "name": "Archmage Elara Brightspire",
+      "title": "The Storm Caller",
+      "race": "Human",
+      "className": "Mage",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/human/human_mage.png",
+      "lore": "Elara was the youngest scholar ever admitted to the Arcane Consortium. Her mastery of elemental magic and divine healing makes her invaluable on the battlefield, though her fragile form demands protection.",
+      "backstory": "Raised in the Brightspire Academy, Elara discovered she could channel both arcane destruction and divine healing, a gift unseen in centuries. The Consortium fears her power; the Crusade depends on it.",
+      "quote": "\"Knowledge is the flame. I am merely the torch.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Passive shield based on remaining mana percentage",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "AoE fire damage to enemies in target area",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Restore HP to target ally",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Chain lightning hitting up to 5 targets",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Adaptable",
+          "effect": "+5% XP gain"
+        },
+        {
+          "name": "Diplomatic",
+          "effect": "+10% gold from quests"
+        }
+      ],
+      "strengths": [
+        "Powerful AoE damage spells",
+        "Only class with healing",
+        "Blink teleport for mobility"
+      ],
+      "weaknesses": [
+        "Very fragile in melee",
+        "Mana dependent",
+        "Low physical defense"
+      ],
+      "combatStyle": "Holy Staff Caster",
+      "weapons": "Holy Staff (two-handed)",
+      "alignment": "Neutral Good",
+      "difficulty": "Intermediate",
+      "flavorText": "The sky splits at her command.",
+      "loadoutShort": "Holy Staff"
+    },
+    {
+      "id": "human_ranger",
+      "name": "Kael Shadowblade",
+      "title": "The Shadow Blade",
+      "race": "Human",
+      "className": "Ranger",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/human/human_archer.png",
+      "lore": "A ghost who moves through shadows, Kael is the Crusade's deadliest operative. His arrows find their mark before the enemy even knows war has begun. He answers to no one but the cause.",
+      "backstory": "Kael grew up in the slums of Port Grimaldi, learning to survive through cunning and speed. Recruited by the Crusade's covert division, he became their finest scout and assassin, preferring to end wars before they start.",
+      "quote": "\"You never see the arrow that kills you.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Passive accuracy and critical hit bonus",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "High damage ranged attack at 2x damage",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "Fire 5 arrows in a spread pattern",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Massive AoE ranged barrage",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Adaptable",
+          "effect": "+5% XP gain"
+        },
+        {
+          "name": "Diplomatic",
+          "effect": "+10% gold from quests"
+        }
+      ],
+      "strengths": [
+        "Longest attack range",
+        "High critical hit chance",
+        "Stealth and evasion"
+      ],
+      "weaknesses": [
+        "Low armor and HP",
+        "Weak in prolonged melee",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Bow",
+      "weapons": "Longbow + Quiver",
+      "alignment": "Chaotic Good",
+      "difficulty": "Intermediate",
+      "flavorText": "Shadows are just arrows waiting to be loosed.",
+      "loadoutShort": "Bow"
+    },
+    {
+      "id": "barbarian_warrior",
+      "name": "Ulfgar Bonecrusher",
+      "title": "The Mountain Breaker",
+      "race": "Barbarian",
+      "className": "Warrior",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/barbarian/barbarian_warrior.png",
+      "lore": "From the frozen peaks of the Northlands, Ulfgar descends like an avalanche upon his foes. His massive frame and berserker fury make him a force of nature that no shield wall can withstand.",
+      "backstory": "Ulfgar earned his title by literally shattering a mountain pass to prevent a Legion invasion, burying an entire army beneath tons of stone. The act cost him his left eye but saved his entire tribe.",
+      "quote": "\"I do not fight to survive. I fight because the mountain told me to.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Become immune to all damage",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "+25% attack power boost",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "+15% defense to nearby allies",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "+40% all stats, increased size",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Rage",
+          "effect": "+20% damage below 50% HP"
+        },
+        {
+          "name": "Frost Resistance",
+          "effect": "+15% cold defense"
+        }
+      ],
+      "strengths": [
+        "Highest armor and block chance",
+        "Rage damage bonus when wounded",
+        "Flexible tank or DPS builds"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No magic or healing",
+        "Slow movement speed"
+      ],
+      "combatStyle": "Melee Two-Handed Hammer",
+      "weapons": "War Hammer (two-handed)",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Beginner",
+      "flavorText": "The earth trembles when Ulfgar charges.",
+      "loadoutShort": "2H Hammer"
+    },
+    {
+      "id": "barbarian_worg",
+      "name": "Hrothgar Fangborn",
+      "title": "The Beast of the North",
+      "race": "Barbarian",
+      "className": "Worg",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Legendary",
+      "portrait": "sprites/entities/units/barbarian/barbarian_paladin.png",
+      "lore": "In the deepest winter, when wolves howl for blood, Hrothgar answers. Half-man, half-beast, he leads a pack of dire wolves across the frozen wastes, hunting Legion scouts with savage precision.",
+      "backstory": "Born during an eclipse, Hrothgar was left in the woods as an omen of doom. Raised by a great wolf mother, he returned to his tribe as a teenager who could speak with beasts and shift his form at will.",
+      "quote": "\"The pack does not forgive. The pack does not forget.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "+50% defense, +30% max HP",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "+30% attack speed and damage",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "Stealth DPS with +15% crit",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "Ultimate tank form with pack summon",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Rage",
+          "effect": "+20% damage below 50% HP"
+        },
+        {
+          "name": "Frost Resistance",
+          "effect": "+15% cold defense"
+        }
+      ],
+      "strengths": [
+        "Multiple combat forms",
+        "Rage synergy with beast forms",
+        "Strong self-buffs"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No healing spells",
+        "Form-dependent abilities"
+      ],
+      "combatStyle": "Melee Hybrid · Lightning Tome",
+      "weapons": "Hand Axe + Lightning Tome",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Expert",
+      "flavorText": "When the north wind howls, it speaks his name.",
+      "loadoutShort": "Axe · Lightning Tome"
+    },
+    {
+      "id": "barbarian_mage",
+      "name": "Volka Stormborn",
+      "title": "The Frost Witch",
+      "race": "Barbarian",
+      "className": "Mage",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/barbarian/barbarian_mage.png",
+      "lore": "The northern shamans channel magic through primal fury rather than scholarly study. Volka commands blizzards and lightning, her spells fueled by the raw rage of the frozen north.",
+      "backstory": "During a deadly blizzard that buried her village, young Volka discovered she could command the storm itself. The tribal elders named her Stormborn and sent her south to aid the Crusade with her elemental fury.",
+      "quote": "\"Winter does not come. I bring it.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Passive shield from mana",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "AoE elemental damage",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Restore HP to target ally",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Chain lightning hitting 5 targets",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Rage",
+          "effect": "+20% damage below 50% HP"
+        },
+        {
+          "name": "Frost Resistance",
+          "effect": "+15% cold defense"
+        }
+      ],
+      "strengths": [
+        "Powerful AoE damage",
+        "Rage bonus applies to spells",
+        "Frost resistance"
+      ],
+      "weaknesses": [
+        "Very fragile in melee",
+        "Mana dependent",
+        "Low physical defense"
+      ],
+      "combatStyle": "Frost Staff Caster",
+      "weapons": "Frost Staff (two-handed)",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Advanced",
+      "flavorText": "Her anger is the storm. Her mercy is the calm.",
+      "loadoutShort": "Frost Staff"
+    },
+    {
+      "id": "barbarian_ranger",
+      "name": "Svala Windrider",
+      "title": "The Silent Huntress",
+      "race": "Barbarian",
+      "className": "Ranger",
+      "faction": "Crusade",
+      "factionColor": "#3b82f6",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/barbarian/barbarian_archer.png",
+      "lore": "No prey escapes Svala. She tracks across frozen tundra, through blinding snowstorms, reading the land like an open book. Her arrows are tipped with the venom of ice serpents.",
+      "backstory": "Svala was the youngest hunter to ever complete the Trial of the Winter Hunt, tracking and slaying a frost drake alone at age fourteen. Now she serves as the Crusade's premier wilderness scout.",
+      "quote": "\"The wind tells me where you hide.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Passive accuracy and crit bonus",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "High damage ranged attack",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "5 arrow spread pattern",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Massive AoE ranged barrage",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Rage",
+          "effect": "+20% damage below 50% HP"
+        },
+        {
+          "name": "Frost Resistance",
+          "effect": "+15% cold defense"
+        }
+      ],
+      "strengths": [
+        "Longest attack range",
+        "Rage bonus when wounded",
+        "Stealth and evasion"
+      ],
+      "weaknesses": [
+        "Low armor and HP",
+        "Weak in prolonged melee",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Firearm",
+      "weapons": "Flintlock Gun",
+      "alignment": "True Neutral",
+      "difficulty": "Intermediate",
+      "flavorText": "She does not miss. She does not warn.",
+      "loadoutShort": "Gun"
+    },
+    {
+      "id": "dwarf_warrior",
+      "name": "Thane Ironshield",
+      "title": "The Mountain Guardian",
+      "race": "Dwarf",
+      "className": "Warrior",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/dwarf/dwarf_warrior.png",
+      "lore": "The Thane of Ironhold has defended the mountain passes for over a century. His enchanted shield, Aegis of Ancestors, was forged from the heart of the mountain itself and has never been pierced.",
+      "backstory": "Thane Ironshield is the 47th guardian of the Deep Gate, an unbroken lineage stretching back to the founding of Stonehold. When the Grudge Wars began, he sealed the lower mines and marched to war.",
+      "quote": "\"Deeper than stone. Harder than iron. We endure.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Complete damage immunity",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "+25% attack power boost",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "+15% defense to allies",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "+40% all stats",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Stoneborn",
+          "effect": "+20% Defense"
+        },
+        {
+          "name": "Master Craftsman",
+          "effect": "+1 crafting tier"
+        }
+      ],
+      "strengths": [
+        "Highest defense in game",
+        "Stoneborn defense bonus stacks",
+        "Impenetrable tank"
+      ],
+      "weaknesses": [
+        "Very slow movement",
+        "No ranged attacks",
+        "No healing"
+      ],
+      "combatStyle": "Melee Mace & Shield",
+      "weapons": "Mace + Tower Shield",
+      "alignment": "Lawful Good",
+      "difficulty": "Beginner",
+      "flavorText": "The mountain does not move. Neither does he.",
+      "loadoutShort": "Mace + Shield"
+    },
+    {
+      "id": "dwarf_worg",
+      "name": "Bromm Earthshaker",
+      "title": "The Cavern Beast",
+      "race": "Dwarf",
+      "className": "Worg",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Legendary",
+      "portrait": "sprites/entities/units/dwarf/dwarf_paladin.png",
+      "lore": "Deep beneath the mountains, Bromm discovered an ancient bear spirit imprisoned in crystal. By freeing it, the spirit merged with his dwarven soul, creating something unprecedented: a shapeshifter of living stone.",
+      "backstory": "Bromm was a miner who broke through into a sealed cavern containing a primordial earth spirit. The merging nearly killed him but left him able to transform into a creature of rock and fury.",
+      "quote": "\"The mountain has teeth. I am its bite.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "+50% defense, +30% max HP",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "+30% attack speed",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "Stealth DPS mode",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "Ultimate stone form",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Stoneborn",
+          "effect": "+20% Defense"
+        },
+        {
+          "name": "Master Craftsman",
+          "effect": "+1 crafting tier"
+        }
+      ],
+      "strengths": [
+        "Bear Form + Stoneborn = unstoppable tank",
+        "Multiple combat forms",
+        "High base defense"
+      ],
+      "weaknesses": [
+        "Extremely slow in all forms",
+        "No ranged attacks",
+        "No healing spells"
+      ],
+      "combatStyle": "Melee Hybrid · Arcane Tome",
+      "weapons": "War Hammer + Arcane Tome",
+      "alignment": "Neutral Good",
+      "difficulty": "Expert",
+      "flavorText": "The deep places remember. Bromm makes them forget.",
+      "loadoutShort": "Hammer · Arcane Tome"
+    },
+    {
+      "id": "dwarf_mage",
+      "name": "Runa Forgekeeper",
+      "title": "The Runesmith",
+      "race": "Dwarf",
+      "className": "Mage",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/dwarf/dwarf_mage.png",
+      "lore": "Dwarven magic is not the flashy arcana of elves or humans. It is the deep magic of rune and forge, of fire shaped by will and hammer. Runa channels this ancient craft in battle.",
+      "backstory": "Last of the Forgekeeper bloodline, Runa carries the knowledge of runic magic that predates the Grudge Wars. Her forge-spells burn hotter than dragonfire and her rune-shields are nigh unbreakable.",
+      "quote": "\"Every rune tells a story. Mine tells of fire.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Passive runic barrier",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "Forge-fire AoE blast",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Runic restoration",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Arc lightning through runes",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Stoneborn",
+          "effect": "+20% Defense"
+        },
+        {
+          "name": "Master Craftsman",
+          "effect": "+1 crafting tier"
+        }
+      ],
+      "strengths": [
+        "Stoneborn makes her tankier than other mages",
+        "Powerful forge spells",
+        "Runic healing"
+      ],
+      "weaknesses": [
+        "Slow movement",
+        "Mana dependent",
+        "Short range compared to elves"
+      ],
+      "combatStyle": "Fire Staff Caster",
+      "weapons": "Fire Staff (two-handed)",
+      "alignment": "Lawful Neutral",
+      "difficulty": "Intermediate",
+      "flavorText": "The forge burns eternal. So does she.",
+      "loadoutShort": "Fire Staff"
+    },
+    {
+      "id": "dwarf_ranger",
+      "name": "Durin Tunnelwatcher",
+      "title": "The Deep Scout",
+      "race": "Dwarf",
+      "className": "Ranger",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/dwarf/dwarf_archer.png",
+      "lore": "Not all dwarves fight on the front line. Durin patrols the endless tunnels beneath the mountains, his crossbow picking off threats in the dark long before they reach the surface.",
+      "backstory": "Durin lost his squad to a cave-in during a tunnel patrol. Alone in the dark for thirty days, he learned to navigate by echo and smell. He emerged transformed, able to fight in total darkness.",
+      "quote": "\"In the deep, every sound is a target.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Enhanced accuracy in darkness",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "Armor-piercing crossbow bolt",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "5 bolt spread pattern",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Bolt barrage from the heights",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Stoneborn",
+          "effect": "+20% Defense"
+        },
+        {
+          "name": "Master Craftsman",
+          "effect": "+1 crafting tier"
+        }
+      ],
+      "strengths": [
+        "Stoneborn gives extra survivability",
+        "Armor-piercing bolts",
+        "Dark vision"
+      ],
+      "weaknesses": [
+        "Slow movement",
+        "Less range than elf rangers",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Crossbow",
+      "weapons": "Heavy Crossbow",
+      "alignment": "Lawful Neutral",
+      "difficulty": "Intermediate",
+      "flavorText": "He sees in the dark. You do not see him.",
+      "loadoutShort": "Crossbow"
+    },
+    {
+      "id": "elf_warrior",
+      "name": "Thalion Bladedancer",
+      "title": "The Graceful Death",
+      "race": "Elf",
+      "className": "Warrior",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Common",
+      "portrait": "sprites/entities/units/elf/elf_warrior.png",
+      "lore": "Elven warriors do not rely on brute force. Thalion's blade moves like water, each stroke a masterwork of precision. He has dueled and defeated opponents twice his size through technique alone.",
+      "backstory": "Trained in the Moonblade Academy for three centuries, Thalion mastered every weapon form before settling on the twin curved blades that earned him his title. His dance-like fighting style is mesmerizing and lethal.",
+      "quote": "\"A blade is a brush. Combat is art.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Perfect dodge state",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "Blade dance combo +25% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "Moonshadow protection aura",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "Ascended blade master form",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Keen Senses",
+          "effect": "+15% Accuracy"
+        },
+        {
+          "name": "Arcane Affinity",
+          "effect": "+10% Mana"
+        }
+      ],
+      "strengths": [
+        "Highest accuracy of all warriors",
+        "Fast attack speed",
+        "Arcane mana bonus"
+      ],
+      "weaknesses": [
+        "Lower HP than other warriors",
+        "No ranged attacks",
+        "Fragile for a tank"
+      ],
+      "combatStyle": "Melee Two-Handed Greatsword",
+      "weapons": "Greatsword (two-handed)",
+      "alignment": "Neutral Good",
+      "difficulty": "Intermediate",
+      "flavorText": "His enemies never see the second strike.",
+      "loadoutShort": "2H Greatsword"
+    },
+    {
+      "id": "elf_worg",
+      "name": "Sylara Wildheart",
+      "title": "The Forest Spirit",
+      "race": "Elf",
+      "className": "Worg",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/elf/elf_paladin.png",
+      "lore": "Sylara is the last of the Wildheart druids who once protected the great forests. She channels the spirits of ancient beasts through elven magic, her transformations enhanced by centuries of arcane study.",
+      "backstory": "When the Darkwood began to wither from Legion corruption, Sylara performed the ancient Rite of Binding, merging her soul with the forest's guardian spirit. Now she IS the forest's wrath.",
+      "quote": "\"The forest breathes through me. And it is angry.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "Ancient treant defense form",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "Nature's fury +30% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "Swift predator stealth",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "Ancient forest guardian form",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Keen Senses",
+          "effect": "+15% Accuracy"
+        },
+        {
+          "name": "Arcane Affinity",
+          "effect": "+10% Mana"
+        }
+      ],
+      "strengths": [
+        "Extra mana for more transformations",
+        "Keen senses boost form accuracy",
+        "Ancient spirit power"
+      ],
+      "weaknesses": [
+        "Fragile base form",
+        "No ranged attacks",
+        "Form-dependent abilities"
+      ],
+      "combatStyle": "Melee Hybrid · Nature Tome",
+      "weapons": "Scythe + Nature Tome (off-hand)",
+      "alignment": "Neutral Good",
+      "difficulty": "Expert",
+      "flavorText": "She wears the shapes of forgotten gods.",
+      "loadoutShort": "Scythe · Nature Tome"
+    },
+    {
+      "id": "elf_mage",
+      "name": "Lyra Stormweaver",
+      "title": "The Storm Weaver",
+      "race": "Elf",
+      "className": "Mage",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/elf/elf_mage.png",
+      "lore": "Elven mages are the most powerful spellcasters in all the realms. Lyra channels the raw essence of the ley lines, her magic amplified by centuries of study and an innate arcane connection.",
+      "backstory": "Lyra spent four hundred years studying in the Crystal Spire before the Grudge Wars forced her into battle. Her mastery of all eight schools of magic makes her the most versatile caster alive.",
+      "quote": "\"Magic is not power. It is understanding. I understand everything.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Arcane barrier from mana pool",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "Pure arcane fire explosion",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Ley line healing",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Storm magic chaining 5 targets",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Keen Senses",
+          "effect": "+15% Accuracy"
+        },
+        {
+          "name": "Arcane Affinity",
+          "effect": "+10% Mana"
+        }
+      ],
+      "strengths": [
+        "Highest spell power in game",
+        "Extra mana from Arcane Affinity",
+        "Spell accuracy from Keen Senses"
+      ],
+      "weaknesses": [
+        "Extremely fragile",
+        "Mana dependent",
+        "Virtually no melee capability"
+      ],
+      "combatStyle": "Lightning Staff Caster",
+      "weapons": "Storm Staff (lightning school)",
+      "alignment": "True Neutral",
+      "difficulty": "Advanced",
+      "flavorText": "The stars whisper their secrets to her alone.",
+      "loadoutShort": "Storm Staff"
+    },
+    {
+      "id": "elf_ranger",
+      "name": "Aelindra Swiftbow",
+      "title": "The Wind Walker",
+      "race": "Elf",
+      "className": "Ranger",
+      "faction": "Fabled",
+      "factionColor": "#16a34a",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/elf/elf_archer.png",
+      "lore": "The greatest archer to ever live, Aelindra can split an arrow at three hundred paces while riding at full gallop. Her elven eyes miss nothing, and her enchanted bow never runs dry.",
+      "backstory": "Captain of the Silverglade Sentinels for two centuries, Aelindra has defended the borders of the Fabled lands against every threat. She trained under Lyra Stormweaver and infuses her arrows with arcane energy.",
+      "quote": "\"I loosed the arrow yesterday. It arrives tomorrow. You die today.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Elven sight perfect accuracy",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "Arcane-infused arrow",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "5 enchanted arrows",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Arcane arrow storm",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Keen Senses",
+          "effect": "+15% Accuracy"
+        },
+        {
+          "name": "Arcane Affinity",
+          "effect": "+10% Mana"
+        }
+      ],
+      "strengths": [
+        "Unmatched accuracy",
+        "Arcane-enhanced arrows",
+        "Fastest ranger"
+      ],
+      "weaknesses": [
+        "Very fragile",
+        "Poor melee defense",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Bow",
+      "weapons": "Elven Longbow + Quiver",
+      "alignment": "Chaotic Good",
+      "difficulty": "Advanced",
+      "flavorText": "Her arrows sing the songs of extinction.",
+      "loadoutShort": "Bow"
+    },
+    {
+      "id": "orc_warrior",
+      "name": "Grommash Ironjaw",
+      "title": "The Warchief",
+      "race": "Orc",
+      "className": "Warrior",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Common",
+      "portrait": "sprites/entities/units/orc/orc_warrior.png",
+      "lore": "The mightiest warrior the Legion has ever produced, Grommash earned his chieftainship by defeating every challenger in the Pit of Blood. His massive cleaver has carved a path of destruction across three continents.",
+      "backstory": "Born during a blood eclipse, Grommash was destined for war. At age six he killed his first opponent in the fighting pits. By twenty he had united the warring orc clans under a single banner through sheer force.",
+      "quote": "\"BLOOD AND THUNDER!\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Blood rage immunity",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "Berserker fury +25% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "Warcry defense boost",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "Warchief ascension form",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Bloodrage",
+          "effect": "+25% damage below 50% HP"
+        },
+        {
+          "name": "Warborn",
+          "effect": "+10% Critical"
+        }
+      ],
+      "strengths": [
+        "Highest raw damage",
+        "Bloodrage + crit combo devastating",
+        "Best warrior for pure DPS"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No healing",
+        "Reckless combat style"
+      ],
+      "combatStyle": "Melee Two-Handed Greataxe",
+      "weapons": "Greataxe (two-handed)",
+      "alignment": "Chaotic Evil",
+      "difficulty": "Beginner",
+      "flavorText": "He does not ask for surrender.",
+      "loadoutShort": "2H Greataxe"
+    },
+    {
+      "id": "orc_worg",
+      "name": "Fenris Bloodfang",
+      "title": "The Alpha",
+      "race": "Orc",
+      "className": "Worg",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/orc/orc_paladin.png",
+      "lore": "Fenris challenged the great dire wolf Shadowmaw to single combat and won, absorbing the beast's spirit. Now he commands the Legion's beast packs, his howl freezing enemies in terror.",
+      "backstory": "Exiled from his clan for refusing to kill prisoners, Fenris wandered the Ashlands alone until Shadowmaw found him. Their battle lasted three days. When it ended, they were one being.",
+      "quote": "\"I am the alpha. There is no omega.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "War bear destruction form",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "Blood frenzy +30% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "Shadow hunter stealth",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "Alpha predator ascension",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Bloodrage",
+          "effect": "+25% damage below 50% HP"
+        },
+        {
+          "name": "Warborn",
+          "effect": "+10% Critical"
+        }
+      ],
+      "strengths": [
+        "Bloodrage synergizes with feral forms",
+        "Crit bonus in all forms",
+        "Most aggressive worg"
+      ],
+      "weaknesses": [
+        "No ranged attacks",
+        "No healing",
+        "Berserker tendencies"
+      ],
+      "combatStyle": "Melee Hybrid · Fire Tome",
+      "weapons": "Mace + Fire Tome",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Expert",
+      "flavorText": "His shadow has teeth.",
+      "loadoutShort": "Mace · Fire Tome"
+    },
+    {
+      "id": "orc_mage",
+      "name": "Zul'jin the Hexmaster",
+      "title": "The Blood Shaman",
+      "race": "Orc",
+      "className": "Mage",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/orc/orc_mage.png",
+      "lore": "Orc magic is blood magic, raw and dangerous. Zul'jin channels the life force of fallen enemies into devastating hexes and dark healing, growing stronger with every kill.",
+      "backstory": "Born with the gift of blood-sight, Zul'jin was taken by the Legion's war shamans at birth. He learned to weaponize pain itself, turning enemy suffering into fuel for his dark arts.",
+      "quote": "\"Your blood screams louder than you do.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Blood ward barrier",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "Blood fire explosion",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Blood sacrifice healing",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Chain hex through blood",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Bloodrage",
+          "effect": "+25% damage below 50% HP"
+        },
+        {
+          "name": "Warborn",
+          "effect": "+10% Critical"
+        }
+      ],
+      "strengths": [
+        "Bloodrage boosts spell damage when wounded",
+        "Critical hit spells",
+        "Dark healing"
+      ],
+      "weaknesses": [
+        "Fragile in melee",
+        "Blood magic is unstable",
+        "Mana dependent"
+      ],
+      "combatStyle": "Nature Staff Caster",
+      "weapons": "Nature Staff (totem)",
+      "alignment": "Neutral Evil",
+      "difficulty": "Advanced",
+      "flavorText": "He paints with the colors of agony.",
+      "loadoutShort": "Nature Staff"
+    },
+    {
+      "id": "orc_ranger",
+      "name": "Razak Deadeye",
+      "title": "The Trophy Hunter",
+      "race": "Orc",
+      "className": "Ranger",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/orc/orc_archer.png",
+      "lore": "Razak hunts for glory, not survival. His trophy rack holds the heads of legendary beasts, and his poison-tipped bolts bring down prey that should be impossible to kill.",
+      "backstory": "A disgraced warrior who lost his sword arm in battle, Razak reinvented himself as a marksman. His custom war-crossbow fires bolts that can penetrate dragon scale at fifty paces.",
+      "quote": "\"Every head on my wall was once the strongest in its land.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Predator instinct accuracy",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "Armor-crushing bolt",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "Spread of poison bolts",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Bolt storm barrage",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Bloodrage",
+          "effect": "+25% damage below 50% HP"
+        },
+        {
+          "name": "Warborn",
+          "effect": "+10% Critical"
+        }
+      ],
+      "strengths": [
+        "Crit bonus stacks with Precision",
+        "Bloodrage makes him lethal when wounded",
+        "Armor-piercing"
+      ],
+      "weaknesses": [
+        "Low armor",
+        "Reckless positioning",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Firearm",
+      "weapons": "Flintlock Gun",
+      "alignment": "Chaotic Evil",
+      "difficulty": "Intermediate",
+      "flavorText": "His trophies whisper of things that should not die.",
+      "loadoutShort": "Gun"
+    },
+    {
+      "id": "undead_warrior",
+      "name": "Lord Malachar",
+      "title": "The Deathless Knight",
+      "race": "Undead",
+      "className": "Warrior",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Rare",
+      "portrait": "sprites/entities/units/undead/undead_warrior.png",
+      "lore": "Once a noble paladin, Malachar was slain and raised by dark necromancy. Now he fights with the skill of his former life but the relentless endurance of undeath, unable to feel pain or fear.",
+      "backstory": "Sir Malachar the Pure was the greatest knight of his age until he fell defending a temple. The necromancer who raised him twisted his devotion into dark loyalty. He remembers fragments of who he was and hates what he has become.",
+      "quote": "\"I cannot die. I have tried.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Invincibility",
+          "icon": "shield",
+          "description": "Deathless ward immunity",
+          "manaCost": 40
+        },
+        {
+          "name": "Damage Surge",
+          "icon": "zap",
+          "description": "Unholy strength +25% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Guardian's Aura",
+          "icon": "shield-check",
+          "description": "Dread aura defense",
+          "manaCost": 30
+        },
+        {
+          "name": "Avatar Form",
+          "icon": "crown",
+          "description": "Death Knight ascension",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Undying",
+          "effect": "+20% HP"
+        },
+        {
+          "name": "Fear Aura",
+          "effect": "-10% enemy accuracy"
+        }
+      ],
+      "strengths": [
+        "Highest effective HP from Undying bonus",
+        "Fear Aura weakens enemies",
+        "Cannot be feared"
+      ],
+      "weaknesses": [
+        "Slow",
+        "Vulnerable to holy magic",
+        "No healing synergies"
+      ],
+      "combatStyle": "Melee Two-Handed Mace",
+      "weapons": "Great Mace (two-handed)",
+      "alignment": "Lawful Evil",
+      "difficulty": "Intermediate",
+      "flavorText": "Death was just the beginning of his war.",
+      "loadoutShort": "2H Mace"
+    },
+    {
+      "id": "undead_worg",
+      "name": "The Ghoulfather",
+      "title": "The Abomination",
+      "race": "Undead",
+      "className": "Worg",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Legendary",
+      "portrait": "sprites/entities/units/undead/undead_paladin.png",
+      "lore": "A failed necromantic experiment that merged a warrior's corpse with several beast spirits. The result is an abomination that shifts between grotesque forms, each more terrifying than the last.",
+      "backstory": "The Ghoulfather was created when a desperate necromancer tried to bind multiple animal spirits to a single corpse. The spirits fought for dominance, creating an entity that shifts between forms uncontrollably, driven by rage.",
+      "quote": "\"We... are... HUNGRY.\"",
+      "primaryAttribute": "STR",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Bear Form",
+          "icon": "shield",
+          "description": "Corpse bear horror form",
+          "manaCost": 30
+        },
+        {
+          "name": "Feral Rage",
+          "icon": "flame",
+          "description": "Undying frenzy +30% ATK",
+          "manaCost": 25
+        },
+        {
+          "name": "Raptor Form",
+          "icon": "zap",
+          "description": "Ghoul stalker stealth",
+          "manaCost": 30
+        },
+        {
+          "name": "Worg Lord",
+          "icon": "crown",
+          "description": "Full abomination form",
+          "manaCost": 80
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Undying",
+          "effect": "+20% HP"
+        },
+        {
+          "name": "Fear Aura",
+          "effect": "-10% enemy accuracy"
+        }
+      ],
+      "strengths": [
+        "Undying + Bear Form = massive HP pool",
+        "Fear Aura in all forms",
+        "Terrifying presence"
+      ],
+      "weaknesses": [
+        "Uncontrollable",
+        "Vulnerable to holy",
+        "No healing"
+      ],
+      "combatStyle": "Melee Hybrid · Frost Tome",
+      "weapons": "Cursed Sword + Frost Tome",
+      "alignment": "Chaotic Evil",
+      "difficulty": "Expert",
+      "flavorText": "It remembers being three different things. None of them were kind.",
+      "loadoutShort": "Sword · Frost Tome"
+    },
+    {
+      "id": "undead_mage",
+      "name": "Necromancer Vexis",
+      "title": "The Soul Harvester",
+      "race": "Undead",
+      "className": "Mage",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Epic",
+      "portrait": "sprites/entities/units/undead/undead_mage.png",
+      "lore": "Vexis died as a scholar of the arcane arts and was raised specifically for her magical knowledge. In undeath, her power has grown beyond mortal limits, fueled by harvested souls.",
+      "backstory": "In life, Vexis was a renowned healer. The irony is not lost on her, she now commands the very forces of death she once fought against. Her soul spells tear the life essence from enemies.",
+      "quote": "\"Death is not the end. It is the door to real power.\"",
+      "primaryAttribute": "INT",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Mana Shield",
+          "icon": "shield",
+          "description": "Soul ward barrier",
+          "manaCost": 0
+        },
+        {
+          "name": "Fireball",
+          "icon": "flame",
+          "description": "Soulfire explosion",
+          "manaCost": 30
+        },
+        {
+          "name": "Heal",
+          "icon": "heart",
+          "description": "Life drain healing",
+          "manaCost": 20
+        },
+        {
+          "name": "Lightning Chain",
+          "icon": "zap",
+          "description": "Soul chain through enemies",
+          "manaCost": 35
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Undying",
+          "effect": "+20% HP"
+        },
+        {
+          "name": "Fear Aura",
+          "effect": "-10% enemy accuracy"
+        }
+      ],
+      "strengths": [
+        "Undying makes her surprisingly durable for a mage",
+        "Fear Aura helps survival",
+        "Soul magic amplification"
+      ],
+      "weaknesses": [
+        "Still fragile to burst damage",
+        "Holy magic weakness",
+        "Mana dependent"
+      ],
+      "combatStyle": "Wand Caster",
+      "weapons": "Shadow Wand",
+      "alignment": "Neutral Evil",
+      "difficulty": "Advanced",
+      "flavorText": "She weaves spells from the screams of the fallen.",
+      "loadoutShort": "Wand"
+    },
+    {
+      "id": "undead_ranger",
+      "name": "Shade Whisper",
+      "title": "The Phantom Archer",
+      "race": "Undead",
+      "className": "Ranger",
+      "faction": "Legion",
+      "factionColor": "#ef4444",
+      "rarity": "Uncommon",
+      "portrait": "sprites/entities/units/undead/undead_archer.png",
+      "lore": "Once the finest scout in the Crusade, Shade Whisper was killed and raised to serve the very forces she once hunted. Her spectral arrows pass through armor as if it were mist.",
+      "backstory": "In life she was named Elena Brightarrow, and she was beloved by her comrades. Now she hunts them with the same skill, her phantom arrows guided by the memories of a life she can no longer feel.",
+      "quote": "\"I remember your face. I remember all their faces.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Spectral sight perfect aim",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "Phase arrow through armor",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "Spectral arrow volley",
+          "manaCost": 25
+        },
+        {
+          "name": "Rain of Arrows",
+          "icon": "cloud-rain",
+          "description": "Ghost arrow storm",
+          "manaCost": 40
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Undying",
+          "effect": "+20% HP"
+        },
+        {
+          "name": "Fear Aura",
+          "effect": "-10% enemy accuracy"
+        }
+      ],
+      "strengths": [
+        "Phase arrows ignore some defense",
+        "Fear Aura provides safety",
+        "Undying survivability"
+      ],
+      "weaknesses": [
+        "Holy magic weakness",
+        "Haunted by past",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Crossbow",
+      "weapons": "Phantom Crossbow",
+      "alignment": "Neutral Evil",
+      "difficulty": "Intermediate",
+      "flavorText": "Her arrows carry the weight of a life she can never reclaim.",
+      "loadoutShort": "Crossbow"
+    },
+    {
+      "id": "pirate_king",
+      "name": "Racalvin the Pirate King",
+      "title": "The Scourge of the Grudge Ocean Line",
+      "race": "Barbarian",
+      "className": "Ranger",
+      "faction": "Crusade",
+      "factionColor": "#c9a030",
+      "rarity": "Legendary",
+      "portrait": "sprites/entities/units/barbarian/barbarian_archer.png",
+      "lore": "Legend speaks of a pirate so ruthless that even the sea feared him. Racalvin conquered the Grudge Ocean Line with nothing but a stolen ship and a crew of outcasts, building an empire of plunder and freedom.",
+      "backstory": "Born as the bastard son of a barbarian chieftain and a merchant's daughter, Racalvin was cast out at birth. He stowed away on a merchant vessel at age eight, mutinied at twelve, and by twenty commanded a fleet of thirty ships. His true name became synonymous with freedom and terror across every port.",
+      "quote": "\"The sea does not bow. Neither do I.\"",
+      "primaryAttribute": "DEX",
+      "stats": null,
+      "abilities": [
+        {
+          "name": "Precision",
+          "icon": "crosshair",
+          "description": "Sea-born accuracy",
+          "manaCost": 0
+        },
+        {
+          "name": "Power Shot",
+          "icon": "target",
+          "description": "Cannon-force shot",
+          "manaCost": 20
+        },
+        {
+          "name": "Multi Shot",
+          "icon": "split",
+          "description": "Broadside volley",
+          "manaCost": 25
+        },
+        {
+          "name": "Storm of Arrows",
+          "icon": "crown",
+          "description": "Ultimate sea storm devastation",
+          "manaCost": 50
+        }
+      ],
+      "racialTraits": [
+        {
+          "name": "Rage",
+          "effect": "+20% damage below 50% HP"
+        },
+        {
+          "name": "Frost Resistance",
+          "effect": "+15% cold defense"
+        },
+        {
+          "name": "Pirate King",
+          "effect": "+10% HP, +25% ATK, +15% SPD"
+        }
+      ],
+      "strengths": [
+        "Highest base stats of any hero",
+        "Pirate King bonus on top of racial traits",
+        "Fastest hero in the game"
+      ],
+      "weaknesses": [
+        "Secret unlock required",
+        "Glass cannon build",
+        "No healing abilities"
+      ],
+      "combatStyle": "Ranged Physical & Stealth",
+      "weapons": "Flintlock Pistols, Cutlass, Captain's Coat",
+      "alignment": "Chaotic Neutral",
+      "difficulty": "Expert",
+      "flavorText": "Crowns are taken. Thrones are stolen. The sea is earned."
+    }
+  ],
+  "patchedAt": "2026-06-29T12:42:29.537Z",
+  "canonicalSource": "prefabLoadouts.ts / hero-codex CANONICAL_LOADOUTS"
+}

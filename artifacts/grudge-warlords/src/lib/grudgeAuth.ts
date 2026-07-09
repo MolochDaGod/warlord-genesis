@@ -35,12 +35,15 @@ let deviceId = "";
 function getDeviceId(): string {
   if (deviceId) return deviceId;
   try {
-    const stored = localStorage.getItem("gw_device_id");
+    const stored =
+      localStorage.getItem("grudge_device_id") ||
+      localStorage.getItem("gw_device_id");
     if (stored) {
       deviceId = stored;
       return deviceId;
     }
     deviceId = `gw-${crypto.randomUUID()}`;
+    localStorage.setItem("grudge_device_id", deviceId);
     localStorage.setItem("gw_device_id", deviceId);
   } catch {
     deviceId = `gw-${Math.random().toString(36).slice(2)}`;

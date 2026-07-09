@@ -13,12 +13,19 @@
     "moduleResolution": "bundler",
     "types": ["node", "vite/client"],
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@workspace/r3f-fleet": ["../../lib/r3f-fleet/src/index.ts"]
     }
   },
   "references": [
     {
       "path": "../../lib/api-client-react"
+    },
+    {
+      "path": "../../lib/game-content"
+    },
+    {
+      "path": "../../lib/r3f-fleet"
     }
   ]
 }

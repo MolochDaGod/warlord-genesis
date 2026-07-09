@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+:root {
+  --gw-bg: #0a1218;
+  --gw-panel: rgba(10, 16, 24, 0.88);
+  --gw-gold: #d4b06a;
+  --gw-text: #e8dcc8;
+  --gw-muted: rgba(232, 220, 200, 0.55);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  margin: 0;
+  min-height: 100%;
+  background: var(--gw-bg);
+  color: var(--gw-text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+button {
+  font-family: inherit;
+  cursor: pointer;
+}

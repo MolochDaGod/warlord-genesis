@@ -8,7 +8,7 @@ import {
 import { createInsertSchema } from "drizzle-zod";
 import { z } from "zod/v4";
 
-// A Grudge Warlords account. The authoritative identity is the Puter user
+// Platform account (shared across all Grudge games). The authoritative identity is the Puter user
 // (`puterUuid`); guests are keyed by a client-generated `deviceId` instead.
 // The human-facing `grudgeId` is derived from whichever identity created the
 // row and is stable for the lifetime of the account.

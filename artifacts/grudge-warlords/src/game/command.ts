@@ -27,7 +27,7 @@ interface CommandState {
   marquee: MarqueeRect;
   /** Selected commandable ally unit ids. */
   selection: number[];
-  /** Persistent control groups (Shift+digit assign, digit recall). */
+  /** Persistent control groups (Shift+digit assign, Ctrl+digit recall). */
   groups: number[][];
   /** Armed build placement, or null. */
   build: BuildTarget;

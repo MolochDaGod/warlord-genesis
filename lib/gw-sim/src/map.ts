@@ -21,8 +21,9 @@ export interface MapSize {
 }
 
 export const MAP_SIZES: Record<GameMode, MapSize> = {
-  "1v1": { w: 72, l: 112 },
-  "2v2": { w: 96, l: 136 },
+  "1v1": { w: 108, l: 168 },
+  "2v2": { w: 144, l: 204 },
+  "3v3": { w: 180, l: 252 },
 };
 
 const CELL = 1.5;
@@ -49,6 +50,8 @@ export interface SimMap {
   grid: WalkGrid;
   /** flow field that descends toward team N's core */
   flowToCore: Record<Team, FlowField>;
+  /** per-lane flow (index = lane id) — keeps waves in their corridor */
+  flowToCoreByLane: Record<Team, FlowField[]>;
   heightAt(x: number, z: number): number;
 }
 
@@ -68,6 +71,12 @@ function buildHeights(rng: Rng, w: number, l: number) {
     }
   }
   return { heights, hcols, hrows, hstep };
+}
+
+function dist2(ax: number, az: number, bx: number, bz: number) {
+  const dx = ax - bx;
+  const dz = az - bz;
+  return dx * dx + dz * dz;
 }
 
 export function generateMap(seed: number, mode: GameMode): SimMap {
@@ -136,6 +145,42 @@ export function generateMap(seed: number, mode: GameMode): SimMap {
     1: new FlowField(grid, cores[1].x, cores[1].z),
   };
 
+  // Block structure footprints so pathing routes around towers / cores.
+  for (const team of [0, 1] as Team[]) {
+    grid.blockDisc(cores[team].x, cores[team].z, 3.2);
+    for (const tw of towers[team]) {
+      grid.blockDisc(tw.x, tw.z, 2.2);
+    }
+  }
+
+  const flowToCoreByLane: Record<Team, FlowField[]> = { 0: [], 1: [] };
+  for (const team of [0, 1] as Team[]) {
+    for (let lane = 0; lane < 3; lane++) {
+      const laneGrid = new WalkGrid({ minX, minZ, width: w, length: l, cell: CELL });
+      const lx = laneX[lane]!;
+      const corridor = w * 0.14;
+      for (let cz = 0; cz < laneGrid.rows; cz++) {
+        for (let cx = 0; cx < laneGrid.cols; cx++) {
+          const wx = laneGrid.worldX(cx);
+          const wz = laneGrid.worldZ(cz);
+          const onLane = Math.abs(wx - lx) <= corridor;
+          const inBorder =
+            wx < minX + BORDER ||
+            wx > minX + w - BORDER ||
+            wz < minZ + BORDER ||
+            wz > minZ + l - BORDER;
+          const nearStruct =
+            dist2(wx, wz, cores[team].x, cores[team].z) < 12 ||
+            towers[team].some((tw) => dist2(wx, wz, tw.x, tw.z) < 8);
+          laneGrid.setWalkable(cx, cz, onLane && !inBorder && !nearStruct);
+        }
+      }
+      flowToCoreByLane[team].push(
+        new FlowField(laneGrid, cores[team === 0 ? 1 : 0].x, cores[team === 0 ? 1 : 0].z),
+      );
+    }
+  }
+
   return {
     seed,
     mode,
@@ -151,6 +196,7 @@ export function generateMap(seed: number, mode: GameMode): SimMap {
     heroSpawn,
     grid,
     flowToCore,
+    flowToCoreByLane,
     heightAt,
   };
 }

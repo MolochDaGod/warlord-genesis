@@ -1,0 +1,1407 @@
+{
+  "version": 1,
+  "generatedFrom": "prefabs",
+  "count": 24,
+  "heroes": [
+    {
+      "id": "sir-aldric-valorheart",
+      "name": "Sir Aldric Valorheart",
+      "title": "The Iron Bastion",
+      "raceId": "human",
+      "classId": "warrior",
+      "faction": "crusade",
+      "stars": 1,
+      "grudgeId": "GRDG-23C675",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InNpci1hbGRyaWMtdmFsb3JoZWFydCIsIm5hbWUiOiJTaXIgQWxkcmljIFZhbG9yaGVhcnQiLCJiYXNlIjp7InYiOjEsInJhY2UiOiJodW1hbiIsImNsYXNzIjoid2FycmlvciIsImxldmVsIjo1LCJ3ZWFwb24iOiJzd29yZCIsImFpIjp7ImRpZmZpY3VsdHkiOiJlYXN5IiwiYmVoYXZpb3IiOiJkZWZlbnNpdmUifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNXT1JEIiwib2ZmaGFuZCI6IlNISUVMRCIsImZhY3Rpb24iOiJjcnVzYWRlIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uc3dvcmQiLCJ0aWVyIjowLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfSwib2ZmSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnNoaWVsZCIsInRpZXIiOjAsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJjcnVzYWRlIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiU2lyIEFsZHJpYyBWYWxvcmhlYXJ0LCBUaGUgSXJvbiBCYXN0aW9uIiwibGluZXMiOlsiQSBzd29ybiBrbmlnaHQgb2YgdGhlIENydXNhZGUgd2hvIGhhcyBuZXZlciBicm9rZW4gYSBzaGllbGQgd2FsbC4iXX0sInRpdGxlIjoiVGhlIElyb24gQmFzdGlvbiIsImxvcmUiOiJBIHN3b3JuIGtuaWdodCBvZiB0aGUgQ3J1c2FkZSB3aG8gaGFzIG5ldmVyIGJyb2tlbiBhIHNoaWVsZCB3YWxsLiBXaGVyZSBBbGRyaWMgcGxhbnRzIGhpcyBiYW5uZXIsIHRoZSBsaW5lIGhvbGRzLiJ9",
+      "spec": {
+        "v": 1,
+        "id": "sir-aldric-valorheart",
+        "name": "Sir Aldric Valorheart",
+        "base": {
+          "v": 1,
+          "race": "human",
+          "class": "warrior",
+          "level": 5,
+          "weapon": "sword",
+          "ai": {
+            "difficulty": "easy",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "SWORD",
+          "offhand": "SHIELD",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.sword",
+              "tier": 0,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.shield",
+              "tier": 0,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Sir Aldric Valorheart, The Iron Bastion",
+          "lines": [
+            "A sworn knight of the Crusade who has never broken a shield wall."
+          ]
+        },
+        "title": "The Iron Bastion",
+        "lore": "A sworn knight of the Crusade who has never broken a shield wall. Where Aldric plants his banner, the line holds."
+      }
+    },
+    {
+      "id": "gareth-moonshadow",
+      "name": "Gareth Moonshadow",
+      "title": "The Twilight Stalker",
+      "raceId": "human",
+      "classId": "worge",
+      "faction": "crusade",
+      "stars": 3,
+      "grudgeId": "GRDG-C2F04D",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImdhcmV0aC1tb29uc2hhZG93IiwibmFtZSI6IkdhcmV0aCBNb29uc2hhZG93IiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoiaHVtYW4iLCJjbGFzcyI6IndvcmdlIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJkYWdnZXIiLCJhaSI6eyJkaWZmaWN1bHR5IjoibWVkaXVtIiwiYmVoYXZpb3IiOiJhZ2dyZXNzaXZlIn0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJEQUdHRVIiLCJvZmZoYW5kIjoiVE9NRSIsImZhY3Rpb24iOiJjcnVzYWRlIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uZGFnZ2VyIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX0sIm9mZkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi50b21lIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX19fSwibGV2ZWxNb2RlIjoicGxheWVyIiwiZmFjdGlvbiI6ImNydXNhZGUiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJHYXJldGggTW9vbnNoYWRvdywgVGhlIFR3aWxpZ2h0IFN0YWxrZXIiLCJsaW5lcyI6WyJDdXJzZWQgYXQgYmlydGggdG8gd2FsayBiZXR3ZWVuIG1hbiBhbmQgYmVhc3QsIEdhcmV0aCBodW50cyB0aGUgQ3J1c2FkZSdzIGVuZW1pZXMgdW5kZXIgdGhlIGhhbGYtbW9vbiBhbmQgaXMgZ29uZSBieSBkYXduLiJdfSwidGl0bGUiOiJUaGUgVHdpbGlnaHQgU3RhbGtlciIsImxvcmUiOiJDdXJzZWQgYXQgYmlydGggdG8gd2FsayBiZXR3ZWVuIG1hbiBhbmQgYmVhc3QsIEdhcmV0aCBodW50cyB0aGUgQ3J1c2FkZSdzIGVuZW1pZXMgdW5kZXIgdGhlIGhhbGYtbW9vbiBhbmQgaXMgZ29uZSBieSBkYXduLiJ9",
+      "spec": {
+        "v": 1,
+        "id": "gareth-moonshadow",
+        "name": "Gareth Moonshadow",
+        "base": {
+          "v": 1,
+          "race": "human",
+          "class": "worge",
+          "level": 15,
+          "weapon": "dagger",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "DAGGER",
+          "offhand": "TOME",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.dagger",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Gareth Moonshadow, The Twilight Stalker",
+          "lines": [
+            "Cursed at birth to walk between man and beast, Gareth hunts the Crusade's enemies under the half-moon and is gone by dawn."
+          ]
+        },
+        "title": "The Twilight Stalker",
+        "lore": "Cursed at birth to walk between man and beast, Gareth hunts the Crusade's enemies under the half-moon and is gone by dawn."
+      }
+    },
+    {
+      "id": "archmage-elara-brightspire",
+      "name": "Archmage Elara Brightspire",
+      "title": "The Storm Caller",
+      "raceId": "human",
+      "classId": "mage",
+      "faction": "crusade",
+      "stars": 4,
+      "grudgeId": "GRDG-8D6ABB",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImFyY2htYWdlLWVsYXJhLWJyaWdodHNwaXJlIiwibmFtZSI6IkFyY2htYWdlIEVsYXJhIEJyaWdodHNwaXJlIiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoiaHVtYW4iLCJjbGFzcyI6Im1hZ2UiLCJsZXZlbCI6MjAsIndlYXBvbiI6InN0YWZmIiwiYWkiOnsiZGlmZmljdWx0eSI6ImhhcmQiLCJiZWhhdmlvciI6InN1cHBvcnQifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNUQUZGIiwiZmFjdGlvbiI6ImNydXNhZGUiLCJlcXVpcG1lbnQiOnsibWFpbkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5zdGFmZiIsInRpZXIiOjMsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJjcnVzYWRlIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiQXJjaG1hZ2UgRWxhcmEgQnJpZ2h0c3BpcmUsIFRoZSBTdG9ybSBDYWxsZXIiLCJsaW5lcyI6WyJGaXJzdCBvZiB0aGUgQnJpZ2h0c3BpcmUgY29uY2xhdmUuIl19LCJ0aXRsZSI6IlRoZSBTdG9ybSBDYWxsZXIiLCJsb3JlIjoiRmlyc3Qgb2YgdGhlIEJyaWdodHNwaXJlIGNvbmNsYXZlLiBTaGUgYm90dGxlcyB0ZW1wZXN0cyBhbmQgbG9vc2VzIHRoZW0gdXBvbiB0aGUgZmllbGQsIGhlYWxpbmcgaGVyIGZhaXRoZnVsIGluIHRoZSBzYW1lIGJyZWF0aC4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "archmage-elara-brightspire",
+        "name": "Archmage Elara Brightspire",
+        "base": {
+          "v": 1,
+          "race": "human",
+          "class": "mage",
+          "level": 20,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "STAFF",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.staff",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Archmage Elara Brightspire, The Storm Caller",
+          "lines": [
+            "First of the Brightspire conclave."
+          ]
+        },
+        "title": "The Storm Caller",
+        "lore": "First of the Brightspire conclave. She bottles tempests and looses them upon the field, healing her faithful in the same breath."
+      }
+    },
+    {
+      "id": "kael-shadowblade",
+      "name": "Kael Shadowblade",
+      "title": "The Silent Arrow",
+      "raceId": "human",
+      "classId": "ranger",
+      "faction": "crusade",
+      "stars": 3,
+      "grudgeId": "GRDG-7B3BC8",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImthZWwtc2hhZG93YmxhZGUiLCJuYW1lIjoiS2FlbCBTaGFkb3dibGFkZSIsImJhc2UiOnsidiI6MSwicmFjZSI6Imh1bWFuIiwiY2xhc3MiOiJyYW5nZXIiLCJsZXZlbCI6MTUsIndlYXBvbiI6ImJvdyIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InBhdHJvbCJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiQk9XIiwiZmFjdGlvbiI6ImNydXNhZGUiLCJlcXVpcG1lbnQiOnsibWFpbkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5ib3ciLCJ0aWVyIjoyLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoiY3J1c2FkZSIsImFnZ3JvUmFkaXVzIjoxMiwicHJvdGVjdFJhZGl1cyI6OCwiaW52ZW50b3J5IjpbXSwibWlzc2lvbnMiOltdLCJhaUNoYXQiOnsicGVyc29uYSI6IkthZWwgU2hhZG93YmxhZGUsIFRoZSBTaWxlbnQgQXJyb3ciLCJsaW5lcyI6WyJBIHJhbmdlci1zY291dCB3aG8gc3BlYWtzIG9uY2UgYW5kIHNob290cyB0d2ljZS4iXX0sInRpdGxlIjoiVGhlIFNpbGVudCBBcnJvdyIsImxvcmUiOiJBIHJhbmdlci1zY291dCB3aG8gc3BlYWtzIG9uY2UgYW5kIHNob290cyB0d2ljZS4gSGlzIGFycm93cyBmaW5kIHRoZSBnYXAgaW4gYW55IGFybW9yIGJlZm9yZSB0aGUgd2FyaG9ybiBldmVuIHNvdW5kcy4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "kael-shadowblade",
+        "name": "Kael Shadowblade",
+        "base": {
+          "v": 1,
+          "race": "human",
+          "class": "ranger",
+          "level": 15,
+          "weapon": "bow",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "BOW",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.bow",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Kael Shadowblade, The Silent Arrow",
+          "lines": [
+            "A ranger-scout who speaks once and shoots twice."
+          ]
+        },
+        "title": "The Silent Arrow",
+        "lore": "A ranger-scout who speaks once and shoots twice. His arrows find the gap in any armor before the warhorn even sounds."
+      }
+    },
+    {
+      "id": "ulfgar-bonecrusher",
+      "name": "Ulfgar Bonecrusher",
+      "title": "The Mountain Breaker",
+      "raceId": "barbarian",
+      "classId": "warrior",
+      "faction": "crusade",
+      "stars": 5,
+      "grudgeId": "GRDG-BC92DC",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InVsZmdhci1ib25lY3J1c2hlciIsIm5hbWUiOiJVbGZnYXIgQm9uZWNydXNoZXIiLCJiYXNlIjp7InYiOjEsInJhY2UiOiJiYXJiYXJpYW4iLCJjbGFzcyI6IndhcnJpb3IiLCJsZXZlbCI6MjUsIndlYXBvbiI6ImhhbW1lciIsImFpIjp7ImRpZmZpY3VsdHkiOiJlbGl0ZSIsImJlaGF2aW9yIjoiZGVmZW5zaXZlIn0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJIQU1NRVIiLCJmYWN0aW9uIjoiY3J1c2FkZSIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmhhbW1lciIsInRpZXIiOjQsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJjcnVzYWRlIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiVWxmZ2FyIEJvbmVjcnVzaGVyLCBUaGUgTW91bnRhaW4gQnJlYWtlciIsImxpbmVzIjpbIlRoZXkgc2F5IFVsZmdhciBvbmNlIGZlbGxlZCBhIHNpZWdlIHRvd2VyIHdpdGggdGhyZWUgc3dpbmdzLiJdfSwidGl0bGUiOiJUaGUgTW91bnRhaW4gQnJlYWtlciIsImxvcmUiOiJUaGV5IHNheSBVbGZnYXIgb25jZSBmZWxsZWQgYSBzaWVnZSB0b3dlciB3aXRoIHRocmVlIHN3aW5ncy4gSGlzIHdhcmhhbW1lciBpcyBuYW1lZCBHcmllZiwgYW5kIGl0IGhhcyBlYXJuZWQgdGhlIG5hbWUuIn0",
+      "spec": {
+        "v": 1,
+        "id": "ulfgar-bonecrusher",
+        "name": "Ulfgar Bonecrusher",
+        "base": {
+          "v": 1,
+          "race": "barbarian",
+          "class": "warrior",
+          "level": 25,
+          "weapon": "hammer",
+          "ai": {
+            "difficulty": "elite",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "HAMMER",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.hammer",
+              "tier": 4,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Ulfgar Bonecrusher, The Mountain Breaker",
+          "lines": [
+            "They say Ulfgar once felled a siege tower with three swings."
+          ]
+        },
+        "title": "The Mountain Breaker",
+        "lore": "They say Ulfgar once felled a siege tower with three swings. His warhammer is named Grief, and it has earned the name."
+      }
+    },
+    {
+      "id": "hrothgar-fangborn",
+      "name": "Hrothgar Fangborn",
+      "title": "The Beast of the Wilds",
+      "raceId": "barbarian",
+      "classId": "worge",
+      "faction": "crusade",
+      "stars": 3,
+      "grudgeId": "GRDG-8FE3B9",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6Imhyb3RoZ2FyLWZhbmdib3JuIiwibmFtZSI6Ikhyb3RoZ2FyIEZhbmdib3JuIiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoiYmFyYmFyaWFuIiwiY2xhc3MiOiJ3b3JnZSIsImxldmVsIjoxNSwid2VhcG9uIjoiYXhlIiwiYWkiOnsiZGlmZmljdWx0eSI6Im1lZGl1bSIsImJlaGF2aW9yIjoiYWdncmVzc2l2ZSJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiQVhFIiwib2ZmaGFuZCI6IlRPTUUiLCJmYWN0aW9uIjoiY3J1c2FkZSIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmF4ZSIsInRpZXIiOjIsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119LCJvZmZIYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24udG9tZSIsInRpZXIiOjIsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJjcnVzYWRlIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiSHJvdGhnYXIgRmFuZ2Jvcm4sIFRoZSBCZWFzdCBvZiB0aGUgV2lsZHMiLCJsaW5lcyI6WyJSYWlzZWQgYnkgdGhlIHdvbHZlcyB0aGF0IHNob3VsZCBoYXZlIGVhdGVuIGhpbS4iXX0sInRpdGxlIjoiVGhlIEJlYXN0IG9mIHRoZSBXaWxkcyIsImxvcmUiOiJSYWlzZWQgYnkgdGhlIHdvbHZlcyB0aGF0IHNob3VsZCBoYXZlIGVhdGVuIGhpbS4gSHJvdGhnYXIgZmlnaHRzIHdpdGggdG9vdGggYW5kIGF4ZSBhbGlrZSwgYW5kIGFuc3dlcnMgdG8gbm8gY2hpZWZ0YWluLiJ9",
+      "spec": {
+        "v": 1,
+        "id": "hrothgar-fangborn",
+        "name": "Hrothgar Fangborn",
+        "base": {
+          "v": 1,
+          "race": "barbarian",
+          "class": "worge",
+          "level": 15,
+          "weapon": "axe",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "AXE",
+          "offhand": "TOME",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.axe",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Hrothgar Fangborn, The Beast of the Wilds",
+          "lines": [
+            "Raised by the wolves that should have eaten him."
+          ]
+        },
+        "title": "The Beast of the Wilds",
+        "lore": "Raised by the wolves that should have eaten him. Hrothgar fights with tooth and axe alike, and answers to no chieftain."
+      }
+    },
+    {
+      "id": "volka-stormborn",
+      "name": "Volka Stormborn",
+      "title": "The Frost Witch",
+      "raceId": "barbarian",
+      "classId": "mage",
+      "faction": "crusade",
+      "stars": 4,
+      "grudgeId": "GRDG-7B2726",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InZvbGthLXN0b3JtYm9ybiIsIm5hbWUiOiJWb2xrYSBTdG9ybWJvcm4iLCJiYXNlIjp7InYiOjEsInJhY2UiOiJiYXJiYXJpYW4iLCJjbGFzcyI6Im1hZ2UiLCJsZXZlbCI6MjAsIndlYXBvbiI6InN0YWZmIiwiYWkiOnsiZGlmZmljdWx0eSI6ImhhcmQiLCJiZWhhdmlvciI6InN1cHBvcnQifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNUQUZGIiwiZmFjdGlvbiI6ImNydXNhZGUiLCJlcXVpcG1lbnQiOnsibWFpbkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5zdGFmZiIsInRpZXIiOjMsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJjcnVzYWRlIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiVm9sa2EgU3Rvcm1ib3JuLCBUaGUgRnJvc3QgV2l0Y2giLCJsaW5lcyI6WyJCb3JuIGluIGEgYmxpenphcmQgdGhhdCBidXJpZWQgaGVyIGNsYW4sIFZvbGthIGNhcnJpZXMgdGhlIGNvbGQgaW5zaWRlIGhlci4iXX0sInRpdGxlIjoiVGhlIEZyb3N0IFdpdGNoIiwibG9yZSI6IkJvcm4gaW4gYSBibGl6emFyZCB0aGF0IGJ1cmllZCBoZXIgY2xhbiwgVm9sa2EgY2FycmllcyB0aGUgY29sZCBpbnNpZGUgaGVyLiBGb2VzIGZyZWV6ZSB3aGVyZSB0aGV5IHN0YW5kIGFuZCBzaGF0dGVyIHdoZXJlIHRoZXkgZmFsbC4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "volka-stormborn",
+        "name": "Volka Stormborn",
+        "base": {
+          "v": 1,
+          "race": "barbarian",
+          "class": "mage",
+          "level": 20,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "STAFF",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.staff",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Volka Stormborn, The Frost Witch",
+          "lines": [
+            "Born in a blizzard that buried her clan, Volka carries the cold inside her."
+          ]
+        },
+        "title": "The Frost Witch",
+        "lore": "Born in a blizzard that buried her clan, Volka carries the cold inside her. Foes freeze where they stand and shatter where they fall."
+      }
+    },
+    {
+      "id": "syala-windrider",
+      "name": "Syala Windrider",
+      "title": "The Silent Huntress",
+      "raceId": "barbarian",
+      "classId": "ranger",
+      "faction": "crusade",
+      "stars": 3,
+      "grudgeId": "GRDG-BDE97E",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InN5YWxhLXdpbmRyaWRlciIsIm5hbWUiOiJTeWFsYSBXaW5kcmlkZXIiLCJiYXNlIjp7InYiOjEsInJhY2UiOiJiYXJiYXJpYW4iLCJjbGFzcyI6InJhbmdlciIsImxldmVsIjoxNSwid2VhcG9uIjoib3RoZXIiLCJhaSI6eyJkaWZmaWN1bHR5IjoibWVkaXVtIiwiYmVoYXZpb3IiOiJwYXRyb2wifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IkdVTiIsImZhY3Rpb24iOiJjcnVzYWRlIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uZ3VuIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX19fSwibGV2ZWxNb2RlIjoicGxheWVyIiwiZmFjdGlvbiI6ImNydXNhZGUiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJTeWFsYSBXaW5kcmlkZXIsIFRoZSBTaWxlbnQgSHVudHJlc3MiLCJsaW5lcyI6WyJGYXN0ZXN0IGJvdyBub3J0aCBvZiB0aGUgc3BpbmUgcmlkZ2UuIl19LCJ0aXRsZSI6IlRoZSBTaWxlbnQgSHVudHJlc3MiLCJsb3JlIjoiRmFzdGVzdCBib3cgbm9ydGggb2YgdGhlIHNwaW5lIHJpZGdlLiBTeWFsYSBydW5zIGRvd24gY2F2YWxyeSBvbiBmb290IGFuZCBpcyBhbHJlYWR5IG5vY2tpbmcgdGhlIG5leHQgYXJyb3cgd2hlbiB0aGUgZmlyc3QgbGFuZHMuIn0",
+      "spec": {
+        "v": 1,
+        "id": "syala-windrider",
+        "name": "Syala Windrider",
+        "base": {
+          "v": 1,
+          "race": "barbarian",
+          "class": "ranger",
+          "level": 15,
+          "weapon": "other",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "GUN",
+          "faction": "crusade",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.gun",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "crusade",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Syala Windrider, The Silent Huntress",
+          "lines": [
+            "Fastest bow north of the spine ridge."
+          ]
+        },
+        "title": "The Silent Huntress",
+        "lore": "Fastest bow north of the spine ridge. Syala runs down cavalry on foot and is already nocking the next arrow when the first lands."
+      }
+    },
+    {
+      "id": "thane-ironshield",
+      "name": "Thane Ironshield",
+      "title": "The Mountain Guardian",
+      "raceId": "dwarf",
+      "classId": "warrior",
+      "faction": "fabled",
+      "stars": 3,
+      "grudgeId": "GRDG-5C64F9",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InRoYW5lLWlyb25zaGllbGQiLCJuYW1lIjoiVGhhbmUgSXJvbnNoaWVsZCIsImJhc2UiOnsidiI6MSwicmFjZSI6ImR3YXJmIiwiY2xhc3MiOiJ3YXJyaW9yIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJtYWNlIiwiYWkiOnsiZGlmZmljdWx0eSI6Im1lZGl1bSIsImJlaGF2aW9yIjoiZGVmZW5zaXZlIn0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJNQUNFIiwib2ZmaGFuZCI6IlNISUVMRCIsImZhY3Rpb24iOiJmYWJsZWQiLCJlcXVpcG1lbnQiOnsibWFpbkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5tYWNlIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX0sIm9mZkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5zaGllbGQiLCJ0aWVyIjoyLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoiZmFibGVkIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiVGhhbmUgSXJvbnNoaWVsZCwgVGhlIE1vdW50YWluIEd1YXJkaWFuIiwibGluZXMiOlsiTGFzdCB0aGFuZSBvZiBhIHNlYWxlZCBob2xkLiJdfSwidGl0bGUiOiJUaGUgTW91bnRhaW4gR3VhcmRpYW4iLCJsb3JlIjoiTGFzdCB0aGFuZSBvZiBhIHNlYWxlZCBob2xkLiBJcm9uc2hpZWxkIGd1YXJkcyB0aGUgZGVlcCByb2FkcyB3aXRoIGEgaGFtbWVyIGluIG9uZSBoYW5kIGFuZCBhIGdydWRnZSBpbiB0aGUgb3RoZXIuIn0",
+      "spec": {
+        "v": 1,
+        "id": "thane-ironshield",
+        "name": "Thane Ironshield",
+        "base": {
+          "v": 1,
+          "race": "dwarf",
+          "class": "warrior",
+          "level": 15,
+          "weapon": "mace",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "MACE",
+          "offhand": "SHIELD",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.mace",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.shield",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Thane Ironshield, The Mountain Guardian",
+          "lines": [
+            "Last thane of a sealed hold."
+          ]
+        },
+        "title": "The Mountain Guardian",
+        "lore": "Last thane of a sealed hold. Ironshield guards the deep roads with a hammer in one hand and a grudge in the other."
+      }
+    },
+    {
+      "id": "bromm-earthshaker",
+      "name": "Bromm Earthshaker",
+      "title": "The Stone Beast",
+      "raceId": "dwarf",
+      "classId": "worge",
+      "faction": "fabled",
+      "stars": 5,
+      "grudgeId": "GRDG-4804C3",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImJyb21tLWVhcnRoc2hha2VyIiwibmFtZSI6IkJyb21tIEVhcnRoc2hha2VyIiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoiZHdhcmYiLCJjbGFzcyI6IndvcmdlIiwibGV2ZWwiOjI1LCJ3ZWFwb24iOiJoYW1tZXIiLCJhaSI6eyJkaWZmaWN1bHR5IjoiZWxpdGUiLCJiZWhhdmlvciI6ImFnZ3Jlc3NpdmUifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IkhBTU1FUiIsIm9mZmhhbmQiOiJUT01FIiwiZmFjdGlvbiI6ImZhYmxlZCIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmhhbW1lciIsInRpZXIiOjQsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119LCJvZmZIYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24udG9tZSIsInRpZXIiOjQsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJmYWJsZWQiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJCcm9tbSBFYXJ0aHNoYWtlciwgVGhlIFN0b25lIEJlYXN0IiwibGluZXMiOlsiQSBkd2FyZiB3aG8gdG9vayB0aGUgcHJpbWFsIHBhY3QgYW5kIG5ldmVyIHF1aXRlIGNoYW5nZWQgYmFjay4iXX0sInRpdGxlIjoiVGhlIFN0b25lIEJlYXN0IiwibG9yZSI6IkEgZHdhcmYgd2hvIHRvb2sgdGhlIHByaW1hbCBwYWN0IGFuZCBuZXZlciBxdWl0ZSBjaGFuZ2VkIGJhY2suIFRoZSBtb3VudGFpbiBhbnN3ZXJzIHdoZW4gQnJvbW0gcm9hcnMuIn0",
+      "spec": {
+        "v": 1,
+        "id": "bromm-earthshaker",
+        "name": "Bromm Earthshaker",
+        "base": {
+          "v": 1,
+          "race": "dwarf",
+          "class": "worge",
+          "level": 25,
+          "weapon": "hammer",
+          "ai": {
+            "difficulty": "elite",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "HAMMER",
+          "offhand": "TOME",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.hammer",
+              "tier": 4,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 4,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Bromm Earthshaker, The Stone Beast",
+          "lines": [
+            "A dwarf who took the primal pact and never quite changed back."
+          ]
+        },
+        "title": "The Stone Beast",
+        "lore": "A dwarf who took the primal pact and never quite changed back. The mountain answers when Bromm roars."
+      }
+    },
+    {
+      "id": "runa-forgekeeper",
+      "name": "Runa Forgekeeper",
+      "title": "The Flame Smith",
+      "raceId": "dwarf",
+      "classId": "mage",
+      "faction": "fabled",
+      "stars": 3,
+      "grudgeId": "GRDG-00EB54",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InJ1bmEtZm9yZ2VrZWVwZXIiLCJuYW1lIjoiUnVuYSBGb3JnZWtlZXBlciIsImJhc2UiOnsidiI6MSwicmFjZSI6ImR3YXJmIiwiY2xhc3MiOiJtYWdlIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJzdGFmZiIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InN1cHBvcnQifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNUQUZGIiwiZmFjdGlvbiI6ImZhYmxlZCIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnN0YWZmIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX19fSwibGV2ZWxNb2RlIjoicGxheWVyIiwiZmFjdGlvbiI6ImZhYmxlZCIsImFnZ3JvUmFkaXVzIjoxMiwicHJvdGVjdFJhZGl1cyI6OCwiaW52ZW50b3J5IjpbXSwibWlzc2lvbnMiOltdLCJhaUNoYXQiOnsicGVyc29uYSI6IlJ1bmEgRm9yZ2VrZWVwZXIsIFRoZSBGbGFtZSBTbWl0aCIsImxpbmVzIjpbIktlZXBlciBvZiB0aGUgYW5jZXN0cmFsIGZvcmdlLWZpcmUuIl19LCJ0aXRsZSI6IlRoZSBGbGFtZSBTbWl0aCIsImxvcmUiOiJLZWVwZXIgb2YgdGhlIGFuY2VzdHJhbCBmb3JnZS1maXJlLiBSdW5hIHNoYXBlcyBsaXZpbmcgZmxhbWUgdGhlIHdheSBoZXIga2luIHNoYXBlIHN0ZWVsIOKAlCBwYXRpZW50bHksIHRoZW4gYWxsIGF0IG9uY2UuIn0",
+      "spec": {
+        "v": 1,
+        "id": "runa-forgekeeper",
+        "name": "Runa Forgekeeper",
+        "base": {
+          "v": 1,
+          "race": "dwarf",
+          "class": "mage",
+          "level": 15,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "STAFF",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.staff",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Runa Forgekeeper, The Flame Smith",
+          "lines": [
+            "Keeper of the ancestral forge-fire."
+          ]
+        },
+        "title": "The Flame Smith",
+        "lore": "Keeper of the ancestral forge-fire. Runa shapes living flame the way her kin shape steel — patiently, then all at once."
+      }
+    },
+    {
+      "id": "durin-tunnelwatcher",
+      "name": "Durin Tunnelwatcher",
+      "title": "The Deep Shot",
+      "raceId": "dwarf",
+      "classId": "ranger",
+      "faction": "fabled",
+      "stars": 2,
+      "grudgeId": "GRDG-E35B8D",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImR1cmluLXR1bm5lbHdhdGNoZXIiLCJuYW1lIjoiRHVyaW4gVHVubmVsd2F0Y2hlciIsImJhc2UiOnsidiI6MSwicmFjZSI6ImR3YXJmIiwiY2xhc3MiOiJyYW5nZXIiLCJsZXZlbCI6MTAsIndlYXBvbiI6ImJvdyIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InBhdHJvbCJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiQ1JPU1NCT1ciLCJmYWN0aW9uIjoiZmFibGVkIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uY3Jvc3Nib3ciLCJ0aWVyIjoxLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoiZmFibGVkIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiRHVyaW4gVHVubmVsd2F0Y2hlciwgVGhlIERlZXAgU2hvdCIsImxpbmVzIjpbIlNlbnRpbmVsIG9mIHRoZSB1bmRlci1kYXJrIGNyb3NzaW5ncy4iXX0sInRpdGxlIjoiVGhlIERlZXAgU2hvdCIsImxvcmUiOiJTZW50aW5lbCBvZiB0aGUgdW5kZXItZGFyayBjcm9zc2luZ3MuIER1cmluIGNhbiBwdXQgYSBib2x0IHRocm91Z2ggYSBjYXZlLXNwaWRlcidzIGV5ZSBpbiBwaXRjaCBibGFjayBieSBzb3VuZCBhbG9uZS4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "durin-tunnelwatcher",
+        "name": "Durin Tunnelwatcher",
+        "base": {
+          "v": 1,
+          "race": "dwarf",
+          "class": "ranger",
+          "level": 10,
+          "weapon": "bow",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "CROSSBOW",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.crossbow",
+              "tier": 1,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Durin Tunnelwatcher, The Deep Shot",
+          "lines": [
+            "Sentinel of the under-dark crossings."
+          ]
+        },
+        "title": "The Deep Shot",
+        "lore": "Sentinel of the under-dark crossings. Durin can put a bolt through a cave-spider's eye in pitch black by sound alone."
+      }
+    },
+    {
+      "id": "thalion-bladedancer",
+      "name": "Thalion Bladedancer",
+      "title": "The Graceful Death",
+      "raceId": "elf",
+      "classId": "warrior",
+      "faction": "fabled",
+      "stars": 3,
+      "grudgeId": "GRDG-D86C92",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InRoYWxpb24tYmxhZGVkYW5jZXIiLCJuYW1lIjoiVGhhbGlvbiBCbGFkZWRhbmNlciIsImJhc2UiOnsidiI6MSwicmFjZSI6ImVsZiIsImNsYXNzIjoid2FycmlvciIsImxldmVsIjoxNSwid2VhcG9uIjoic3dvcmQiLCJhaSI6eyJkaWZmaWN1bHR5IjoibWVkaXVtIiwiYmVoYXZpb3IiOiJkZWZlbnNpdmUifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IkdSRUFUU1dPUkQiLCJmYWN0aW9uIjoiZmFibGVkIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uZ3JlYXRzd29yZCIsInRpZXIiOjIsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJmYWJsZWQiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJUaGFsaW9uIEJsYWRlZGFuY2VyLCBUaGUgR3JhY2VmdWwgRGVhdGgiLCJsaW5lcyI6WyJBIGR1ZWxpc3Qgb2YgdGhlIGhpZ2ggY291cnRzIHdobyB0dXJuZWQgd2FyIGludG8gY2hvcmVvZ3JhcGh5LiJdfSwidGl0bGUiOiJUaGUgR3JhY2VmdWwgRGVhdGgiLCJsb3JlIjoiQSBkdWVsaXN0IG9mIHRoZSBoaWdoIGNvdXJ0cyB3aG8gdHVybmVkIHdhciBpbnRvIGNob3Jlb2dyYXBoeS4gRXZlcnkgcGFycnkgb2YgVGhhbGlvbidzIGVuZHMgYSBsaWZlIOKAlCB1c3VhbGx5IHR3by4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "thalion-bladedancer",
+        "name": "Thalion Bladedancer",
+        "base": {
+          "v": 1,
+          "race": "elf",
+          "class": "warrior",
+          "level": 15,
+          "weapon": "sword",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "GREATSWORD",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.greatsword",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Thalion Bladedancer, The Graceful Death",
+          "lines": [
+            "A duelist of the high courts who turned war into choreography."
+          ]
+        },
+        "title": "The Graceful Death",
+        "lore": "A duelist of the high courts who turned war into choreography. Every parry of Thalion's ends a life — usually two."
+      }
+    },
+    {
+      "id": "sylara-wildheart",
+      "name": "Sylara Wildheart",
+      "title": "The Forest Spirit",
+      "raceId": "elf",
+      "classId": "worge",
+      "faction": "fabled",
+      "stars": 4,
+      "grudgeId": "GRDG-C8051D",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InN5bGFyYS13aWxkaGVhcnQiLCJuYW1lIjoiU3lsYXJhIFdpbGRoZWFydCIsImJhc2UiOnsidiI6MSwicmFjZSI6ImVsZiIsImNsYXNzIjoid29yZ2UiLCJsZXZlbCI6MjAsIndlYXBvbiI6Im90aGVyIiwiYWkiOnsiZGlmZmljdWx0eSI6ImhhcmQiLCJiZWhhdmlvciI6ImFnZ3Jlc3NpdmUifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNDWVRIRSIsIm9mZmhhbmQiOiJUT01FIiwiZmFjdGlvbiI6ImZhYmxlZCIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnNjeXRoZSIsInRpZXIiOjMsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119LCJvZmZIYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24udG9tZSIsInRpZXIiOjMsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJmYWJsZWQiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJTeWxhcmEgV2lsZGhlYXJ0LCBUaGUgRm9yZXN0IFNwaXJpdCIsImxpbmVzIjpbIkJvbmRlZCB0byB0aGUgd29vZCBpdHNlbGYuIl19LCJ0aXRsZSI6IlRoZSBGb3Jlc3QgU3Bpcml0IiwibG9yZSI6IkJvbmRlZCB0byB0aGUgd29vZCBpdHNlbGYuIFN5bGFyYSB3ZWFycyB0aGUgc2hhcGUgb2Ygc3RhZywgd29sZiwgYW5kIHRob3JuLCBhbmQgdGhlIGZvcmVzdCBmaWdodHMgYmVzaWRlIGhlci4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "sylara-wildheart",
+        "name": "Sylara Wildheart",
+        "base": {
+          "v": 1,
+          "race": "elf",
+          "class": "worge",
+          "level": 20,
+          "weapon": "other",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "SCYTHE",
+          "offhand": "TOME",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.scythe",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Sylara Wildheart, The Forest Spirit",
+          "lines": [
+            "Bonded to the wood itself."
+          ]
+        },
+        "title": "The Forest Spirit",
+        "lore": "Bonded to the wood itself. Sylara wears the shape of stag, wolf, and thorn, and the forest fights beside her."
+      }
+    },
+    {
+      "id": "lyra-stormweaver",
+      "name": "Lyra Stormweaver",
+      "title": "The Tempest",
+      "raceId": "elf",
+      "classId": "mage",
+      "faction": "fabled",
+      "stars": 4,
+      "grudgeId": "GRDG-1AD080",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6Imx5cmEtc3Rvcm13ZWF2ZXIiLCJuYW1lIjoiTHlyYSBTdG9ybXdlYXZlciIsImJhc2UiOnsidiI6MSwicmFjZSI6ImVsZiIsImNsYXNzIjoibWFnZSIsImxldmVsIjoyMCwid2VhcG9uIjoic3RhZmYiLCJhaSI6eyJkaWZmaWN1bHR5IjoiaGFyZCIsImJlaGF2aW9yIjoic3VwcG9ydCJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiU1RBRkYiLCJmYWN0aW9uIjoiZmFibGVkIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uc3RhZmYiLCJ0aWVyIjozLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoiZmFibGVkIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiTHlyYSBTdG9ybXdlYXZlciwgVGhlIFRlbXBlc3QiLCJsaW5lcyI6WyJTaGUgbGVhcm5lZCBtYWdpYyBieSBsaXN0ZW5pbmcgdG8gdGh1bmRlci4iXX0sInRpdGxlIjoiVGhlIFRlbXBlc3QiLCJsb3JlIjoiU2hlIGxlYXJuZWQgbWFnaWMgYnkgbGlzdGVuaW5nIHRvIHRodW5kZXIuIEx5cmEgd2VhdmVzIGxpZ2h0bmluZyB0aHJvdWdoIHJhbmtzIG9mIGFybW9yIGxpa2UgdGhyZWFkIHRocm91Z2ggY2xvdGguIn0",
+      "spec": {
+        "v": 1,
+        "id": "lyra-stormweaver",
+        "name": "Lyra Stormweaver",
+        "base": {
+          "v": 1,
+          "race": "elf",
+          "class": "mage",
+          "level": 20,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "STAFF",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.staff",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Lyra Stormweaver, The Tempest",
+          "lines": [
+            "She learned magic by listening to thunder."
+          ]
+        },
+        "title": "The Tempest",
+        "lore": "She learned magic by listening to thunder. Lyra weaves lightning through ranks of armor like thread through cloth."
+      }
+    },
+    {
+      "id": "aelindra-swiftbow",
+      "name": "Aelindra Swiftbow",
+      "title": "The Wind Archer",
+      "raceId": "elf",
+      "classId": "ranger",
+      "faction": "fabled",
+      "stars": 2,
+      "grudgeId": "GRDG-22B088",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImFlbGluZHJhLXN3aWZ0Ym93IiwibmFtZSI6IkFlbGluZHJhIFN3aWZ0Ym93IiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoiZWxmIiwiY2xhc3MiOiJyYW5nZXIiLCJsZXZlbCI6MTAsIndlYXBvbiI6ImJvdyIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InBhdHJvbCJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiQk9XIiwiZmFjdGlvbiI6ImZhYmxlZCIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmJvdyIsInRpZXIiOjEsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJmYWJsZWQiLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJBZWxpbmRyYSBTd2lmdGJvdywgVGhlIFdpbmQgQXJjaGVyIiwibGluZXMiOlsiVGhlIHdpbmQgY2FycmllcyBoZXIgYXJyb3dzIGFuZCBoaWRlcyBoZXIgc3RlcHMuIl19LCJ0aXRsZSI6IlRoZSBXaW5kIEFyY2hlciIsImxvcmUiOiJUaGUgd2luZCBjYXJyaWVzIGhlciBhcnJvd3MgYW5kIGhpZGVzIGhlciBzdGVwcy4gQWVsaW5kcmEgaGFzIGVtcHRpZWQgYSBxdWl2ZXIgYmVmb3JlIGhlciB0YXJnZXRzIGtuZXcgdGhlIGJhdHRsZSBoYWQgYmVndW4uIn0",
+      "spec": {
+        "v": 1,
+        "id": "aelindra-swiftbow",
+        "name": "Aelindra Swiftbow",
+        "base": {
+          "v": 1,
+          "race": "elf",
+          "class": "ranger",
+          "level": 10,
+          "weapon": "bow",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "BOW",
+          "faction": "fabled",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.bow",
+              "tier": 1,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "fabled",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Aelindra Swiftbow, The Wind Archer",
+          "lines": [
+            "The wind carries her arrows and hides her steps."
+          ]
+        },
+        "title": "The Wind Archer",
+        "lore": "The wind carries her arrows and hides her steps. Aelindra has emptied a quiver before her targets knew the battle had begun."
+      }
+    },
+    {
+      "id": "grommash-ironjaw",
+      "name": "Grommash Ironjaw",
+      "title": "The Warlord",
+      "raceId": "orc",
+      "classId": "warrior",
+      "faction": "legion",
+      "stars": 1,
+      "grudgeId": "GRDG-C3EFEE",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6Imdyb21tYXNoLWlyb25qYXciLCJuYW1lIjoiR3JvbW1hc2ggSXJvbmphdyIsImJhc2UiOnsidiI6MSwicmFjZSI6Im9yYyIsImNsYXNzIjoid2FycmlvciIsImxldmVsIjo1LCJ3ZWFwb24iOiJheGUiLCJhaSI6eyJkaWZmaWN1bHR5IjoiZWFzeSIsImJlaGF2aW9yIjoiZGVmZW5zaXZlIn0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJHUkVBVEFYRSIsImZhY3Rpb24iOiJsZWdpb24iLCJlcXVpcG1lbnQiOnsibWFpbkhhbmQiOnsiaWQiOiJpdGVtLndlYXBvbi5ncmVhdGF4ZSIsInRpZXIiOjAsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJsZWdpb24iLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJHcm9tbWFzaCBJcm9uamF3LCBUaGUgV2FybG9yZCIsImxpbmVzIjpbIldhcmNoaWVmIGJ5IHJpZ2h0IG9mIGV2ZXJ5IHNrdWxsIG9uIGhpcyBiZWx0LiJdfSwidGl0bGUiOiJUaGUgV2FybG9yZCIsImxvcmUiOiJXYXJjaGllZiBieSByaWdodCBvZiBldmVyeSBza3VsbCBvbiBoaXMgYmVsdC4gR3JvbW1hc2ggbGVhZHMgdGhlIExlZ2lvbidzIHZhbmd1YXJkIGFuZCBleHBlY3RzIHRvIGRpZSBsYXN0LiJ9",
+      "spec": {
+        "v": 1,
+        "id": "grommash-ironjaw",
+        "name": "Grommash Ironjaw",
+        "base": {
+          "v": 1,
+          "race": "orc",
+          "class": "warrior",
+          "level": 5,
+          "weapon": "axe",
+          "ai": {
+            "difficulty": "easy",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "GREATAXE",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.greataxe",
+              "tier": 0,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Grommash Ironjaw, The Warlord",
+          "lines": [
+            "Warchief by right of every skull on his belt."
+          ]
+        },
+        "title": "The Warlord",
+        "lore": "Warchief by right of every skull on his belt. Grommash leads the Legion's vanguard and expects to die last."
+      }
+    },
+    {
+      "id": "fenris-bloodfang",
+      "name": "Fenris Bloodfang",
+      "title": "The Alpha",
+      "raceId": "orc",
+      "classId": "worge",
+      "faction": "legion",
+      "stars": 4,
+      "grudgeId": "GRDG-C9731C",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImZlbnJpcy1ibG9vZGZhbmciLCJuYW1lIjoiRmVucmlzIEJsb29kZmFuZyIsImJhc2UiOnsidiI6MSwicmFjZSI6Im9yYyIsImNsYXNzIjoid29yZ2UiLCJsZXZlbCI6MjAsIndlYXBvbiI6Im1hY2UiLCJhaSI6eyJkaWZmaWN1bHR5IjoiaGFyZCIsImJlaGF2aW9yIjoiYWdncmVzc2l2ZSJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiTUFDRSIsIm9mZmhhbmQiOiJUT01FIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLm1hY2UiLCJ0aWVyIjozLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfSwib2ZmSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnRvbWUiLCJ0aWVyIjozLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoibGVnaW9uIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiRmVucmlzIEJsb29kZmFuZywgVGhlIEFscGhhIiwibGluZXMiOlsiVGhlIGxhcmdlc3Qgd29yZyB0aGUgTGVnaW9uIGhhcyBldmVyIGZpZWxkZWQuIl19LCJ0aXRsZSI6IlRoZSBBbHBoYSIsImxvcmUiOiJUaGUgbGFyZ2VzdCB3b3JnIHRoZSBMZWdpb24gaGFzIGV2ZXIgZmllbGRlZC4gRmVucmlzIGRvZXMgbm90IGNvbW1hbmQgdGhlIHBhY2sg4oCUIGhlIGlzIHRoZSBwYWNrLiJ9",
+      "spec": {
+        "v": 1,
+        "id": "fenris-bloodfang",
+        "name": "Fenris Bloodfang",
+        "base": {
+          "v": 1,
+          "race": "orc",
+          "class": "worge",
+          "level": 20,
+          "weapon": "mace",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "MACE",
+          "offhand": "TOME",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.mace",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Fenris Bloodfang, The Alpha",
+          "lines": [
+            "The largest worg the Legion has ever fielded."
+          ]
+        },
+        "title": "The Alpha",
+        "lore": "The largest worg the Legion has ever fielded. Fenris does not command the pack — he is the pack."
+      }
+    },
+    {
+      "id": "zuejin-the-hexmaster",
+      "name": "Zuejin the Hexmaster",
+      "title": "The Blood Shaman",
+      "raceId": "orc",
+      "classId": "mage",
+      "faction": "legion",
+      "stars": 3,
+      "grudgeId": "GRDG-4A98CF",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6Inp1ZWppbi10aGUtaGV4bWFzdGVyIiwibmFtZSI6Ilp1ZWppbiB0aGUgSGV4bWFzdGVyIiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoib3JjIiwiY2xhc3MiOiJtYWdlIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJzdGFmZiIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InN1cHBvcnQifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNUQUZGIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnN0YWZmIiwidGllciI6MiwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX19fSwibGV2ZWxNb2RlIjoicGxheWVyIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImFnZ3JvUmFkaXVzIjoxMiwicHJvdGVjdFJhZGl1cyI6OCwiaW52ZW50b3J5IjpbXSwibWlzc2lvbnMiOltdLCJhaUNoYXQiOnsicGVyc29uYSI6Ilp1ZWppbiB0aGUgSGV4bWFzdGVyLCBUaGUgQmxvb2QgU2hhbWFuIiwibGluZXMiOlsiSGUgc3BlbmRzIGhpcyBvd24gYmxvb2QgZm9yIHBvd2VyIGFuZCBoaXMgZW5lbWllcycgZm9yIHNwb3J0LiJdfSwidGl0bGUiOiJUaGUgQmxvb2QgU2hhbWFuIiwibG9yZSI6IkhlIHNwZW5kcyBoaXMgb3duIGJsb29kIGZvciBwb3dlciBhbmQgaGlzIGVuZW1pZXMnIGZvciBzcG9ydC4gWnVlamluJ3MgaGV4ZXMgcm90IGFybW9yIGFuZCByZXNvbHZlIGFsaWtlLiJ9",
+      "spec": {
+        "v": 1,
+        "id": "zuejin-the-hexmaster",
+        "name": "Zuejin the Hexmaster",
+        "base": {
+          "v": 1,
+          "race": "orc",
+          "class": "mage",
+          "level": 15,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "STAFF",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.staff",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Zuejin the Hexmaster, The Blood Shaman",
+          "lines": [
+            "He spends his own blood for power and his enemies' for sport."
+          ]
+        },
+        "title": "The Blood Shaman",
+        "lore": "He spends his own blood for power and his enemies' for sport. Zuejin's hexes rot armor and resolve alike."
+      }
+    },
+    {
+      "id": "razak-deadeye",
+      "name": "Razak Deadeye",
+      "title": "The Trophy Hunter",
+      "raceId": "orc",
+      "classId": "ranger",
+      "faction": "legion",
+      "stars": 3,
+      "grudgeId": "GRDG-E3E6C7",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InJhemFrLWRlYWRleWUiLCJuYW1lIjoiUmF6YWsgRGVhZGV5ZSIsImJhc2UiOnsidiI6MSwicmFjZSI6Im9yYyIsImNsYXNzIjoicmFuZ2VyIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJvdGhlciIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6InBhdHJvbCJ9LCJzeXN0ZW1zIjp7InBhdGhmaW5kaW5nIjp0cnVlLCJjb250cm9sbGVyIjp0cnVlLCJhbmltYXRpb25zIjp0cnVlfSwiYXBpV2VhcG9uIjoiR1VOIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmd1biIsInRpZXIiOjIsImVuaGFuY2VtZW50cyI6W10sImVuY2hhbnRtZW50cyI6W119fX0sImxldmVsTW9kZSI6InBsYXllciIsImZhY3Rpb24iOiJsZWdpb24iLCJhZ2dyb1JhZGl1cyI6MTIsInByb3RlY3RSYWRpdXMiOjgsImludmVudG9yeSI6W10sIm1pc3Npb25zIjpbXSwiYWlDaGF0Ijp7InBlcnNvbmEiOiJSYXphayBEZWFkZXllLCBUaGUgVHJvcGh5IEh1bnRlciIsImxpbmVzIjpbIlJhemFrIGNvdW50cyBraWxscyBpbiB0cm9waGllcywgbm90IG51bWJlcnMuIl19LCJ0aXRsZSI6IlRoZSBUcm9waHkgSHVudGVyIiwibG9yZSI6IlJhemFrIGNvdW50cyBraWxscyBpbiB0cm9waGllcywgbm90IG51bWJlcnMuIEhlIHBpY2tzIHRoZSBwcm91ZGVzdCB0YXJnZXQgb24gdGhlIGZpZWxkIGFuZCB0YWtlcyB0aGVpciBoZWFkIGZpcnN0LiJ9",
+      "spec": {
+        "v": 1,
+        "id": "razak-deadeye",
+        "name": "Razak Deadeye",
+        "base": {
+          "v": 1,
+          "race": "orc",
+          "class": "ranger",
+          "level": 15,
+          "weapon": "other",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "GUN",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.gun",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Razak Deadeye, The Trophy Hunter",
+          "lines": [
+            "Razak counts kills in trophies, not numbers."
+          ]
+        },
+        "title": "The Trophy Hunter",
+        "lore": "Razak counts kills in trophies, not numbers. He picks the proudest target on the field and takes their head first."
+      }
+    },
+    {
+      "id": "lord-malachar",
+      "name": "Lord Malachar",
+      "title": "The Deathless Knight",
+      "raceId": "undead",
+      "classId": "warrior",
+      "faction": "legion",
+      "stars": 5,
+      "grudgeId": "GRDG-59E727",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6ImxvcmQtbWFsYWNoYXIiLCJuYW1lIjoiTG9yZCBNYWxhY2hhciIsImJhc2UiOnsidiI6MSwicmFjZSI6InVuZGVhZCIsImNsYXNzIjoid2FycmlvciIsImxldmVsIjoyNSwid2VhcG9uIjoibWFjZSIsImFpIjp7ImRpZmZpY3VsdHkiOiJlbGl0ZSIsImJlaGF2aW9yIjoiZGVmZW5zaXZlIn0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJNQUNFIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLm1hY2UiLCJ0aWVyIjo0LCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoibGVnaW9uIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiTG9yZCBNYWxhY2hhciwgVGhlIERlYXRobGVzcyBLbmlnaHQiLCJsaW5lcyI6WyJTbGFpbiBhdCBoaXMgb3duIGNvcm9uYXRpb24gYW5kIHJpc2VuIHRoZSBzYW1lIG5pZ2h0LiJdfSwidGl0bGUiOiJUaGUgRGVhdGhsZXNzIEtuaWdodCIsImxvcmUiOiJTbGFpbiBhdCBoaXMgb3duIGNvcm9uYXRpb24gYW5kIHJpc2VuIHRoZSBzYW1lIG5pZ2h0LiBNYWxhY2hhciBoYXMgZm91Z2h0IGV2ZXJ5IHdhciBzaW5jZSBhbmQgaW50ZW5kcyB0byBmaWdodCBldmVyeSB3YXIgdG8gY29tZS4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "lord-malachar",
+        "name": "Lord Malachar",
+        "base": {
+          "v": 1,
+          "race": "undead",
+          "class": "warrior",
+          "level": 25,
+          "weapon": "mace",
+          "ai": {
+            "difficulty": "elite",
+            "behavior": "defensive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "MACE",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.mace",
+              "tier": 4,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Lord Malachar, The Deathless Knight",
+          "lines": [
+            "Slain at his own coronation and risen the same night."
+          ]
+        },
+        "title": "The Deathless Knight",
+        "lore": "Slain at his own coronation and risen the same night. Malachar has fought every war since and intends to fight every war to come."
+      }
+    },
+    {
+      "id": "the-ghoulfather",
+      "name": "The Ghoulfather",
+      "title": "The Abomination",
+      "raceId": "undead",
+      "classId": "worge",
+      "faction": "legion",
+      "stars": 3,
+      "grudgeId": "GRDG-504D32",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InRoZS1naG91bGZhdGhlciIsIm5hbWUiOiJUaGUgR2hvdWxmYXRoZXIiLCJiYXNlIjp7InYiOjEsInJhY2UiOiJ1bmRlYWQiLCJjbGFzcyI6IndvcmdlIiwibGV2ZWwiOjE1LCJ3ZWFwb24iOiJzd29yZCIsImFpIjp7ImRpZmZpY3VsdHkiOiJtZWRpdW0iLCJiZWhhdmlvciI6ImFnZ3Jlc3NpdmUifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IlNXT1JEIiwib2ZmaGFuZCI6IlRPTUUiLCJmYWN0aW9uIjoibGVnaW9uIiwiZXF1aXBtZW50Ijp7Im1haW5IYW5kIjp7ImlkIjoiaXRlbS53ZWFwb24uc3dvcmQiLCJ0aWVyIjoyLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfSwib2ZmSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLnRvbWUiLCJ0aWVyIjoyLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoibGVnaW9uIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiVGhlIEdob3VsZmF0aGVyLCBUaGUgQWJvbWluYXRpb24iLCJsaW5lcyI6WyJBIHN0aXRjaGVkIGhvcnJvciBvZiBhIGRvemVuIGJlYXN0cyBhbmQgdHdpY2UgYXMgbWFueSBtZW4uIl19LCJ0aXRsZSI6IlRoZSBBYm9taW5hdGlvbiIsImxvcmUiOiJBIHN0aXRjaGVkIGhvcnJvciBvZiBhIGRvemVuIGJlYXN0cyBhbmQgdHdpY2UgYXMgbWFueSBtZW4uIFdoYXQgdGhlIEdob3VsZmF0aGVyIGNhbm5vdCBraWxsLCBpdCBhZGRzIHRvIGl0c2VsZi4ifQ",
+      "spec": {
+        "v": 1,
+        "id": "the-ghoulfather",
+        "name": "The Ghoulfather",
+        "base": {
+          "v": 1,
+          "race": "undead",
+          "class": "worge",
+          "level": 15,
+          "weapon": "sword",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "aggressive"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "SWORD",
+          "offhand": "TOME",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.sword",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            },
+            "offHand": {
+              "id": "item.weapon.tome",
+              "tier": 2,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "The Ghoulfather, The Abomination",
+          "lines": [
+            "A stitched horror of a dozen beasts and twice as many men."
+          ]
+        },
+        "title": "The Abomination",
+        "lore": "A stitched horror of a dozen beasts and twice as many men. What the Ghoulfather cannot kill, it adds to itself."
+      }
+    },
+    {
+      "id": "necromancer-vexis",
+      "name": "Necromancer Vexis",
+      "title": "The Soul Harvester",
+      "raceId": "undead",
+      "classId": "mage",
+      "faction": "legion",
+      "stars": 4,
+      "grudgeId": "GRDG-0A4AD0",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6Im5lY3JvbWFuY2VyLXZleGlzIiwibmFtZSI6Ik5lY3JvbWFuY2VyIFZleGlzIiwiYmFzZSI6eyJ2IjoxLCJyYWNlIjoidW5kZWFkIiwiY2xhc3MiOiJtYWdlIiwibGV2ZWwiOjIwLCJ3ZWFwb24iOiJzdGFmZiIsImFpIjp7ImRpZmZpY3VsdHkiOiJoYXJkIiwiYmVoYXZpb3IiOiJzdXBwb3J0In0sInN5c3RlbXMiOnsicGF0aGZpbmRpbmciOnRydWUsImNvbnRyb2xsZXIiOnRydWUsImFuaW1hdGlvbnMiOnRydWV9LCJhcGlXZWFwb24iOiJXQU5EIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLndhbmQiLCJ0aWVyIjozLCJlbmhhbmNlbWVudHMiOltdLCJlbmNoYW50bWVudHMiOltdfX19LCJsZXZlbE1vZGUiOiJwbGF5ZXIiLCJmYWN0aW9uIjoibGVnaW9uIiwiYWdncm9SYWRpdXMiOjEyLCJwcm90ZWN0UmFkaXVzIjo4LCJpbnZlbnRvcnkiOltdLCJtaXNzaW9ucyI6W10sImFpQ2hhdCI6eyJwZXJzb25hIjoiTmVjcm9tYW5jZXIgVmV4aXMsIFRoZSBTb3VsIEhhcnZlc3RlciIsImxpbmVzIjpbIkV2ZXJ5IHNvdWwgVmV4aXMgcmVhcHMgYmVjb21lcyBhIHNvbGRpZXIuIl19LCJ0aXRsZSI6IlRoZSBTb3VsIEhhcnZlc3RlciIsImxvcmUiOiJFdmVyeSBzb3VsIFZleGlzIHJlYXBzIGJlY29tZXMgYSBzb2xkaWVyLiBTaGUgaGFzIGxvc3QgYmF0dGxlcyBhbmQgd29uIHRoZSB3YXIgdGhhdCBmb2xsb3dlZCB3aXRoIHRoZSBkZWFkIG9mIGJvdGggc2lkZXMuIn0",
+      "spec": {
+        "v": 1,
+        "id": "necromancer-vexis",
+        "name": "Necromancer Vexis",
+        "base": {
+          "v": 1,
+          "race": "undead",
+          "class": "mage",
+          "level": 20,
+          "weapon": "staff",
+          "ai": {
+            "difficulty": "hard",
+            "behavior": "support"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "WAND",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.wand",
+              "tier": 3,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Necromancer Vexis, The Soul Harvester",
+          "lines": [
+            "Every soul Vexis reaps becomes a soldier."
+          ]
+        },
+        "title": "The Soul Harvester",
+        "lore": "Every soul Vexis reaps becomes a soldier. She has lost battles and won the war that followed with the dead of both sides."
+      }
+    },
+    {
+      "id": "shade-whisper",
+      "name": "Shade Whisper",
+      "title": "The Phantom Archer",
+      "raceId": "undead",
+      "classId": "ranger",
+      "faction": "legion",
+      "stars": 2,
+      "grudgeId": "GRDG-8DF722",
+      "code": "GRDGN1.eyJ2IjoxLCJpZCI6InNoYWRlLXdoaXNwZXIiLCJuYW1lIjoiU2hhZGUgV2hpc3BlciIsImJhc2UiOnsidiI6MSwicmFjZSI6InVuZGVhZCIsImNsYXNzIjoicmFuZ2VyIiwibGV2ZWwiOjEwLCJ3ZWFwb24iOiJib3ciLCJhaSI6eyJkaWZmaWN1bHR5IjoibWVkaXVtIiwiYmVoYXZpb3IiOiJwYXRyb2wifSwic3lzdGVtcyI6eyJwYXRoZmluZGluZyI6dHJ1ZSwiY29udHJvbGxlciI6dHJ1ZSwiYW5pbWF0aW9ucyI6dHJ1ZX0sImFwaVdlYXBvbiI6IkNST1NTQk9XIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImVxdWlwbWVudCI6eyJtYWluSGFuZCI6eyJpZCI6Iml0ZW0ud2VhcG9uLmNyb3NzYm93IiwidGllciI6MSwiZW5oYW5jZW1lbnRzIjpbXSwiZW5jaGFudG1lbnRzIjpbXX19fSwibGV2ZWxNb2RlIjoicGxheWVyIiwiZmFjdGlvbiI6ImxlZ2lvbiIsImFnZ3JvUmFkaXVzIjoxMiwicHJvdGVjdFJhZGl1cyI6OCwiaW52ZW50b3J5IjpbXSwibWlzc2lvbnMiOltdLCJhaUNoYXQiOnsicGVyc29uYSI6IlNoYWRlIFdoaXNwZXIsIFRoZSBQaGFudG9tIEFyY2hlciIsImxpbmVzIjpbIkhhbGYtaGVyZSBhbmQgaGFsZi1nb25lLiJdfSwidGl0bGUiOiJUaGUgUGhhbnRvbSBBcmNoZXIiLCJsb3JlIjoiSGFsZi1oZXJlIGFuZCBoYWxmLWdvbmUuIFNoYWRlJ3MgYXJyb3dzIHBhc3MgdGhyb3VnaCBzaGllbGRzIGFzIGlmIHRoZXkgd2VyZSBtaXN0LCBiZWNhdXNlIHNvIGRvZXMgU2hhZGUuIn0",
+      "spec": {
+        "v": 1,
+        "id": "shade-whisper",
+        "name": "Shade Whisper",
+        "base": {
+          "v": 1,
+          "race": "undead",
+          "class": "ranger",
+          "level": 10,
+          "weapon": "bow",
+          "ai": {
+            "difficulty": "medium",
+            "behavior": "patrol"
+          },
+          "systems": {
+            "pathfinding": true,
+            "controller": true,
+            "animations": true
+          },
+          "apiWeapon": "CROSSBOW",
+          "faction": "legion",
+          "equipment": {
+            "mainHand": {
+              "id": "item.weapon.crossbow",
+              "tier": 1,
+              "enhancements": [],
+              "enchantments": []
+            }
+          }
+        },
+        "levelMode": "player",
+        "faction": "legion",
+        "aggroRadius": 12,
+        "protectRadius": 8,
+        "inventory": [],
+        "missions": [],
+        "aiChat": {
+          "persona": "Shade Whisper, The Phantom Archer",
+          "lines": [
+            "Half-here and half-gone."
+          ]
+        },
+        "title": "The Phantom Archer",
+        "lore": "Half-here and half-gone. Shade's arrows pass through shields as if they were mist, because so does Shade."
+      }
+    }
+  ]
+}
