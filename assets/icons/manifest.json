@@ -1,0 +1,10 @@
+{
+  "stagedAt": "2026-07-07T05:43:56.757Z",
+  "voxSrc": "C:\\Users\\nugye\\Desktop\\grudgeproduction\\voxgrudge",
+  "fleetBase": "https://objectstore.grudge-studio.com",
+  "counts": {
+    "staged": 44,
+    "skipped": 0,
+    "failed": 0
+  }
+}

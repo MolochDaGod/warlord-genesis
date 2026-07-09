@@ -1,0 +1,681 @@
+{
+  "name": "warlord-genesis",
+  "site": "https://warlord-genesis.vercel.app",
+  "bundleVersion": 61,
+  "bundleFile": "assets/index-warlord-fix3.js",
+  "bundleSource": "assets/index-warlord-fix2.js",
+  "cssFile": "assets/index-BNWYZMT1.css",
+  "routes": [
+    {
+      "path": "/",
+      "id": "title",
+      "screen": "Title / auth",
+      "component": "xO"
+    },
+    {
+      "path": "/lobby",
+      "id": "warcamp",
+      "screen": "Warcamp / loadout",
+      "component": "u7"
+    },
+    {
+      "path": "/deploy",
+      "id": "deploy",
+      "screen": "Pre-game deploy + REST load",
+      "component": "WgDeployScreen"
+    },
+    {
+      "path": "/warcamp",
+      "id": "warcamp-alias",
+      "redirect": "/lobby"
+    },
+    {
+      "path": "/play",
+      "id": "battle",
+      "screen": "Lane battle",
+      "component": "PgA",
+      "guard": "deploy-or-session"
+    },
+    {
+      "path": "/battle",
+      "id": "battle-alias",
+      "redirect": "/play"
+    },
+    {
+      "path": "/auth/callback",
+      "id": "auth-callback",
+      "screen": "Grudge ID SSO return",
+      "component": "WgAuthCallbackScreen"
+    },
+    {
+      "path": "/admin",
+      "id": "admin",
+      "screen": "Map & asset editor",
+      "component": "WgAdminScreen"
+    },
+    {
+      "path": "/mp",
+      "id": "multiplayer",
+      "screen": "Multiplayer lobby",
+      "component": "NCA"
+    },
+    {
+      "path": "*",
+      "id": "fallback",
+      "redirect": "/"
+    }
+  ],
+  "requiredStatic": [
+    "index.html",
+    "favicon.svg",
+    "vercel.json",
+    "assets/index-warlord-fix3.js",
+    "assets/index-BNWYZMT1.css",
+    "textures/ground_diff.jpg",
+    "textures/ground_nor.jpg",
+    "textures/concrete_diff.jpg",
+    "textures/metal_diff.jpg",
+    "textures/metal_nor.jpg",
+    "anims/baked/venom/idle.json",
+    "anims/baked/venom/walk-forward.json",
+    "anims/baked/venom/run-forward.json",
+    "anims/baked/rifle/firing 2.json",
+    "anims/baked/rifle/reloading.json",
+    "anims/baked/rifle/punch.json",
+    "models/towers/medieval/tower_02_1.glb",
+    "models/towers/medieval/tower_03_1_full.glb",
+    "models/towers/medieval/atlas.png",
+    "models/towers/elven/tower_2.glb",
+    "models/towers/elven/tower_3_full.glb",
+    "models/towers/orc/tower_02.glb",
+    "models/towers/orc/tower_3_full.glb",
+    "models/towers/ruins/ruin_11.glb",
+    "models/towers/ruins/ruin_15.glb",
+    "models/buildings/faction/muu.glb",
+    "models/buildings/faction/mantah.glb",
+    "models/buildings/faction/krakee.glb",
+    "models/buildings/faction/antuk.glb",
+    "models/towers/medieval/watchtower_lvl1.glb",
+    "models/towers/medieval/game_ready_turret.glb",
+    "models/towers/elven/fantasy_crossbow_tower.glb",
+    "models/towers/elven/archer_t3.glb",
+    "models/towers/orc/bomber_t1.glb",
+    "models/towers/orc/bomber_t3.glb",
+    "models/towers/ruins/slow_t1.glb",
+    "models/towers/ruins/slow_t3.glb",
+    "models/projectiles/GRDG-3D-5B98764B.glb",
+    "models/weapons/polygon_guns.glb",
+    "models/kaykit/heroes/barbarian.glb",
+    "models/kaykit/heroes/rogue_hooded.glb",
+    "models/kaykit/heroes/knight.glb",
+    "models/kaykit/heroes/ranger.glb",
+    "models/heroes/grudge6/western-kingdoms_warrior.glb",
+    "models/heroes/grudge6/barbarians_worge.glb",
+    "models/heroes/grudge6/dwarves_mage.glb",
+    "models/heroes/grudge6/high-elves_ranger.glb",
+    "models/heroes/grudge6/orcs_warrior.glb",
+    "models/heroes/grudge6/undead_worge.glb",
+    "models/anims/anim-bank.glb",
+    "models/pets/boar.glb",
+    "models/kaykit/enemies/skeleton_warrior.glb",
+    "models/kaykit/enemies/skeleton_mage.glb",
+    "models/units/footman.glb",
+    "models/units/archer.glb",
+    "models/units/knight.glb",
+    "models/units/Color_Palette.png",
+    "textures/grudge6/barbarians/BRB_StandardUnits_texture.webp",
+    "textures/grudge6/dwarves/DWF_Standard_Units.webp",
+    "textures/grudge6/elves/ELF_HighElves_Texture.webp",
+    "textures/grudge6/orcs/ORC_StandardUnits.webp",
+    "textures/grudge6/undead/UD_Standard_Units.webp",
+    "textures/grudge6/western-kingdoms/WK_Standard_Units.webp",
+    "textures/WK_Standard_Units.webp",
+    "assets/ui-kit/craftpix/Action Bar/ActionBar_Main_Background.png",
+    "assets/ui-kit/craftpix/Action Bar/Slots/ActionBar_Slot_Background.png",
+    "assets/ui-kit/craftpix/Minimap/Minimap_Background.png",
+    "assets/ui-kit/craftpix/Window/Window_Background.png",
+    "assets/ui-kit/craftpix/Quest Tracker/QuestTracker_Background.png",
+    "assets/ui-kit/craftpix/Inventory/Coins/Coin_Gold.png",
+    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Normal.png",
+    "assets/ui-kit/craftpix/Chat/Tabs/Chat_Tab_Active.png",
+    "assets/icons/manifest.json",
+    "assets/icons/brand/living4characters.png",
+    "assets/icons/brand/bosslogo.png",
+    "assets/icons/factions/holy.png",
+    "assets/icons/factions/ice.png",
+    "assets/icons/factions/storm.png",
+    "assets/icons/weapons/sword.png",
+    "assets/icons/weapons/bow.png",
+    "assets/icons/weapons/staff.png",
+    "assets/icons/weapons/dagger.png",
+    "assets/icons/weapons/hammer.png",
+    "assets/icons/weapons/gun.png",
+    "assets/icons/skills/warrior-01.png",
+    "assets/icons/skills/warrior-02.png",
+    "assets/icons/vox/fire-rock.png",
+    "assets/icons/vox/spectral-dagger.png"
+  ],
+  "vercelRewritesRequired": [
+    "/api/grudge/:path*",
+    "/api/assets/models/maps/:theme/:file",
+    "/api/assets/:path*",
+    "/api/auth/:path*",
+    "/login",
+    "/models/heroes/grudge6/:file",
+    "/models/kaykit/:path*",
+    "/models/characters/:path*"
+  ],
+  "bundlePatches": [
+    {
+      "id": "cdn-proxy",
+      "needle": "PQ=\"/api/assets\""
+    },
+    {
+      "id": "fleet-auth",
+      "needle": "GN=\"/api/auth\""
+    },
+    {
+      "id": "local-towers",
+      "needle": "WgGetAssetPath(`tower_${C}_${A}`"
+    },
+    {
+      "id": "local-tower-atlas",
+      "needle": "return`${pT}models/towers/${C}/atlas.png`"
+    },
+    {
+      "id": "local-palette",
+      "needle": "unitPalette:\"/models/units/Color_Palette.png\""
+    },
+    {
+      "id": "cdn-default-off",
+      "needle": "cdnReachable:!1,bootedAt:0"
+    },
+    {
+      "id": "boot-cache-v6",
+      "needle": "gw_engine_boot_v6"
+    },
+    {
+      "id": "asset-sanitize",
+      "needle": "function WgSanitizeAssetPaths()"
+    },
+    {
+      "id": "debug-core",
+      "needle": "function WgDebugPanel("
+    },
+    {
+      "id": "debug-anim",
+      "needle": "function WgAnimLog("
+    },
+    {
+      "id": "debug-panel-mount",
+      "needle": "d.jsx(WgDebugPanel,{})"
+    },
+    {
+      "id": "local-units",
+      "needle": "units:\"/models/units/\""
+    },
+    {
+      "id": "local-unit-raa",
+      "needle": "function RAA(C){return`/models/units/${C}.glb`}"
+    },
+    {
+      "id": "match-persist",
+      "needle": "function WgRestoreMatch"
+    },
+    {
+      "id": "play-boot",
+      "needle": "gw-play-gate"
+    },
+    {
+      "id": "play-helpers",
+      "needle": "function WgAutoOnboard"
+    },
+    {
+      "id": "ensure-ready",
+      "needle": "function WgEnsureReady"
+    },
+    {
+      "id": "quick-battle",
+      "needle": "function WgQuickBattle"
+    },
+    {
+      "id": "hero-cdn",
+      "needle": "https://assets.grudge-studio.com/assets/"
+    },
+    {
+      "id": "engage-v2",
+      "needle": "gw-engage-v2"
+    },
+    {
+      "id": "raycast-camera",
+      "needle": "cam&&($y.camera=cam)"
+    },
+    {
+      "id": "game-viewport",
+      "needle": "gw-game-viewport"
+    },
+    {
+      "id": "warcamp-route",
+      "needle": "path:\"/warcamp\""
+    },
+    {
+      "id": "battle-route",
+      "needle": "path:\"/battle\""
+    },
+    {
+      "id": "title-v3",
+      "needle": "gw-screen gw-title-v3"
+    },
+    {
+      "id": "puter-auth",
+      "needle": "signInWithPuter:()=>xR(C,WgPuterSignIn)"
+    },
+    {
+      "id": "auth-sso-redirect",
+      "needle": "WgGrudgeIdLogin"
+    },
+    {
+      "id": "auth-canonical-login",
+      "needle": "login?redirect_uri="
+    },
+    {
+      "id": "deploy-session-boot",
+      "needle": "WgEnsureSession"
+    },
+    {
+      "id": "auth-callback-route",
+      "needle": "path:\"/auth/callback\""
+    },
+    {
+      "id": "auth-callback-screen",
+      "needle": "function WgAuthCallbackScreen"
+    },
+    {
+      "id": "atlas-flipy",
+      "needle": "A.flipY=!0"
+    },
+    {
+      "id": "baked-anims-local",
+      "needle": "/anims/baked/"
+    },
+    {
+      "id": "baked-null-guard",
+      "needle": "WgDebug.asset(\"clip.missing\""
+    },
+    {
+      "id": "pack-card-art",
+      "needle": "gw-pack-card-art"
+    },
+    {
+      "id": "chest-btn-stack",
+      "needle": "gw-chest-btn-title"
+    },
+    {
+      "id": "lane-card-icon",
+      "needle": "gw-lane-card-icon"
+    },
+    {
+      "id": "deploy-screen",
+      "needle": "gk-deploy-v2"
+    },
+    {
+      "id": "deploy-lane-cards",
+      "needle": "gk-lane-card"
+    },
+    {
+      "id": "citadel-endgame",
+      "needle": "C.faction===\"enemy\"?wg.win():wg.lose()"
+    },
+    {
+      "id": "castle-glb",
+      "needle": "WgFactionCoreBuilding"
+    },
+    {
+      "id": "champion-lane",
+      "needle": "WgApplyChampionLane"
+    },
+    {
+      "id": "deploy-route",
+      "needle": "path:\"/deploy\""
+    },
+    {
+      "id": "psd-race-remap",
+      "needle": "WgRaceTex"
+    },
+    {
+      "id": "kaykit-rig-medium",
+      "needle": "Rig_Medium_General.glb"
+    },
+    {
+      "id": "kaykit-anim-mixer",
+      "needle": "WgKayKitAnimPick"
+    },
+    {
+      "id": "eu-tu-mixer",
+      "needle": "mx?.update(dt)"
+    },
+    {
+      "id": "map-admin-helpers",
+      "needle": "WgApplyMapOverride"
+    },
+    {
+      "id": "map-override-newmatch",
+      "needle": "WgApplyMapOverride(m)"
+    },
+    {
+      "id": "admin-screen",
+      "needle": "function WgAdminScreen"
+    },
+    {
+      "id": "admin-route",
+      "needle": "path:\"/admin\""
+    },
+    {
+      "id": "kaykit-unit-footman",
+      "needle": "WgKayKitMinion,{paletteUrl:t,tint:i,unitId:I,scale:C.scale"
+    },
+    {
+      "id": "kaykit-unit-archer",
+      "needle": "case\"archer\":case\"raider\":return d.jsx(WgKayKitMinion"
+    },
+    {
+      "id": "kaykit-unit-knight",
+      "needle": "case\"knight\":case\"ogre\":return d.jsx(WgKayKitMinion"
+    },
+    {
+      "id": "cdn-boot-off",
+      "needle": "cdnReachable:!1,bootedAt:Date.now()"
+    },
+    {
+      "id": "ui-kit-hud",
+      "needle": "function WgMinimap"
+    },
+    {
+      "id": "ui-kit-actionbar",
+      "needle": "function WgKitActionBar"
+    },
+    {
+      "id": "ui-kit-hud-class",
+      "needle": "gk-combat-hud"
+    },
+    {
+      "id": "ui-kit-shell",
+      "needle": "function WgKitQuestRail"
+    },
+    {
+      "id": "ui-kit-lobby-shell",
+      "needle": "gk-warcamp-shell"
+    },
+    {
+      "id": "ui-kit-lobby-grid",
+      "needle": "gw-lobby-body"
+    },
+    {
+      "id": "ui-kit-lobby-wrap",
+      "needle": "WgKitQuestRail,{activeStep:\"recruit\"}"
+    },
+    {
+      "id": "ui-kit-deploy-shell",
+      "needle": "gk-deploy-shell"
+    },
+    {
+      "id": "hero-mesh-haa",
+      "needle": "e?.isHero?A===\"ally\""
+    },
+    {
+      "id": "hero-mesh-baa",
+      "needle": "isHero:g=!1"
+    },
+    {
+      "id": "hero-mesh-xaa",
+      "needle": "w?.grudge?d.jsx(bAA"
+    },
+    {
+      "id": "hero-skill-vfx",
+      "needle": "requestOneShot(I,{fade:.1,blend:A.blend}),!0):!1}"
+    },
+    {
+      "id": "weapon-mesh-sync",
+      "needle": "WgSyncWeaponMeshes"
+    },
+    {
+      "id": "moba-hide-lane-deploy",
+      "needle": "function cgA(){return null}"
+    },
+    {
+      "id": "moba-no-deploy-rounds",
+      "needle": "beginDeploymentRound:I=>{}"
+    },
+    {
+      "id": "moba-hud-class",
+      "needle": "gw-moba-battle"
+    },
+    {
+      "id": "strip-ocean",
+      "needle": "function QgA(){return null}"
+    },
+    {
+      "id": "strip-grass-trees",
+      "needle": "function UAA(){return null}"
+    },
+    {
+      "id": "board-scene",
+      "needle": "args:[\"#10141c\"]"
+    },
+    {
+      "id": "combat-vfx-aia",
+      "needle": "Z.addSlashWave({origin:g.clone()"
+    },
+    {
+      "id": "combat-vfx-ls",
+      "needle": "A>20&&Z.addEmber(xo.clone()"
+    },
+    {
+      "id": "hero-glb-helpers",
+      "needle": "WgHeroGlbUrl"
+    },
+    {
+      "id": "hero-glb-v6",
+      "needle": "WgHeroGlbUrl(g,i)"
+    },
+    {
+      "id": "hero-class-vfx",
+      "needle": "WgClassBurstColor"
+    },
+    {
+      "id": "skill-icons",
+      "needle": "function WgSkillIcon"
+    },
+    {
+      "id": "actionbar-icons",
+      "needle": "gk-ab-icon"
+    },
+    {
+      "id": "faction-icons",
+      "needle": "gw-cs-faction-icon"
+    },
+    {
+      "id": "title-splash",
+      "needle": "gw-title-bg-art"
+    },
+    {
+      "id": "brand-logo",
+      "needle": "gw-auth-brand-icon"
+    },
+    {
+      "id": "combat-targeting",
+      "needle": "function WgCombatHud"
+    },
+    {
+      "id": "combat-input-rmb",
+      "needle": "WgPickTargetFromRay"
+    },
+    {
+      "id": "combat-input-tab",
+      "needle": "WgCycleSoftLock"
+    },
+    {
+      "id": "combat-attack-gate",
+      "needle": "WgSoftLock.active"
+    },
+    {
+      "id": "combat-aim-dir",
+      "needle": "WgGetAimDir(A,ue)"
+    },
+    {
+      "id": "combat-unit-register",
+      "needle": "WgCombatRegisterUnit(c)"
+    },
+    {
+      "id": "combat-ai-scale",
+      "needle": "WgCombatAiMult(C)"
+    },
+    {
+      "id": "combat-proj-tint",
+      "needle": "tint=nr[A]"
+    },
+    {
+      "id": "combat-proj-trail",
+      "needle": "s.traveled>.35"
+    },
+    {
+      "id": "combat-melee-trail",
+      "needle": "addScaledVector(ue,OA.reach"
+    },
+    {
+      "id": "grudge6-flipy",
+      "needle": "s.flipY=!0,s.needsUpdate=!0,o.traverse"
+    },
+    {
+      "id": "combat-hud-overlay",
+      "needle": "d.jsx(WgCombatHud,{}"
+    },
+    {
+      "id": "combat-sync-units",
+      "needle": "WgCombatSyncUnits()"
+    },
+    {
+      "id": "toon-palettes",
+      "needle": "WgToonPalettes"
+    },
+    {
+      "id": "toon-faction-tint",
+      "needle": "WgGetFactionTint"
+    },
+    {
+      "id": "warcamp-palette-ui",
+      "needle": "wg-palette-row"
+    },
+    {
+      "id": "ui-frame-fit-v43",
+      "needle": "gk-frame-window"
+    },
+    {
+      "id": "hero-textures-v44",
+      "needle": "WgFinishHeroMesh"
+    },
+    {
+      "id": "tower-v47",
+      "needle": "WgAnimatedTower"
+    },
+    {
+      "id": "tower-v48",
+      "needle": "outer:\"watchtower_lvl1\""
+    },
+    {
+      "id": "core-building-v48",
+      "needle": "WgFactionCoreBuilding"
+    },
+    {
+      "id": "hero-weapon-battle",
+      "needle": "WgHeroBattleAnimPack"
+    },
+    {
+      "id": "hero-weapon-lobby",
+      "needle": "MK(l)?.animPack"
+    },
+    {
+      "id": "canonical-model3d-helper",
+      "needle": "WgModel3dToVisibleMeshes"
+    },
+    {
+      "id": "canonical-handoff",
+      "needle": "WgModel3dToVisibleMeshes(i,m3)"
+    },
+    {
+      "id": "canonical-visual-mesh",
+      "needle": "_wgVis?.length&&L6(C,_wgVis)"
+    },
+    {
+      "id": "combat-arrow-glb",
+      "needle": "GRDG-3D-5B98764B.glb"
+    },
+    {
+      "id": "combat-proj-glb-load",
+      "needle": "Q.glb"
+    },
+    {
+      "id": "combat-staff-mount",
+      "needle": "staff:{targetSize:.85"
+    },
+    {
+      "id": "combat-semi-rate",
+      "needle": "fireRate:.42,"
+    },
+    {
+      "id": "combat-muzzle-node",
+      "needle": "setWeaponMount(A)"
+    },
+    {
+      "id": "combat-cast-state",
+      "needle": "WgSkillCastTime"
+    },
+    {
+      "id": "combat-skill-cast",
+      "needle": "WgCast.active=!0"
+    },
+    {
+      "id": "combat-cast-hud",
+      "needle": "wg-cast-bar"
+    },
+    {
+      "id": "combat-vfx-catalog",
+      "needle": "const WgVfxCat="
+    },
+    {
+      "id": "combat-spell-orbs",
+      "needle": "wg_flame_ball:{orb:1"
+    },
+    {
+      "id": "combat-proj-orb",
+      "needle": "Q.orb"
+    },
+    {
+      "id": "combat-skill-vfx-iaa",
+      "needle": "WgSkillProjectile(C,g)"
+    },
+    {
+      "id": "combat-cast-charge-vfx",
+      "needle": "WgCastChargeTick"
+    },
+    {
+      "id": "combat-proj-trail-rate",
+      "needle": "l.trail??"
+    },
+    {
+      "id": "lobby-onboarding-hook",
+      "needle": "O=zC(x=>x.onboardingDone)"
+    },
+    {
+      "id": "lobby-deploy-gate",
+      "needle": "m=O||(y&&N(h))"
+    },
+    {
+      "id": "lobby-ensure-ready",
+      "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
+    }
+  ],
+  "lastBuilt": "2026-07-07T06:28:47.185Z",
+  "bundleBytes": 4120205,
+  "bundleSha256": "ffe407ca172467a8"
+}

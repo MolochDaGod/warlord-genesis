@@ -1,31 +1,394 @@
 {
-  "$schema": "https://openapi.vercel.sh/vercel.json",
-  "installCommand": "pnpm config set minimumReleaseAge 0 && pnpm install --frozen-lockfile",
   "buildCommand": "BASE_PATH=/ PORT=5173 pnpm --filter @workspace/grudge-warlords run build",
+  "installCommand": "pnpm config set minimumReleaseAge 0 && pnpm install --frozen-lockfile",
   "outputDirectory": "artifacts/grudge-warlords/dist/public",
   "framework": null,
+  "headers": [
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/models/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/textures/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/anims/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=86400, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/grudge/:path*",
+      "destination": "https://warlord-genesis-api-production.up.railway.app/api/grudge/:path*"
+    },
+    {
+      "source": "/api/assets/models/maps/:theme/:file",
+      "destination": "/models/towers/:theme/:file"
+    },
+    {
+      "source": "/api/assets/grudge-nexus/models/maps/:theme/:file",
+      "destination": "/models/towers/:theme/:file"
+    },
+    {
+      "source": "/api/assets/grudge-nexus/textures/Color_Palette.png",
+      "destination": "/models/units/Color_Palette.png"
+    },
+    {
+      "source": "/api/assets/grudge-nexus/models/rts/units/:file",
+      "destination": "/models/units/:file"
+    },
+    {
+      "source": "/models/heroes/grudge6/:file",
+      "destination": "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file"
+    },
+    {
+      "source": "/textures/grudge6/:race/:file",
+      "destination": "https://assets.grudge-studio.com/assets/:race/textures/:file"
+    },
+    {
+      "source": "/textures/WK_Standard_Units.webp",
+      "destination": "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp"
+    },
+    {
+      "source": "/api/assets/:path*",
+      "destination": "https://client.grudge-studio.com/:path*"
+    },
+    {
+      "source": "/api/objectstore/:path*",
+      "destination": "https://objectstore.grudge-studio.com/api/:path*"
+    },
+    {
+      "source": "/assets/skills/:path*",
+      "destination": "https://objectstore.grudge-studio.com/assets/skills/:path*"
+    },
+    {
+      "source": "/media/heroes/portraits/:path*",
+      "destination": "https://objectstore.grudge-studio.com/heroes/portraits/:path*"
+    },
+    {
+      "source": "/media/heroes/videos/:path*",
+      "destination": "https://objectstore.grudge-studio.com/heroes/videos/:path*"
+    },
+    {
+      "source": "/models/kaykit/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/kaykit/:path*"
+    },
+    {
+      "source": "/models/characters/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/characters/:path*"
+    },
+    {
+      "source": "/models/grudge6/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/grudge6/:path*"
+    },
+    {
+      "source": "/models/units/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/units/:path*"
+    },
+    {
+      "source": "/models/projectiles/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/projectiles/:path*"
+    },
+    {
+      "source": "/models/rts/:path*",
+      "destination": "https://objectstore.grudge-studio.com/models/rts/:path*"
+    },
+    {
+      "source": "/api/health",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/health"
+    },
+    {
+      "source": "/api/health/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/health/:path*"
+    },
+    {
+      "source": "/api/characters",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters"
+    },
+    {
+      "source": "/api/characters/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters/:path*"
+    },
+    {
+      "source": "/api/party",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/party"
+    },
+    {
+      "source": "/api/party/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/party/:path*"
+    },
+    {
+      "source": "/api/account",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/account"
+    },
+    {
+      "source": "/api/account/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/account/:path*"
+    },
+    {
+      "source": "/api/island",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/island"
+    },
+    {
+      "source": "/api/island/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/island/:path*"
+    },
+    {
+      "source": "/api/islands",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/islands"
+    },
+    {
+      "source": "/api/islands/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/islands/:path*"
+    },
+    {
+      "source": "/api/inventory",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/inventory"
+    },
+    {
+      "source": "/api/inventory/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/inventory/:path*"
+    },
+    {
+      "source": "/api/wallet",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/wallet"
+    },
+    {
+      "source": "/api/wallet/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/wallet/:path*"
+    },
+    {
+      "source": "/api/nfts",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/nfts"
+    },
+    {
+      "source": "/api/nfts/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/nfts/:path*"
+    },
+    {
+      "source": "/api/professions",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/professions"
+    },
+    {
+      "source": "/api/professions/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/professions/:path*"
+    },
+    {
+      "source": "/api/missions",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/missions"
+    },
+    {
+      "source": "/api/missions/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/missions/:path*"
+    },
+    {
+      "source": "/api/player",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/player"
+    },
+    {
+      "source": "/api/player/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/player/:path*"
+    },
+    {
+      "source": "/api/resources",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/resources"
+    },
+    {
+      "source": "/api/resources/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/resources/:path*"
+    },
+    {
+      "source": "/api/sprites",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/sprites"
+    },
+    {
+      "source": "/api/sprites/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/sprites/:path*"
+    },
+    {
+      "source": "/api/fleet",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/fleet"
+    },
+    {
+      "source": "/api/fleet/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/fleet/:path*"
+    },
+    {
+      "source": "/api/lore",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/lore"
+    },
+    {
+      "source": "/api/lore/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/lore/:path*"
+    },
+    {
+      "source": "/api/combat",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/combat"
+    },
+    {
+      "source": "/api/combat/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/combat/:path*"
+    },
+    {
+      "source": "/api/rts",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/rts"
+    },
+    {
+      "source": "/api/rts/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/rts/:path*"
+    },
+    {
+      "source": "/api/races",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/races"
+    },
+    {
+      "source": "/api/races/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/races/:path*"
+    },
+    {
+      "source": "/api/classes",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/classes"
+    },
+    {
+      "source": "/api/classes/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/classes/:path*"
+    },
+    {
+      "source": "/api/items",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/items"
+    },
+    {
+      "source": "/api/items/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/items/:path*"
+    },
+    {
+      "source": "/api/auth/puter",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/puter"
+    },
+    {
+      "source": "/api/auth/puter-sso",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/puter-sso"
+    },
+    {
+      "source": "/api/auth/guest",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/guest"
+    },
+    {
+      "source": "/api/auth/login",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/login"
+    },
+    {
+      "source": "/api/auth/register",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/register"
+    },
+    {
+      "source": "/api/auth/me",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/me"
+    },
+    {
+      "source": "/api/auth/scoped-profile",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/scoped-profile"
+    },
+    {
+      "source": "/api/auth/discord/start",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/discord/start"
+    },
+    {
+      "source": "/api/auth/verify",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/verify"
+    },
+    {
+      "source": "/api/auth/session/exchange",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/session/exchange"
+    },
+    {
+      "source": "/api/auth/popup-token",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/popup-token"
+    },
+    {
+      "source": "/api/auth/grudge-bridge",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/grudge-bridge"
+    },
+    {
+      "source": "/api/auth/wallet",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/wallet"
+    },
+    {
+      "source": "/api/auth/puter-link",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/puter-link"
+    },
+    {
+      "source": "/api/auth/complete-profile",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/complete-profile"
+    },
+    {
+      "source": "/auth/callback",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/api/auth/:path*",
+      "destination": "https://id.grudge-studio.com/api/auth/:path*"
+    },
+    {
+      "source": "/auth/:path*",
+      "destination": "https://id.grudge-studio.com/auth/:path*"
+    },
+    {
+      "source": "/login",
+      "destination": "https://id.grudge-studio.com/login"
+    },
+    {
+      "source": "/api/ai/:path*",
+      "destination": "https://ai.grudge-studio.com/:path*"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://grudge-studio.com/api/:path*"
+    },
+    {
+      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
+      "destination": "/index.html"
+    }
+  ],
+  "": "https://openapi.vercel.sh/vercel.json",
   "build": {
     "env": {
       "VITE_WORLD_URL": "https://water.grudge-studio.com",
       "VITE_ASSETS_CDN_URL": "https://assets.grudge-studio.com"
     }
-  },
-  "rewrites": [
-    { "source": "/api/characters", "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters" },
-    { "source": "/api/characters/:path*", "destination": "https://grudge-api-production-0d46.up.railway.app/api/characters/:path*" },
-    { "source": "/api/auth/:path*", "destination": "https://id.grudge-studio.com/api/auth/:path*" },
-    { "source": "/assets/(.*)", "destination": "https://assets.grudge-studio.com/assets/$1" },
-    { "source": "/anims/(.*)", "destination": "https://assets.grudge-studio.com/anims/$1" },
-    { "source": "/models-glb/(.*)", "destination": "https://assets.grudge-studio.com/models-glb/$1" },
-    { "source": "/models/(.*)", "destination": "https://assets.grudge-studio.com/models/$1" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "headers": [
-    {
-      "source": "/(.*)",
-      "headers": [
-        { "key": "X-Content-Type-Options", "value": "nosniff" }
-      ]
-    }
-  ]
+  }
 }
