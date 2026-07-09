@@ -18,6 +18,8 @@ import { viewerUrl } from "../lib/grudgeViewer";
 import { getFleetEndpoints } from "../lib/grudgeOrigins";
 import { sailAethermoorUrl, GRUDGE_FLEET_URLS } from "../lib/fleetUrls";
 import { getStudioToken } from "../lib/grudgeStudio";
+import { ensureWarcampReady } from "../lib/ensureWarcampReady";
+import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
 import "../components/ui/collection.css";
 
 type LobbyTab = "warcamp" | "chest" | "codex";
@@ -42,10 +44,15 @@ export function Lobby() {
   const lockLoadout = useRoster((s) => s.lockLoadout);
   const loadoutReady = isLoadoutReady(meleeId, rangedId, prefabId);
   const gbux = useMeta((s) => s.gbux);
+  const onboardingDone = useMeta((s) => s.onboardingDone);
   const isCharacterUnlocked = useMeta((s) => s.isCharacterUnlocked);
   const syncGbuxFromAccount = useMeta((s) => s.syncGbuxFromAccount);
   const [tab, setTab] = useState<LobbyTab>("warcamp");
   const [fleet, setFleet] = useState<{ world: string | null; colyseus: string | null } | null>(null);
+
+  useEffect(() => {
+    ensureWarcampReady();
+  }, []);
 
   useEffect(() => {
     getFleetEndpoints()
@@ -67,7 +74,12 @@ export function Lobby() {
   const enemyFaction = GRUDGE_FACTION_BY_ID[enemyFactionId];
 
   const march = () => {
-    if (!warlordReady) return;
+    ensureWarcampReady();
+    const r = useRoster.getState();
+    const meta = useMeta.getState();
+    if (!isLoadoutReady(r.meleeId, r.rangedId, r.prefabId) || !meta.isCharacterUnlocked(r.prefabId)) {
+      return;
+    }
     lockLoadout();
     startGame();
     navigate("/play");
@@ -208,6 +220,8 @@ export function Lobby() {
               </div>
             </div>
 
+            <PreMatchLaneDeploy compact />
+
             <div className="gw-mapsize">
               <span className="gw-mapsize-label">Opponent faction</span>
               <div className="gw-mapsize-toggle">
@@ -270,11 +284,13 @@ export function Lobby() {
             </button>
             {!warlordReady && (
               <span className="gw-deploy-hint">
-                {!isCharacterUnlocked(prefabId)
-                  ? "Recruit this warlord with 10 shards in the War Chest, or pick a starter champion."
-                  : !loadoutReady
-                    ? "Select your warlord in the Warcamp — canonical melee and ranged apply automatically."
-                    : "Loadout ready — march when you are."}
+                {!onboardingDone
+                  ? "Choose your starter champion in the overlay above."
+                  : !isCharacterUnlocked(prefabId)
+                    ? "Recruit this warlord with 10 shards in the War Chest, or pick your unlocked starter."
+                    : !loadoutReady
+                      ? "Select an unlocked warlord in the Warcamp tab — canonical weapons apply automatically."
+                      : "Configure lane wave troops above, then march."}
               </span>
             )}
           </div>

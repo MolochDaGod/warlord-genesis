@@ -160,6 +160,8 @@ interface MetaState {
   syncGbuxFromAccount: (balance: number) => void;
   clearLastMatchReward: () => void;
   seedDefaultLaneGuards: (factionId: GrudgeFactionId) => void;
+  /** Repair server/local desync — starter marked done but card missing. */
+  ensureStarterUnlocked: () => void;
 }
 
 const persisted = loadPersisted();
@@ -337,6 +339,20 @@ export const useMeta = create<MetaState>((set, get) => ({
       }
     }
     set({ cards });
+  },
+
+  ensureStarterUnlocked: () => {
+    const s = get();
+    if (!s.onboardingDone && !s.starterPrefabId) return;
+    const prefabId = s.starterPrefabId;
+    if (!prefabId || !PREFAB_BY_ID[prefabId]) return;
+    if (s.isCharacterUnlocked(prefabId)) return;
+    const cards = [...s.cards];
+    const c = ensureCard(cards, "character", prefabId);
+    c.level = 1;
+    c.shards = 0;
+    set({ cards, onboardingDone: true, starterPrefabId: prefabId });
+    get().seedDefaultLaneGuards(PREFAB_BY_ID[prefabId]!.faction as GrudgeFactionId);
   },
 }));
 

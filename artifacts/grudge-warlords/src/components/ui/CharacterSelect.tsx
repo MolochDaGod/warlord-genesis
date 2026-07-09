@@ -10,10 +10,12 @@ import {
 } from "../../engine/grudge6";
 import { factionMeleeIds, factionRangedIds } from "../../game/laneDeployment";
 import { useMeta } from "../../game/metaProgression";
+import { useGame } from "../../game/store";
 import { useRoster } from "../../game/roster";
 import { viewerUrl } from "../../lib/grudgeViewer";
 import { WarlordPreview } from "./WarlordPreview";
 import { Loadout } from "./Loadout";
+import { PreMatchLaneDeploy } from "./PreMatchLaneDeploy";
 import { CharacterCard, LaneGuardCard } from "./CharacterCard";
 import { HeroDetailModal } from "./HeroDetailModal";
 import "./characterSelect.css";
@@ -44,6 +46,7 @@ export function CharacterSelect() {
   const isCharacterUnlocked = useMeta((s) => s.isCharacterUnlocked);
   const isLaneGuardUnlocked = useMeta((s) => s.isLaneGuardUnlocked);
   const seedDefaultLaneGuards = useMeta((s) => s.seedDefaultLaneGuards);
+  const resetLaneDeployment = useGame((s) => s.resetLaneDeployment);
   const [inspectId, setInspectId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -52,7 +55,8 @@ export function CharacterSelect() {
 
   useEffect(() => {
     seedDefaultLaneGuards(factionId);
-  }, [factionId, seedDefaultLaneGuards]);
+    resetLaneDeployment();
+  }, [factionId, seedDefaultLaneGuards, resetLaneDeployment]);
 
   const faction = GRUDGE_FACTION_BY_ID[factionId];
   const prefab = GRUDGE_PREFAB_BY_ID[prefabId];
@@ -212,6 +216,8 @@ export function CharacterSelect() {
           </div>
         </div>
       </section>
+
+      <PreMatchLaneDeploy />
 
       <Loadout />
     </div>

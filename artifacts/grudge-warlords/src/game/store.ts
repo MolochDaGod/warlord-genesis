@@ -622,7 +622,9 @@ export const useGame = create<GameState>((set, get) => ({
         rangedGuard: r.laneRangedHeroId,
       }),
     });
-    get().pushMessage("LANE WAVE CREEPS RESET TO FACTION DEFAULTS", "info");
+    if (get().phase === "battle") {
+      get().pushMessage("LANE WAVE CREEPS RESET TO FACTION DEFAULTS", "info");
+    }
   },
 
   dismissDeploymentHighlight: () => set({ deploymentHighlight: false }),

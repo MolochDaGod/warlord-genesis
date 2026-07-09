@@ -62,6 +62,8 @@ export async function hydrateMetaFromServer(): Promise<boolean> {
     lastMatchReward: (meta.lastMatchReward as MatchRewardSnapshot | null) ?? local.lastMatchReward,
   });
 
+  useMeta.getState().ensureStarterUnlocked();
+
   lastPushed = JSON.stringify({ currency: useMeta.getState().gbux, meta: metaPayload() });
   return true;
 }
