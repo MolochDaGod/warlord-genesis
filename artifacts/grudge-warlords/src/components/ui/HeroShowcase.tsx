@@ -11,7 +11,8 @@ interface HeroShowcaseProps {
   preferVideo?: boolean;
 }
 
-export function HeroShowcase({ prefab, preferVideo = true }: HeroShowcaseProps) {
+/** Default to live Bip001 mesh in warcamp; video is opt-in. */
+export function HeroShowcase({ prefab, preferVideo = false }: HeroShowcaseProps) {
   const [videoFailed, setVideoFailed] = useState(false);
   const [portraitFailed, setPortraitFailed] = useState(false);
   const videoSrc = resolveVideoUrl(prefab.id);

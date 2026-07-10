@@ -6,6 +6,7 @@
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+import * as SkeletonUtils from "three/examples/jsm/utils/SkeletonUtils.js";
 import {
   LOCO_BAKED_BY_PACK,
   asAnimPackId,
@@ -184,10 +185,22 @@ function applyGearPreset(group: THREE.Object3D, visibleMeshes: string[]): void {
 }
 
 function applyBodyTexture(group: THREE.Object3D, texture: THREE.Texture): void {
-  const material = new THREE.MeshLambertMaterial({ map: texture, color: 0xffffff });
+  texture.colorSpace = THREE.SRGBColorSpace;
+  texture.flipY = false;
+  texture.anisotropy = 8;
+  texture.needsUpdate = true;
+  // Per-mesh materials so tint/preview clones don't share one material instance
   group.traverse((node) => {
     if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-      node.material = material;
+      node.material = new THREE.MeshStandardMaterial({
+        map: texture,
+        color: 0xffffff,
+        roughness: 0.78,
+        metalness: 0.06,
+        envMapIntensity: 0.4,
+      });
+      node.castShadow = true;
+      node.receiveShadow = true;
     }
   });
 }
@@ -320,6 +333,83 @@ export function loadGrudge6Character(
     characterCache.set(key, cached);
   }
   return cached;
+}
+
+/**
+ * Independent instance for lobby / warcamp preview.
+ * Clones the cached mesh so battle cannot steal the preview root, and
+ * owns its own mixer + AnimationDirector (safe to dispose on unmount).
+ */
+export async function loadGrudge6CharacterInstance(
+  typeId: string,
+  opts: { fitHeight?: number; tint?: string; animPack?: AnimPack } = {},
+): Promise<PreparedGrudge6Character & { dispose: () => void }> {
+  const shared = await loadGrudge6Character(typeId, opts);
+  const def = resolveUnitDef(typeId);
+  const preset = def?.grudge
+    ? gearPresetFor(def.grudge.raceId, def.grudge.classId)
+    : undefined;
+  const pack = asAnimPackId(opts.animPack ?? preset?.animPack ?? "unarmed");
+
+  const root = SkeletonUtils.clone(shared.root) as unknown as THREE.Group;
+  // Ensure materials are unique + texture color space still valid after clone
+  root.traverse((node) => {
+    if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
+      const mats = Array.isArray(node.material) ? node.material : [node.material];
+      const next = mats.map((m) => {
+        const c = m.clone();
+        const std = c as THREE.MeshStandardMaterial;
+        if (std.map) {
+          std.map.colorSpace = THREE.SRGBColorSpace;
+          std.map.needsUpdate = true;
+        }
+        if (std.color && opts.tint && opts.tint !== "#ffffff") {
+          // tint already applied on shared; clone keeps it
+        }
+        return c;
+      });
+      node.material = Array.isArray(node.material) ? next : next[0]!;
+      node.castShadow = true;
+      node.receiveShadow = true;
+    }
+  });
+
+  const mixer = new THREE.AnimationMixer(root);
+  const bundle = await loadPackBundle(root, mixer, pack);
+  bundle.director.setGaitTarget(false, false);
+
+  const prepared: PreparedGrudge6Character & { dispose: () => void } = {
+    root,
+    mixer,
+    director: bundle.director,
+    attackClip: bundle.attackClip,
+    actions: bundle.actions,
+    swapAnimPack: async (nextPack: AnimPack) => {
+      prepared.director.dispose();
+      mixer.stopAllAction();
+      const next = await loadPackBundle(root, mixer, nextPack);
+      prepared.director = next.director;
+      prepared.attackClip = next.attackClip;
+      prepared.actions = next.actions;
+      prepared.director.setGaitTarget(false, false);
+    },
+    dispose: () => {
+      try {
+        prepared.director.dispose();
+      } catch { /* ignore */ }
+      mixer.stopAllAction();
+      root.removeFromParent();
+      root.traverse((obj) => {
+        const mesh = obj as THREE.Mesh;
+        if (mesh.isMesh) {
+          mesh.geometry?.dispose?.();
+          const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+          for (const m of mats) m?.dispose?.();
+        }
+      });
+    },
+  };
+  return prepared;
 }
 
 /** Lane guard loader — same GRUDGE6 Bip001 pipeline as warlords. */

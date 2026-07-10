@@ -35,8 +35,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
+      // workspace libs (r3f-fleet) import "three" as peer — resolve from app
+      three: path.resolve(import.meta.dirname, "node_modules/three"),
     },
-    dedupe: ["react", "react-dom"],
+    dedupe: ["react", "react-dom", "three", "@react-three/fiber", "@react-three/drei"],
   },
   root: path.resolve(import.meta.dirname),
   build: {

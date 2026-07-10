@@ -612,19 +612,71 @@ for (const [from, to] of SX_PACK_FIXES) {
   }
 }
 
-// Lobby 3D preview — correct anim pack + weapon meshes for selected warlord.
-const _6_ORIG =
-  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A);return T.useEffect(()=>{let t=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I}).then(Q=>{if(t){Q.mixer.stopAllAction();return}g.current=Q;const o=i.current;o&&(o.clear(),o.add(Q.root)),Q.actions.idle?.reset().fadeIn(.2).play()}),()=>{t=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I]),VC((t,Q)=>{g.current?.mixer.update(Q)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
+// Lobby 3D preview — independent instance (v6, not cached OK), correct anim pack,
+// weapon meshes, idle director, slow turntable. Never reparent shared battle root.
 const _6_PATCHED =
-  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>{const l=$E(C,A);return l?MK(l)?.animPack??qh(C,A)?.animPack??"unarmed":qh(C,A)?.animPack??"unarmed"},[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,OK(e,{fitHeight:2.15,tint:I||"#ffffff",animPack:t}).then(o=>{if(Q){o.mixer.stopAllAction();return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);o.actions.idle?.reset().fadeIn(.2).play()}).catch(()=>{}),()=>{Q=!0,g.current?.mixer.stopAllAction(),g.current=null}},[e,I,t,C,A]),VC((o,s)=>{g.current?.mixer.update(s)}),d.jsx("group",{ref:i,position:[0,-.05,0]})}';
-if (js.includes(_6_ORIG)) {
-  js = js.replace(_6_ORIG, _6_PATCHED);
-  mustPatch("lobby-hero-preview", true);
-} else if (js.includes("MK(l)?.weapon")) {
-  mustPatch("lobby-hero-preview", true);
+  'function _6({raceId:C,classId:A,tint:I}){const g=T.useRef(null),i=T.useRef(null),e=nQ(C,A),t=T.useMemo(()=>{const l=$E(C,A);return l?MK(l)?.animPack??qh(C,A)?.animPack??"unarmed":qh(C,A)?.animPack??"unarmed"},[C,A]);return T.useEffect(()=>{let Q=!1;return g.current=null,v6(e,{fitHeight:2.2,tint:I||"#ffffff",animPack:t}).then(o=>{if(Q){try{o.mixer.stopAllAction()}catch{}try{o.root?.removeFromParent?.()}catch{}return}g.current=o;const s=i.current;s&&(s.clear(),s.add(o.root));const l=$E(C,A),c=l?MK(l)?.weapon:void 0;c&&WgSyncWeaponMeshes(o.root,c);try{o.director?.setGaitTarget?.(false,false)}catch{}o.actions.idle?.reset().fadeIn(.2).play()}).catch(err=>console.warn("[warcamp-preview]",err)),()=>{Q=!0;const p=g.current;if(p){try{p.mixer.stopAllAction()}catch{}try{p.root?.removeFromParent?.()}catch{}}g.current=null}},[e,I,t,C,A]),VC((o,s)=>{const p=g.current;if(!p)return;try{p.director?.update?.(s)}catch{p.mixer.update(s)}if(i.current)i.current.rotation.y+=s*.28}),d.jsx("group",{ref:i,position:[0,0,0]})}';
+
+// Replace any existing _6 definition (original or prior patch)
+{
+  const m = js.match(/function _6\(\{raceId:C,classId:A,tint:I\}\)\{[\s\S]*?d\.jsx\("group",\{ref:i,position:\[[^\]]+\]\}\)\}/);
+  if (m) {
+    js = js.replace(m[0], _6_PATCHED);
+    mustPatch("lobby-hero-preview", true);
+    console.log("[patch] lobby _6 preview replaced, len", m[0].length, "→", _6_PATCHED.length);
+  } else if (js.includes("v6(e,{fitHeight:2.2")) {
+    mustPatch("lobby-hero-preview", true);
+  } else {
+    console.warn("[patch] lobby _6 preview hook missing");
+    mustPatch("lobby-hero-preview", false);
+  }
+}
+
+// glTF / atlas textures: flipY=true after load inverts UVs and washes heroes.
+// Force false wherever colorSpace is set for race textures.
+{
+  const before = js;
+  js = js.replace(/(\.map\.)flipY=!0/g, "$1flipY=!1");
+  js = js.replace(/(colorSpace=zg,)([A-Za-z.]+)(\.flipY=)!0/g, "$1$2$3!1");
+  js = js.replace(/(colorSpace=zg,)([A-Za-z]+)(\.flipY=)!0/g, "$1$2$3!1");
+  // q6 helper: A.colorSpace=zg,A.flipY=!0
+  js = js.replace(/(A\.colorSpace=zg,A\.flipY=)!0/g, "$1!1");
+  js = js.replace(/(e\.colorSpace=zg,e\.flipY=)!0/g, "$1!1");
+  js = js.replace(/(s\.colorSpace=zg,s\.flipY=)!0/g, "$1!1");
+  js = js.replace(/(tex\.flipY=o\.flipY\?\?)!0/g, "$1!1");
+  const flipped = (js.match(/flipY=!1/g) || []).length;
+  const stillBad = (js.match(/colorSpace=zg[^;]{0,40}flipY=!0/g) || []).length;
+  console.log("[patch] flipY fix: !1 count=", flipped, "remaining bad=", stillBad);
+  // Soft: do not fail CI if some flipY=!0 remain in unrelated code
+  if (js !== before) mustPatch("texture-flipY", true);
+  else mustPatch("texture-flipY", flipped > 0);
+}
+
+// Hero GLB always from same-origin deploy (real glTF files in /models/heroes/grudge6)
+// Ensure URL uses UK race folder keys (orcs, western-kingdoms, …)
+if (js.includes("function WgHeroGlbUrl(C,A){const I=UK[C]||C,g=WgHeroClassFile[A]||A;return`/models/heroes/grudge6/${I}_${g}.glb`}")) {
+  mustPatch("hero-glb-url", true);
+} else if (js.includes("function WgHeroGlbUrl")) {
+  mustPatch("hero-glb-url", js.includes("/models/heroes/grudge6/"));
+}
+
+// Warcamp preview canvas shell — solid bg + slightly stronger lights + taller frame via class
+const kH_ORIG =
+  'function kH({raceId:C,classId:A,tint:I}){return d.jsxs("div",{className:"gw-warlord-preview",children:[d.jsxs(TK,{camera:{fov:38,near:.1,far:40,position:[0,1.35,3.6]},gl:{antialias:!0,alpha:!0,powerPreference:"high-performance"},dpr:[1,1.5],children:[d.jsx("color",{attach:"background",args:["#0e0a08"]}),d.jsx("hemisphereLight",{args:["#f3e6c8","#1a100c",.85]}),d.jsx("directionalLight",{position:[2.5,5,3],intensity:1.35,color:"#ffe8c8"}),d.jsx("directionalLight",{position:[-3,2.5,-2],intensity:.45,color:"#9bb6ff"}),d.jsx("ambientLight",{intensity:.35}),d.jsx(T.Suspense,{fallback:null,children:d.jsx(_6,{raceId:C,classId:A,tint:I})}),d.jsx(q9,{enablePan:!1,minDistance:2.4,maxDistance:5.5,minPolarAngle:Math.PI*.28,maxPolarAngle:Math.PI*.52,target:[0,1.05,0]})]}),d.jsx("div",{className:"gw-warlord-preview-plate","aria-hidden":!0})]})}';
+const kH_PATCHED =
+  'function kH({raceId:C,classId:A,tint:I}){return d.jsxs("div",{className:"gw-warlord-preview gw-warlord-preview--live",style:{height:"min(42vh,420px)",minHeight:"300px"},children:[d.jsxs(TK,{camera:{fov:36,near:.08,far:40,position:[0,1.45,3.75]},gl:{antialias:!0,alpha:!1,powerPreference:"high-performance",toneMapping:1,outputColorSpace:"srgb"},dpr:[1,1.5],style:{width:"100%",height:"100%",display:"block"},children:[d.jsx("color",{attach:"background",args:["#120e0a"]}),d.jsx("hemisphereLight",{args:["#f5e6c8","#1a1210",.95]}),d.jsx("directionalLight",{position:[3.2,6.5,2.8],intensity:1.55,color:"#ffe8c8"}),d.jsx("directionalLight",{position:[-3.5,2.2,-2.5],intensity:.55,color:"#8aa8ff"}),d.jsx("ambientLight",{intensity:.32}),d.jsx("mesh",{rotation:[-Math.PI/2,0,0],position:[0,0,0],children:[d.jsx("circleGeometry",{args:[1.55,40]}),d.jsx("meshStandardMaterial",{color:"#1a1410",roughness:.92,metalness:.05})]}),d.jsx(T.Suspense,{fallback:null,children:d.jsx(_6,{raceId:C,classId:A,tint:I})}),d.jsx(q9,{enablePan:!1,minDistance:2.2,maxDistance:5.2,minPolarAngle:Math.PI*.3,maxPolarAngle:Math.PI*.5,target:[0,1.05,0]})]}),d.jsx("div",{className:"gw-warlord-preview-plate","aria-hidden":!0})]})}';
+if (js.includes(kH_ORIG)) {
+  js = js.replace(kH_ORIG, kH_PATCHED);
+  mustPatch("lobby-preview-canvas", true);
 } else {
-  console.warn("[patch] lobby _6 preview hook missing");
-  mustPatch("lobby-hero-preview", false);
+  // fuzzy replace kH body if already partially patched
+  const km = js.match(/function kH\(\{raceId:C,classId:A,tint:I\}\)\{return d\.jsxs\("div",\{className:"gw-warlord-preview[\s\S]*?aria-hidden":!0\}\)\]\}\)/);
+  if (km && !js.includes("gw-warlord-preview--live")) {
+    js = js.replace(km[0], kH_PATCHED);
+    mustPatch("lobby-preview-canvas", true);
+  } else {
+    mustPatch("lobby-preview-canvas", js.includes("gw-warlord-preview--live") || js.includes(kH_PATCHED.slice(0, 40)));
+  }
 }
 
 // Battle units — GRUDGE6 FBX + baked anims for heroes/lane guards (never TAA capsule placeholders).

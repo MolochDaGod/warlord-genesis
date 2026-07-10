@@ -505,3 +505,8 @@ body{background:#080c14}
   .gk-ab-slot{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
   .gk-ab-icon{width:28px!important;height:28px!important}
 }
+
+/* warcamp-preview-v66 */
+.gw-warlord-preview,.gw-warlord-preview--live{position:relative;width:100%;height:min(42vh,420px)!important;min-height:300px!important;border-radius:14px;overflow:hidden;border:1px solid rgba(224,178,82,.28);background:radial-gradient(120% 80% at 50% 10%,rgba(80,50,30,.35),#120e0a 70%)}
+.gw-warlord-preview canvas{width:100%!important;height:100%!important;display:block!important}
+.gw-cs-preview-col .gw-warlord-preview{margin-bottom:12px}
