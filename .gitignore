@@ -1,10 +1,11 @@
+# Dependencies & local env
 node_modules/
 node_modules
 api/node_modules
 dist/
 .vercel/
-.railway
 .vercel
+.railway
 .env
 .env.*
 !.env.example
@@ -13,19 +14,27 @@ dist/
 .cache/
 .local/
 .DS_Store
+Thumbs.db
 
-# Local / CI scratch
+# Scratch / agent probes (never ship)
 .tmp-*
 tmp-*
 .tmp/
 scripts/_*.mjs
+scripts/_*.js
+scripts/_*.txt
 scripts/.syntax-probe.js
 scripts/haa.txt
 scripts/wg-debug-code.txt
+scripts/*-dump.txt
+scripts/*-out.txt
 
-# Diagnostic outputs
+# Diagnostic deploy outputs
 *-output.txt
 *-out.txt
+deploy-err.txt
+deploy-output.txt
+verify-output.txt
 bisect-*.txt
 auth-diff.txt
 backtick-audit.txt
@@ -36,14 +45,14 @@ patch-run-output.txt
 syntax-break-report.txt
 SYMBOL_MAP.json
 
-# Bundle experiments (production bundle is index-warlord-fix3.js)
+# Bundle experiments (production is index-warlord-fix3.js; fix2 is patch source)
 assets/index-warlord-fix3-live.js
 assets/index-warlord-hybrid.js
 assets/test-inject.js
 
-# GLB probes
+# GLB probes / temp bakes
 tmp-*.glb
+textures/*.tmp.png
 
-# Partial source imports (use import:baseline when needed)
+# Partial source imports (regenerate via import:baseline)
 src/grudge-warlords/_baseline-ref/
-src/grudge-warlords/canvas/

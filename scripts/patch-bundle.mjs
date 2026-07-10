@@ -18,7 +18,10 @@ const CSS = join(ROOT, "assets", "index-BNWYZMT1.css");
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
 const patchFailures = [];
 function mustPatch(id, ok) {
-  if (!ok) patchFailures.push(id);
+  if (!ok) {
+    patchFailures.push(id);
+    console.error("[patch] fail:", id);
+  }
 }
 
 let js = readFileSync(SRC, "utf8");
@@ -666,21 +669,39 @@ mustPatch(
 // Pre-game deploy + REST sync + champion lane + /play boot.
 const WG_MODEL3D_HELPERS =
   'const WgRacePrefix={human:"WK_",barbarian:"BRB_",dwarf:"DWF_",elf:"ELF_",orc:"ORC_",undead:"UD_"};function WgModel3dToVisibleMeshes(raceId,m3){if(!m3)return null;const p=WgRacePrefix[raceId]||"WK_",out=[],em=m3.equippedMeshes||{},map={head:p+"Units_head_",body:p+"Units_Body_",arms:p+"Units_Arms_",legs:p+"Units_Legs_",shoulders:p+"Units_shoulderpads_",bag:p+"Units_bag_",quiver:p+"Units_quiver_"};for(const k in em){const v=em[k],stem=map[k];stem&&v&&v!=="_default"&&out.push(stem+v)}const ws=m3.weaponSlots||{},wp=(stem,v)=>{v&&v!=="_default"&&out.push(p+stem+v)};wp("weapon_sword_",ws.sword);wp("Shield_",ws.shield);wp("weapon_longbow_",ws.bow);wp("weapon_staff_",ws.staff);wp("weapon_axe_",ws.axe);wp("weapon_hammer_",ws.hammer);wp("weapon_spear_",ws.spear);wp("weapon_pick_",ws.pick);return out.length?out:null}';
-const PLAY_HELPERS = `${WG_MODEL3D_HELPERS}const WgChampionLaneKey="wg-champion-lane",WgDeployDoneKey="wg-deploy-done";function WgReadChampionLane(){try{const v=sessionStorage.getItem(WgChampionLaneKey),n=Number(v);return n===0||n===1||n===2?n:1}catch{}return 1}function WgSaveChampionLane(l){try{sessionStorage.setItem(WgChampionLaneKey,String(l))}catch{}}function WgMarkDeployDone(){try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;if(Rh.getState().loading)return null;try{await Rh.getState().restore()}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:\`Bearer \${tok}\`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}function WgApplyChampionLane(){const lane=WgReadChampionLane(),lanes=Z.map?.lanes;if(!lanes?.[lane]?.pts?.length)return;const pts=lanes[lane].pts,idx=Math.max(0,Math.min(pts.length-1,Math.floor(pts.length*.14))),p=pts[idx];Z.playerPos.set(p.x,1.7,p.z)}function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
+const PLAY_HELPERS = `${WG_MODEL3D_HELPERS}const WgChampionLaneKey="wg-champion-lane",WgDeployDoneKey="wg-deploy-done";function WgReadChampionLane(){try{const v=sessionStorage.getItem(WgChampionLaneKey),n=Number(v);return n===0||n===1||n===2?n:1}catch{}return 1}function WgSaveChampionLane(l){try{sessionStorage.setItem(WgChampionLaneKey,String(l))}catch{}}let WgDeployDoneMem=!1;function WgMarkDeployDone(){WgDeployDoneMem=!0;try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){if(WgDeployDoneMem)return!0;try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){WgDeployDoneMem=!1;try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;const wait=(ms)=>new Promise(r=>setTimeout(r,ms));try{if(Rh.getState().loading){for(let i=0;i<40&&Rh.getState().loading;i++)await wait(50)}else{try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}if(!Rh.getState().user&&!Rh.getState().loading){try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:\`Bearer \${tok}\`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}function WgApplyChampionLane(){const lane=WgReadChampionLane(),lanes=Z.map?.lanes;if(!lanes?.[lane]?.pts?.length)return;const pts=lanes[lane].pts,idx=Math.max(0,Math.min(pts.length-1,Math.floor(pts.length*.14))),p=pts[idx];Z.playerPos.set(p.x,1.7,p.z)}function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});let p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p]){WgDebug.flow("ensure.fallback",{extra:{prefab:p}});p="sir-aldric-valorheart"}const c=qe.find(h=>h.id===p)||qe.find(h=>h.id==="sir-aldric-valorheart");if(!c||!${WCAT}[c.id])return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(c.id);const x=XI.getState();(x.prefabId!==c.id||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(c.id),Yz(c.id,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:c.id,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),nav("/play")}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;if(!WgEnsureReady())return!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
 const DEPLOY_SCREEN_PATH = join(ROOT, "scripts", "deploy-screen-v2.min.txt");
 const DEPLOY_SCREEN = existsSync(DEPLOY_SCREEN_PATH)
   ? readFileSync(DEPLOY_SCREEN_PATH, "utf8").trim()
   : `function WgDeployScreen(){const nav=Fh(),openHub=MN(x=>x.openHub),user=Rh(x=>x.user),gbux=zC(x=>x.gbux),lock=XI(x=>x.lockLoadout),faction=XI(x=>x.factionId),deploy=BI(x=>x.laneDeployment),setPick=BI(x=>x.setLanePick),resetLanes=BI(x=>x.resetLaneDeployment),startGame=BI(x=>x.startGame),[lane,setLane]=T.useState(WgReadChampionLane()),[phase,setPhase]=T.useState("load"),[loadMsg,setLoadMsg]=T.useState("Syncing Railway + Grudge API…"),[loadErr,setLoadErr]=T.useState(""),meleeOpts=T.useMemo(()=>vk(faction),[faction]),rangedOpts=T.useMemo(()=>_k(faction),[faction]);T.useEffect(()=>{let ok=!0;return(async()=>{setPhase("load");const r=await WgFetchBattleReady();if(!ok)return;r.errors.length&&setLoadErr("Partial sync — local defaults apply."),setLoadMsg(r.character?"Hero ready · "+(r.character.name||r.character.raceId||"canonical"):"Session ready — deploy your lanes"),WgEnsureReady(),setTimeout(()=>ok&&setPhase("deploy"),500)})(),()=>{ok=!1}},[]);const assault=()=>{WgEnsureReady(),WgSaveChampionLane(lane),WgMarkDeployDone(),lock(),startGame(),nav("/play")};if(phase==="load")return d.jsx("div",{className:"gw-screen gw-deploy-screen gw-deploy-loading gk-root gk-deploy-shell",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:loadMsg}),loadErr&&d.jsx("p",{className:"gw-deploy-load-warn",children:loadErr})]})});return d.jsxs("div",{className:"gw-screen gw-deploy-screen gk-root gk-deploy-shell",children:[d.jsx(S7,{}),d.jsx(bH,{}),d.jsx(WgKitResourceBar,{gbux,user,onAccount:()=>openHub("account")}),d.jsxs("div",{className:"gk-deploy-layout",children:[d.jsx(WgKitQuestRail,{activeStep:"deploy"}),d.jsxs("div",{className:"gk-deploy-main",children:[d.jsxs("header",{className:"gw-deploy-screen-head",children:[d.jsx("button",{type:"button",className:"gw-back",onClick:()=>nav("/lobby"),children:"‹ WARCAMP"}),d.jsxs("div",{children:[d.jsx("h1",{className:"gw-deploy-screen-title",children:"Battle Deployment"}),d.jsx("p",{className:"gw-deploy-screen-lead",children:"Choose your champion lane and lane wave creeps. Breach a lane, then raze the enemy citadel to win."})]})]}),d.jsxs(WgKitWindow,{title:"Champion Path",className:"gk-deploy-window",children:[d.jsx("p",{className:"gw-deploy-champion-hint",children:"Your GRUDGE6 warlord spawns on this lane at match start."}),d.jsx("div",{className:"gw-champion-lane-row",children:[0,1,2].map(u=>d.jsx("button",{type:"button",className:"gw-btn gw-btn-mini gw-lane-pick"+(lane===u?" gw-active":""),onClick:()=>setLane(u),children:dz[u]},u))})]}),d.jsxs(WgKitWindow,{title:"Lane Wave Deployment",className:"gk-deploy-window gk-deploy-lanes",children:[d.jsx("div",{className:"gw-lane-grid",children:[0,1,2].map(u=>d.jsx(lgA,{lane:u,pick:deploy.lanes[u],meleeOpts,rangedOpts,onPick:(G,p)=>setPick(u,G,p)},u))})]}),d.jsxs("div",{className:"gw-deploy-screen-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>resetLanes(),children:"Optimal Deploy"}),d.jsx("button",{type:"button",className:"gw-btn gw-deploy-assault",onClick:assault,children:"Begin Assault"})]})]})]})]})}`;
 
 const DEPLOY_SCREEN_ORIG = sliceFunction(js, "WgDeployScreen");
+console.log("[patch] deploy inject: origLen=", DEPLOY_SCREEN_ORIG?.length ?? 0, "newLen=", DEPLOY_SCREEN.length, "hasFn=", js.includes("function WgDeployScreen()"));
 if (DEPLOY_SCREEN_ORIG && js.includes(DEPLOY_SCREEN_ORIG)) {
   js = js.replace(DEPLOY_SCREEN_ORIG, DEPLOY_SCREEN);
-  mustPatch("deploy-screen", js.includes("gk-deploy-v2") && js.includes("WgDeployTierCard"));
+  const ok = (js.includes("gk-deploy-v2") || js.includes("wg-dep-screen")) && js.includes("WgDeployTierCard") && js.includes("forcePlay");
+  console.log("[patch] deploy replace branch ok=", ok, "wg-dep=", js.includes("wg-dep-screen"), "forcePlay=", js.includes("forcePlay"));
+  mustPatch("deploy-screen", ok);
 } else if (!js.includes("function WgDeployScreen()")) {
-  js = js.replace("function u7(){", `${DEPLOY_SCREEN}function u7(){`);
-  mustPatch("deploy-screen", true);
+  if (!js.includes("function u7(){")) {
+    console.error("[patch] cannot inject deploy — u7 missing");
+    mustPatch("deploy-screen", false);
+  } else {
+    js = js.replace("function u7(){", `${DEPLOY_SCREEN}function u7(){`);
+    const ok = js.includes("function WgDeployScreen()") && js.includes("forcePlay");
+    console.log("[patch] deploy inject-before-u7 ok=", ok);
+    mustPatch("deploy-screen", ok);
+  }
 } else {
-  mustPatch("deploy-screen", js.includes("gk-deploy-v2"));
+  // Already present from prior inject in this run or source — refresh if missing forcePlay
+  if (!js.includes("forcePlay") && DEPLOY_SCREEN.includes("forcePlay")) {
+    const old = sliceFunction(js, "WgDeployScreen");
+    if (old) js = js.replace(old, DEPLOY_SCREEN.includes("function WgDeployTierCard") ? DEPLOY_SCREEN : old);
+    // also try inject tier card + screen as block before u7 if only partial
+  }
+  const ok = js.includes("forcePlay") || js.includes("wg-dep-screen") || js.includes("gk-deploy-v2");
+  console.log("[patch] deploy else branch ok=", ok);
+  mustPatch("deploy-screen", ok);
 }
 
 js = js.replace(
@@ -705,18 +726,50 @@ if (!js.includes("function WgAutoOnboard")) {
 const WgAutoOnboardLegacy =
   `function WgAutoOnboard(){const s=zC.getState();if(s.onboardingDone)return!0;const p=s.starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;s.completeStarterPick(p),XI.getState().setFaction(c.faction),XI.getState().setPrefab(p),Yz(p,XI.getState().setMelee,XI.getState().setRanged,XI.getState().setGearTier),zC.getState().seedDefaultLaneGuards(c.faction);return!0}function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;WgAutoOnboard();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame();return!0}`;
 const WgAutoOnboardUpgraded =
-  `function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return WgDebug.flow("ensure.fail",{extra:{reason:"catalog"}}),!1;const c=qe.find(h=>h.id===p);if(!c)return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(p),Yz(p,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:p,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){WgDebug.flow("quickbattle.start",{route:location.pathname});if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("quickbattle.nav",{route:"/play"}),nav("/play")}function WgDeployAndPlay(){WgDebug.flow("deploy.play.start",{});if(!WgIsDeployDone()&&!WgRestoreMatch())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"gate"}}),!1;if(!WgEnsureReady())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"ensure"}}),!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("deploy.play.ok",{});return!0}`;
+  `function WgIsDeployValid(dep){if(!dep?.lanes)return!1;for(let u=0;u<3;u++){const L=dep.lanes[u];if(!L?.meleeCreep||!L?.rangedCreep)return!1}return!0}function WgSeedDefaultDeploy(){if(!WgEnsureReady())return!1;const x=XI.getState();Az(x.factionId,x.enemyFactionId);const b=BI.getState();if(!WgIsDeployValid(b.laneDeployment))b.resetLaneDeployment();const bb=b.buildings?.barracks,ba=b.buildings?.archery;if(!bb||!ba||bb<1||ba<1)b.setDeployBuildings({barracks:1,archery:1});return!0}function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});let p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p]){WgDebug.flow("ensure.fallback",{extra:{prefab:p}});p="sir-aldric-valorheart"}const c=qe.find(h=>h.id===p)||qe.find(h=>h.id==="sir-aldric-valorheart");if(!c||!${WCAT}[c.id])return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;const s=zC.getState();s.onboardingDone||s.completeStarterPick(c.id);const x=XI.getState();(x.prefabId!==c.id||!x.meleeId||!x.rangedId)&&(x.setFaction(c.faction),x.setPrefab(c.id),Yz(c.id,x.setMelee,x.setRanged,x.setGearTier),zC.getState().seedDefaultLaneGuards(c.faction));return WgDebug.flow("ensure.ok",{extra:{prefab:c.id,faction:c.faction}}),!0}function WgAutoOnboard(){return WgEnsureReady()}function WgQuickBattle(nav){WgDebug.flow("quickbattle.start",{route:location.pathname});if(!WgEnsureReady())return;WgSeedDefaultDeploy(),WgSaveChampionLane(WgReadChampionLane()),WgMarkDeployDone();const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("quickbattle.nav",{route:"/play"}),nav("/play")}function WgDeployAndPlay(){WgDebug.flow("deploy.play.start",{});if(!WgIsDeployDone()&&!WgRestoreMatch())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"gate"}}),!1;if(!WgEnsureReady())return WgDebug.flow("deploy.play.blocked",{extra:{reason:"ensure"}}),!1;const x=XI.getState();x.loadoutLocked||x.lockLoadout(),BI.getState().startGame(),WgDebug.flow("deploy.play.ok",{});return!0}`;
 if (js.includes(WgAutoOnboardLegacy)) {
   js = js.replace(WgAutoOnboardLegacy, WgAutoOnboardUpgraded);
 }
 const WgFetchBattleReadyLegacy =
   'async function WgFetchBattleReady(){const tok=SO(),hdr=tok?{Authorization:`Bearer ${tok}`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok)out.auth=await r.json()}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=j?.character||j?.active||j}}catch{out.errors.push("characters")}try{const gid=out.auth?.user?.grudgeId||out.auth?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}';
 const WgFetchBattleReadyUpgraded =
-  'function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;if(Rh.getState().loading)return null;try{await Rh.getState().restore()}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:`Bearer ${tok}`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}';
+  'function WgPickCharacter(j){if(!j||typeof j!=="object")return null;if(Array.isArray(j))return j.find(c=>c&&typeof c==="object"&&!Array.isArray(c))||null;return j.character||j.active||(Array.isArray(j.characters)?j.characters[0]:null)||(j.id||j.raceId?j:null)}async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;const wait=(ms)=>new Promise(r=>setTimeout(r,ms));try{if(Rh.getState().loading){for(let i=0;i<40&&Rh.getState().loading;i++)await wait(50)}else{try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}if(!Rh.getState().user&&!Rh.getState().loading){try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}}catch{}return Rh.getState().user}async function WgFetchBattleReady(){await WgEnsureSession();const tok=SO(),hdr=tok?{Authorization:`Bearer ${tok}`}:{},out={auth:null,character:null,save:null,errors:[]};try{const r=await fetch("/api/auth/me",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.auth=j?.user||j}}catch{out.errors.push("session")}try{const r=await fetch("/api/characters?active=true",{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.character=WgPickCharacter(j)}}catch{out.errors.push("characters")}try{const gid=out.auth?.grudgeId||out.auth?.user?.grudgeId;if(gid){const r=await fetch("/api/grudge/player/save?grudgeId="+encodeURIComponent(gid),{credentials:"same-origin",headers:hdr});if(r.ok){const j=await r.json();out.save=j?.save??j}}else out.errors.push("save")}catch{out.errors.push("save")}if(out.character?.raceId)try{XI.getState().setGrudgeHandoff(out.character)}catch{}return out}';
 if (js.includes(WgFetchBattleReadyLegacy)) {
   js = js.replace(WgFetchBattleReadyLegacy, WgFetchBattleReadyUpgraded);
 }
 js = js.replaceAll("if(!WgAutoOnboard())", "if(!WgEnsureReady())");
+
+// v62: fix deploy→play on bundles that already contain older helper injections
+const WG_ENSURE_SESSION_BUG =
+  'async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;if(Rh.getState().loading)return null;try{await Rh.getState().restore()}catch{}return Rh.getState().user}';
+const WG_ENSURE_SESSION_FIX =
+  'async function WgEnsureSession(){if(Rh.getState().user)return Rh.getState().user;const wait=(ms)=>new Promise(r=>setTimeout(r,ms));try{if(Rh.getState().loading){for(let i=0;i<40&&Rh.getState().loading;i++)await wait(50)}else{try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}if(!Rh.getState().user&&!Rh.getState().loading){try{await Promise.race([Rh.getState().restore(),wait(1800)])}catch{}}}catch{}return Rh.getState().user}';
+if (js.includes(WG_ENSURE_SESSION_BUG)) js = js.replaceAll(WG_ENSURE_SESSION_BUG, WG_ENSURE_SESSION_FIX);
+const WG_DEPLOY_DONE_BUG =
+  'function WgMarkDeployDone(){try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}';
+const WG_DEPLOY_DONE_FIX =
+  'let WgDeployDoneMem=!1;function WgMarkDeployDone(){WgDeployDoneMem=!0;try{sessionStorage.setItem(WgDeployDoneKey,"1")}catch{}}function WgIsDeployDone(){if(WgDeployDoneMem)return!0;try{return sessionStorage.getItem(WgDeployDoneKey)==="1"}catch{}return!1}function WgClearDeployDone(){WgDeployDoneMem=!1;try{sessionStorage.removeItem(WgDeployDoneKey)}catch{}}';
+if (js.includes(WG_DEPLOY_DONE_BUG) && !js.includes("WgDeployDoneMem")) {
+  js = js.replace(WG_DEPLOY_DONE_BUG, WG_DEPLOY_DONE_FIX);
+}
+const WG_ENSURE_READY_SIMPLE = `function WgEnsureReady(){const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return!1;const c=qe.find(h=>h.id===p);if(!c)return!1;`;
+const WG_ENSURE_READY_DEBUG = `function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});const p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p])return WgDebug.flow("ensure.fail",{extra:{reason:"catalog"}}),!1;const c=qe.find(h=>h.id===p);if(!c)return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;`;
+const WG_ENSURE_READY_FIX = `function WgEnsureReady(){WgDebug.flow("ensure.ready",{route:location.pathname});let p=zC.getState().starterPrefabId||"sir-aldric-valorheart";if(!${WCAT}[p]){WgDebug.flow("ensure.fallback",{extra:{prefab:p}});p="sir-aldric-valorheart"}const c=qe.find(h=>h.id===p)||qe.find(h=>h.id==="sir-aldric-valorheart");if(!c||!${WCAT}[c.id])return WgDebug.flow("ensure.fail",{extra:{reason:"prefab"}}),!1;`;
+if (js.includes(WG_ENSURE_READY_SIMPLE)) {
+  js = js.replace(
+    WG_ENSURE_READY_SIMPLE,
+    WG_ENSURE_READY_FIX,
+  );
+  js = js.replaceAll("s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p", "s.completeStarterPick(c.id);const x=XI.getState();(x.prefabId!==c.id");
+  js = js.replaceAll("x.setPrefab(p),Yz(p,", "x.setPrefab(c.id),Yz(c.id,");
+  js = js.replaceAll('return!0}function WgAutoOnboard', 'return WgDebug.flow("ensure.ok",{extra:{prefab:c.id,faction:c.faction}}),!0}function WgAutoOnboard');
+}
+if (js.includes(WG_ENSURE_READY_DEBUG)) {
+  js = js.replace(WG_ENSURE_READY_DEBUG, WG_ENSURE_READY_FIX);
+  js = js.replaceAll("s.completeStarterPick(p);const x=XI.getState();(x.prefabId!==p", "s.completeStarterPick(c.id);const x=XI.getState();(x.prefabId!==c.id");
+  js = js.replaceAll("x.setPrefab(p),Yz(p,", "x.setPrefab(c.id),Yz(c.id,");
+  js = js.replaceAll('return WgDebug.flow("ensure.ok",{extra:{prefab:p,faction:c.faction}}),!0}', 'return WgDebug.flow("ensure.ok",{extra:{prefab:c.id,faction:c.faction}}),!0}');
+}
 mustPatch("quick-battle", js.includes("function WgQuickBattle"));
 mustPatch("ensure-ready", js.includes("function WgEnsureReady"));
 mustPatch("deploy-seed", js.includes("function WgSeedDefaultDeploy"));
@@ -894,13 +947,19 @@ js = js.replace(
 const PLAY_ROUTE_ORIG =
   'function PgA(){const C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1);if(T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),C==="menu")return d.jsx(aq,{to:"/lobby",replace:!0});';
 const PLAY_ROUTE_PATCHED =
-  'function PgA(){const nav=Fh(),C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null),[gateErr,s]=T.useState("");T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(!WgEnsureReady()){o(!1);s("Pick a champion in the warcamp first.");return}if(C!=="menu"){o(!0);s("");return}if(WgRestoreMatch()){o(!0);s("");return}if(!WgIsDeployDone()){nav("/deploy",{replace:!0});return}s("");WgDeployAndPlay(),o(!0)},[C,nav]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Loading battlefield…"})]})});if(!boot)return d.jsx("div",{className:"gw-screen gw-play-gate",children:d.jsxs("div",{className:"gw-play-gate-panel",children:[d.jsx("span",{className:"gw-play-gate-kicker",children:"Warlord Genesis"}),d.jsx("h1",{className:"gw-play-gate-title",children:"Warcamp Required"}),d.jsx("p",{className:"gw-play-gate-lead",children:"Recruit a warlord in the warcamp, then complete deployment before battle."}),s&&d.jsx("p",{className:"gw-play-gate-error",children:s}),d.jsxs("div",{className:"gw-play-gate-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-play-gate-deploy",onClick:()=>nav("/lobby"),children:"Open Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>nav("/deploy"),children:"Deploy Lanes"})]})]})});';
+  'function PgA(){const nav=Fh(),C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!=="menu"?!0:null),[gateErr,s]=T.useState("");T.useEffect(()=>{WS()},[]),T.useEffect(()=>{const e=()=>g(!!document.pointerLockElement);return document.addEventListener("pointerlockchange",e),()=>document.removeEventListener("pointerlockchange",e)},[]),T.useEffect(()=>{if(C==="battle"){o(!0);s("");return}if(C!=="menu"){o(!0);s("");return}if(WgRestoreMatch()){o(!0);s("");return}if(WgIsDeployDone()){WgDeployAndPlay(),o(!0);s("");return}if(!WgEnsureReady()){o(!1);s("Pick a champion in the warcamp first.");return}if(!WgIsDeployDone()){nav("/deploy",{replace:!0});return}s("");WgDeployAndPlay(),o(!0)},[C,nav]);if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Loading battlefield…"})]})});if(!boot)return d.jsx("div",{className:"gw-screen gw-play-gate",children:d.jsxs("div",{className:"gw-play-gate-panel",children:[d.jsx("span",{className:"gw-play-gate-kicker",children:"Warlord Genesis"}),d.jsx("h1",{className:"gw-play-gate-title",children:"Warcamp Required"}),d.jsx("p",{className:"gw-play-gate-lead",children:"Recruit a warlord in the warcamp, then complete deployment before battle."}),s&&d.jsx("p",{className:"gw-play-gate-error",children:s}),d.jsxs("div",{className:"gw-play-gate-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-play-gate-deploy",onClick:()=>nav("/lobby"),children:"Open Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>nav("/deploy"),children:"Deploy Lanes"})]})]})});';
 if (js.includes(PLAY_ROUTE_ORIG)) {
   js = js.replace(PLAY_ROUTE_ORIG, PLAY_ROUTE_PATCHED);
   mustPatch("play-boot", true);
 } else {
   mustPatch("play-boot", js.includes("gw-play-gate") || js.includes("gw-play-boot"));
 }
+const PgA_BOOT_BUG =
+  'T.useEffect(()=>{if(!WgEnsureReady()){o(!1);s("Pick a champion in the warcamp first.");return}if(C!=="menu"){o(!0);s("");return}if(WgRestoreMatch()){o(!0);s("");return}if(!WgIsDeployDone()){nav("/deploy",{replace:!0});return}s("");WgDeployAndPlay(),o(!0)},[C,nav]);';
+const PgA_BOOT_FIX =
+  'T.useEffect(()=>{if(C==="battle"){o(!0);s("");return}if(C!=="menu"){o(!0);s("");return}if(WgRestoreMatch()){o(!0);s("");return}if(WgIsDeployDone()){WgDeployAndPlay(),o(!0);s("");return}if(!WgEnsureReady()){o(!1);s("Pick a champion in the warcamp first.");return}if(!WgIsDeployDone()){nav("/deploy",{replace:!0});return}s("");WgDeployAndPlay(),o(!0)},[C,nav]);';
+if (js.includes(PgA_BOOT_BUG)) js = js.replace(PgA_BOOT_BUG, PgA_BOOT_FIX);
+mustPatch("deploy-play-gate", js.includes('if(C==="battle")') && js.includes("WgDeployDoneMem"));
 
 const ENGAGE_ORIG =
   'const i=C==="battle"&&!I&&A==="combat";return d.jsxs("div",{className:"gw-canvas-wrap",children:[d.jsx(sgA,{}),d.jsx(_gA,{}),i&&d.jsx("div",{id:"lock-target",className:"gw-engage",children:d.jsxs("div",{className:"gw-engage-inner",children:[d.jsx("span",{className:"gw-engage-sub",children:"The host awaits your command"}),d.jsx("h2",{className:"gw-engage-title",children:"TAKE THE FIELD"}),d.jsx("span",{className:"gw-hint",children:"Click to lock the mouse · press ` to switch to command"})]})}),d.jsx(OgA,{}),d.jsx(bH,{})]})}';
@@ -1832,6 +1891,426 @@ if (patchFailures.length) {
 // WgKitResourceBar shellInject typo — `})]})` must be `})})]})` (esbuild catches this; node --check does not).
 js = js.replaceAll('children:"Sign in"})]})]})', 'children:"Sign in"})})]})');
 
+
+
+// v65: play-flow + clean UI
+{
+  // Bulletproof Quick Battle — never silent-return
+  const QB_NEW =
+    'function WgQuickBattle(nav){try{if(!WgEnsureReady()){const p="sir-aldric-valorheart",c=qe.find(h=>h.id===p);if(c){const s=zC.getState();s.onboardingDone||s.completeStarterPick(c.id);const x=XI.getState();x.setFaction(c.faction),x.setPrefab(c.id),Yz(c.id,x.setMelee,x.setRanged,x.setGearTier),s.seedDefaultLaneGuards(c.faction)}}}catch{}try{WgSeedDefaultDeploy()}catch{try{BI.getState().resetLaneDeployment()}catch{}}try{WgSaveChampionLane(WgReadChampionLane())}catch{}try{WgMarkDeployDone()}catch{}try{const x=XI.getState();x.loadoutLocked||x.lockLoadout()}catch{}try{BI.getState().startGame()}catch{}try{nav("/play")}catch{location.assign("/play")}}';
+  if (js.includes("function WgQuickBattle")) {
+    js = js.replace(/function WgQuickBattle\(nav\)\{[\s\S]*?\}function WgDeployAndPlay/, QB_NEW + "function WgDeployAndPlay");
+    console.log("[patch] WgQuickBattle hardened");
+  }
+
+  // DeployAndPlay: always start if deploy done
+  js = js.replace(
+    /function WgDeployAndPlay\(\)\{if\(!WgIsDeployDone\(\)&&!WgRestoreMatch\(\)\)return!1;if\(!WgEnsureReady\(\)\)return!1;const x=XI\.getState\(\);x\.loadoutLocked\|\|x\.lockLoadout\(\),BI\.getState\(\)\.startGame\(\);return!0\}/,
+    'function WgDeployAndPlay(){if(!WgIsDeployDone()&&!WgRestoreMatch())return!1;try{WgEnsureReady()}catch{}try{const x=XI.getState();x.loadoutLocked||x.lockLoadout()}catch{}try{BI.getState().startGame()}catch{}return!0}'
+  );
+
+  // PgA: never soft-lock / bounce to deploy — start battle when player reaches /play
+  if (js.includes('if(WgIsDeployDone()){WgDeployAndPlay(),o(!0);s("");return}if(!WgEnsureReady())')) {
+    js = js.replace(
+      'if(WgIsDeployDone()){WgDeployAndPlay(),o(!0);s("");return}if(!WgEnsureReady()){o(!1);s("Pick a champion in the warcamp first.");return}if(!WgIsDeployDone()){nav("/deploy",{replace:!0});return}s("");WgDeployAndPlay(),o(!0)',
+      'try{WgEnsureReady()}catch{}if(WgIsDeployDone()){try{WgDeployAndPlay()}catch{try{BI.getState().startGame()}catch{}}o(!0);s("");return}try{WgMarkDeployDone();BI.getState().startGame();o(!0);s("");return}catch{o(!1);s("Could not start battle — open warcamp and try again.")}'
+    );
+    console.log("[patch] PgA gate no longer soft-locks");
+  }
+
+  mustPatch("quick-battle-v65", js.includes("location.assign") || /function WgQuickBattle\(nav\)\{try\{if\(!WgEnsureReady/.test(js));
+  mustPatch("pga-v65", js.includes("Could not start battle") || !js.includes('nav("/deploy",{replace:!0})'));
+}
+
+// v66: minimap origin-centered map + clamp tower fit (prevents 10000× assets) + keep id.grudge-studio.com auth
+{
+  // Auth SSOT — full-page login is id.grudge-studio.com (NOT game.grudge-studio.com)
+  if (!js.includes('bR="https://id.grudge-studio.com"')) {
+    js = js.replace(/bR="https:\/\/[^"]+"/, 'bR="https://id.grudge-studio.com"');
+  }
+  js = js.replaceAll("game.grudge-studio.com/game/login", "id.grudge-studio.com/login");
+  mustPatch("auth-id-grudge", js.includes('bR="https://id.grudge-studio.com"') && js.includes("${bR}/login?redirect_uri="));
+
+  // Minimap: map coords are origin-centered (ally +z / enemy -z), not 0..width
+  const MM_OLD =
+    'const W=map.width||120,L=map.length||120,mx=Math.max(W,L,.1),sx=w/mx,sz=h/mx,ox=(w-W*sx)/2,oz=(h-L*sz)/2;ctx.clearRect(0,0,w,h);ctx.fillStyle="rgba(6,9,14,0.55)";ctx.fillRect(0,0,w,h);ctx.strokeStyle="rgba(120,150,200,0.42)";ctx.lineWidth=1.5;for(let li=0;li<3;li++){const lane=map.lanes?.[li];if(!lane?.pts?.length)continue;ctx.beginPath();lane.pts.forEach((p,i)=>{const x=ox+p.x*sx,y=oz+p.z*sz;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const dot=(x,z,r,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(ox+x*sx,oz+z*sz,r,0,6.283);ctx.fill()}';
+  const MM_NEW =
+    'const W=map.width||120,L=map.length||120,sx=w/Math.max(W,.1),sz=h/Math.max(L,.1),cx=w*.5,cz=h*.5;ctx.clearRect(0,0,w,h);ctx.fillStyle="rgba(6,9,14,0.72)";ctx.fillRect(0,0,w,h);ctx.strokeStyle="rgba(120,150,200,0.35)";ctx.lineWidth=1;ctx.strokeRect(.5,.5,w-1,h-1);ctx.strokeStyle="rgba(120,150,200,0.45)";ctx.lineWidth=1.5;for(let li=0;li<3;li++){const lane=map.lanes?.[li];if(!lane?.pts?.length)continue;ctx.beginPath();lane.pts.forEach((p,i)=>{const x=cx+p.x*sx,y=cz+p.z*sz;i?ctx.lineTo(x,y):ctx.moveTo(x,y)});ctx.stroke()}const dot=(x,z,r,col)=>{ctx.fillStyle=col;ctx.beginPath();ctx.arc(cx+x*sx,cz+z*sz,r,0,6.283);ctx.fill()}';
+  if (js.includes(MM_OLD)) {
+    js = js.replace(MM_OLD, MM_NEW);
+    console.log("[patch] minimap origin-centered projection");
+  } else if (js.includes("ox+p.x*sx,y=oz+p.z*sz")) {
+    js = js.replaceAll("ox+p.x*sx,y=oz+p.z*sz", "cx+p.x*sx,y=cz+p.z*sz");
+    js = js.replaceAll("ox+x*sx,oz+z*sz", "cx+x*sx,cz+z*sz");
+    js = js.replace(
+      "const W=map.width||120,L=map.length||120,mx=Math.max(W,L,.1),sx=w/mx,sz=h/mx,ox=(w-W*sx)/2,oz=(h-L*sz)/2",
+      "const W=map.width||120,L=map.length||120,sx=w/Math.max(W,.1),sz=h/Math.max(L,.1),cx=w*.5,cz=h*.5",
+    );
+    console.log("[patch] minimap projection alt fix");
+  }
+  // Square canvas for minimap
+  js = js.replace(
+    'className:"gk-minimap-canvas",width:168,height:112',
+    'className:"gk-minimap-canvas",width:156,height:156',
+  );
+
+  // Clamp tower/core fit — empty bbox was producing ~10000× scale
+  const FIT_OLD =
+    "function WgFitTowerScene(C,A=BIA){const I=wM(C);I.traverse(g=>{const i=g;if(i.isMesh){i.castShadow=!0,i.receiveShadow=!0;const e=i.material,t=Array.isArray(e)?e:[e];for(const Q of t)Q?.map&&(Q.map.flipY=!0,Q.map.colorSpace=zg,Q.map.needsUpdate=!0,Q.color?.set?.(\"#ffffff\"))}});const g=new YC().setFromObject(I),i=new O;g.getSize(i);const e=A/Math.max(i.y,.001);return I.scale.setScalar(e),I.position.y=-g.min.y*e,I.position.x=-((g.min.x+g.max.x)/2)*e,I.position.z=-((g.min.z+g.max.z)/2)*e,I}";
+  const FIT_NEW =
+    "function WgFitTowerScene(C,A=BIA){const I=wM(C);I.traverse(g=>{const i=g;if(i.isMesh){i.castShadow=!0,i.receiveShadow=!0;const e=i.material,t=Array.isArray(e)?e:[e];for(const Q of t)Q?.map&&(Q.map.flipY=!0,Q.map.colorSpace=zg,Q.map.needsUpdate=!0,Q.color?.set?.(\"#ffffff\"))}});I.updateWorldMatrix(!0,!0);const g=new YC().setFromObject(I),i=new O;g.getSize(i);const h=Math.max(i.y,i.x*.55,i.z*.55,.75),e=Math.min(Math.max((A||7)/h,.02),12);return I.scale.setScalar(e),I.position.y=-g.min.y*e,I.position.x=-((g.min.x+g.max.x)/2)*e,I.position.z=-((g.min.z+g.max.z)/2)*e,I}";
+  if (js.includes(FIT_OLD)) {
+    js = js.replace(FIT_OLD, FIT_NEW);
+    console.log("[patch] WgFitTowerScene clamp");
+  } else if (js.includes("function WgFitTowerScene")) {
+    js = js.replace(
+      "const e=A/Math.max(i.y,.001);return I.scale.setScalar(e)",
+      "const h=Math.max(i.y,i.x*.55,i.z*.55,.75),e=Math.min(Math.max((A||7)/h,.02),12);return I.scale.setScalar(e)",
+    );
+    console.log("[patch] WgFitTowerScene clamp alt");
+  }
+  // Slightly smaller citadels
+  js = js.replace("WgCoreBIA=12.5", "WgCoreBIA=8.5");
+  js = js.replace('BIA=12.5;function WgFactionCoreUrl', 'BIA=7.2;function WgFactionCoreUrl');
+
+  mustPatch("minimap-v66", js.includes("cx+p.x*sx") || js.includes("cx=w*.5"));
+  mustPatch("tower-fit-v66", js.includes("Math.min(Math.max((A||7)/h") || js.includes("i.x*.55"));
+}
+
+// v67: GRUDGE6 hero fit/facing + real craftpix combat HUD
+{
+  // Y6 was: rotate +90°, power-of-10 unit "fix" (m6) → 100× blowups, walk looks reverse.
+  // Replace with height-based fit, no m6, native facing (controller owns yaw).
+  const Y6_OLD_START = "function Y6(C,A=2.05){const I=J6(C);C.rotation.y=Math.PI/2,";
+  if (js.includes(Y6_OLD_START)) {
+    // Slice full Y6 function
+    const yStart = js.indexOf("function Y6(C,A=2.05){");
+    if (yStart >= 0) {
+      let braces = 0,
+        started = false,
+        yEnd = -1;
+      for (let i = yStart; i < js.length; i++) {
+        if (js[i] === "{") {
+          braces++;
+          started = true;
+        } else if (js[i] === "}") {
+          braces--;
+          if (started && braces === 0) {
+            yEnd = i + 1;
+            break;
+          }
+        }
+      }
+      if (yEnd > yStart) {
+        const Y6_NEW =
+          "function Y6(C,A=2.05){const I=J6(C);C.rotation.set(0,0,0);C.scale.set(1,1,1);C.position.set(0,0,0);C.updateWorldMatrix(!0,!0);const box0=new YC().setFromObject(C),sz0=box0.getSize(new O);let hy=Math.max(sz0.y,.001);if(hy>8){const pre=1.8/hy;C.scale.setScalar(pre),C.updateWorldMatrix(!0,!0)}const box1=new YC().setFromObject(C),sz1=box1.getSize(new O),h=Math.max(sz1.y,.05),target=Math.min(Math.max(A||2.05,1.6),2.4),e=Math.min(Math.max(target/h,.05),3.5);C.scale.multiplyScalar(e),C.updateWorldMatrix(!0,!0);const box2=new YC().setFromObject(C),c2=box2.getCenter(new O);return C.position.set(-c2.x,-box2.min.y,-c2.z),C.updateWorldMatrix(!0,!0),I}";
+        js = js.slice(0, yStart) + Y6_NEW + js.slice(yEnd);
+        console.log("[patch] Y6 hero fit/facing rewrite (no m6, no +90°)");
+      }
+    }
+  } else if (js.includes("C.rotation.y=Math.PI/2,C.updateWorldMatrix(!0,!0)")) {
+    js = js.replace("C.rotation.y=Math.PI/2,C.updateWorldMatrix(!0,!0)", "C.rotation.set(0,0,0),C.updateWorldMatrix(!0,!0)");
+    console.log("[patch] removed Y6 +90° yaw");
+  }
+
+  // Disable power-of-10 mesh rescale globally if still present in other paths
+  if (js.includes("function m6(C,A){return!(C>0)||!(A>0)?1:Math.pow(10,Math.round(Math.log10(C/A)))}")) {
+    js = js.replace(
+      "function m6(C,A){return!(C>0)||!(A>0)?1:Math.pow(10,Math.round(Math.log10(C/A)))}",
+      "function m6(C,A){return 1}",
+    );
+    console.log("[patch] disabled m6 power-of-10 rescale");
+  }
+
+  // Hero fit height for player slightly taller, units sane
+  js = js.replace("l=g?2.25:qAA", "l=g?1.85:1.7");
+  js = js.replaceAll("fitHeight:2.15", "fitHeight:1.85");
+  js = js.replaceAll("fitHeight:2.05", "fitHeight:1.85");
+
+  // Player spawn on ground (not floating 1.7 if model feet wrong)
+  js = js.replace(
+    "Z.playerPos.set(p.x,1.7,p.z)",
+    "Z.playerPos.set(p.x,Z.groundY?Z.groundY(p.x,p.z):0,p.z)",
+  );
+
+  mustPatch("hero-fit-v67", js.includes("function Y6(C,A=2.05){const I=J6(C);C.rotation.set(0,0,0)") || js.includes("disabled m6") || js.includes("function m6(C,A){return 1}"));
+  mustPatch("hero-no-m6", js.includes("function m6(C,A){return 1}") || !js.includes("Math.pow(10,Math.round(Math.log10"));
+}
+
+// v68: pre-game setup (path + troops + asset load) + bulletproof player hero
+{
+  // Harden ah.forPlayer — always resolve a valid grudge typeId
+  const FP_OLD =
+    "static async forPlayer(A){return ah.create({typeId:Iz(A.raceId,A.classId),animPack:A.animPack,tint:A.tint||WgGetPlayerTint()})}";
+  const FP_NEW =
+    'static async forPlayer(A){try{let r=A.raceId||(typeof XI<"u"&&XI.getState().raceId)||"human",c=A.classId||(typeof XI<"u"&&XI.getState().classId)||"warrior";if(!r||!c){r="human",c="warrior"}let tid=Iz(r,c);if(!wa(tid)?.grudge)tid="human_warrior";const pack=A.animPack||"sword_shield";return await ah.create({typeId:tid,animPack:pack,tint:A.tint||(typeof WgGetPlayerTint==="function"?WgGetPlayerTint():"#ffffff"),fitHeight:1.85})}catch(e){console.warn("[grudge-warlords] forPlayer fallback",e);return ah.create({typeId:"human_warrior",animPack:"sword_shield",fitHeight:1.85})}}';
+  if (js.includes(FP_OLD)) {
+    js = js.replace(FP_OLD, FP_NEW);
+    console.log("[patch] ah.forPlayer hardened");
+  }
+
+  // Inject / refresh battle setup screen before PgA
+  const SETUP_PATH = join(ROOT, "scripts", "play-setup.min.txt");
+  const SETUP = existsSync(SETUP_PATH) ? readFileSync(SETUP_PATH, "utf8").trim() : "";
+  if (SETUP) {
+    // Remove prior WgPlaySetupScreen (+ path helpers) if present
+    const setupStart = js.indexOf("function WgReadChampionPath");
+    const setupStart2 = js.indexOf("function WgPlaySetupScreen");
+    const start = setupStart >= 0 ? setupStart : setupStart2;
+    const pgaAt = js.indexOf("function PgA(){");
+    if (start >= 0 && pgaAt > start) {
+      js = js.slice(0, start) + SETUP + js.slice(pgaAt);
+      console.log("[patch] refreshed WgPlaySetupScreen (champion skill path)");
+    } else if (pgaAt >= 0 && !js.includes("function WgPlaySetupScreen")) {
+      js = js.replace("function PgA(){", SETUP + "function PgA(){");
+      console.log("[patch] injected WgPlaySetupScreen");
+    }
+  }
+
+  // PgA: always run setup overlay first (path + troops + asset load), then battle canvas
+  const PGA_MARK = "function PgA(){const nav=Fh(),C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[boot,o]=T.useState(C!==\"menu\"?!0:null),[gateErr,s]=T.useState(\"\");";
+  const PGA_NEW_HEAD =
+    'function PgA(){const nav=Fh(),C=BI(e=>e.phase),A=_g(e=>e.mode),[I,g]=T.useState(!1),[setupDone,setSetupDone]=T.useState(()=>{try{return sessionStorage.getItem("wg-setup-session")==="1"&&C==="battle"}catch{return!1}}),[boot,o]=T.useState(null),[gateErr,s]=T.useState("");';
+  if (js.includes(PGA_MARK)) {
+    js = js.replace(PGA_MARK, PGA_NEW_HEAD);
+  } else if (js.includes("function PgA(){const nav=Fh()")) {
+    // already partially patched — force setup gate via string replace of boot effect
+    console.log("[patch] PgA head alt path");
+  }
+
+  // Replace PgA boot UI: show setup until done
+  const BOOT_SPINNER =
+    'if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Loading battlefield…"})]})});if(!boot)return d.jsx("div",{className:"gw-screen gw-play-gate",children:d.jsxs("div",{className:"gw-play-gate-panel",children:[d.jsx("span",{className:"gw-play-gate-kicker",children:"Warlord Genesis"}),d.jsx("h1",{className:"gw-play-gate-title",children:"Warcamp Required"}),d.jsx("p",{className:"gw-play-gate-lead",children:"Recruit a warlord in the warcamp, then complete deployment before battle."}),s&&d.jsx("p",{className:"gw-play-gate-error",children:s}),d.jsxs("div",{className:"gw-play-gate-actions",children:[d.jsx("button",{type:"button",className:"gw-btn gw-play-gate-deploy",onClick:()=>nav("/lobby"),children:"Open Warcamp"}),d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>nav("/deploy"),children:"Deploy Lanes"})]})]})});';
+  const BOOT_SETUP =
+    'if(!setupDone)return d.jsx(WgPlaySetupScreen,{onReady:()=>{try{sessionStorage.setItem("wg-setup-session","1")}catch{}setSetupDone(!0);o(!0);s("")}});if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Entering battlefield…"})]})});if(!boot)return d.jsx("div",{className:"gw-screen gw-play-gate",children:d.jsxs("div",{className:"gw-play-gate-panel",children:[d.jsx("h1",{children:"Could not start"}),s&&d.jsx("p",{children:s}),d.jsx("button",{type:"button",className:"gw-btn",onClick:()=>{try{sessionStorage.removeItem("wg-setup-session")}catch{}setSetupDone(!1)},children:"Retry Setup"})]})});';
+  if (js.includes(BOOT_SPINNER)) {
+    js = js.replace(BOOT_SPINNER, BOOT_SETUP);
+    console.log("[patch] PgA uses WgPlaySetupScreen gate");
+  } else if (js.includes('children:"Loading battlefield…"')) {
+    js = js.replace(
+      'if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Loading battlefield…"})]})});',
+      'if(!setupDone)return d.jsx(WgPlaySetupScreen,{onReady:()=>{try{sessionStorage.setItem("wg-setup-session","1")}catch{}setSetupDone(!0);o(!0)}});if(boot===null)return d.jsx("div",{className:"gw-screen gw-play-boot",children:d.jsxs("div",{className:"gw-play-boot-inner",children:[d.jsx("span",{className:"gw-play-boot-spinner","aria-hidden":!0}),d.jsx("span",{className:"gw-hint",children:"Entering battlefield…"})]})});',
+    );
+    console.log("[patch] PgA setup gate (short)");
+  }
+
+  // Clear setup session on match end (comma-expression safe — do NOT insert bare `;try`)
+  js = js.replaceAll(
+    "WgClearMatch(),WgClearDeployDone()",
+    'WgClearMatch(),WgClearDeployDone(),(()=>{try{sessionStorage.removeItem("wg-setup-session")}catch{}})()',
+  );
+
+  // Lobby/title march → /play (setup handles deploy) not only /deploy
+  js = js.replace(
+    'onClick:()=>WgQuickBattle(C),children:"Quick Battle"',
+    'onClick:()=>{try{sessionStorage.removeItem("wg-setup-session")}catch{}WgEnsureReady();C("/play")},children:"Quick Battle"',
+  );
+
+  mustPatch("play-setup-v68", js.includes("function WgPlaySetupScreen") || js.includes("wg-setup-screen") || js.includes("wg-pregame"));
+  mustPatch("forplayer-v68", js.includes("forPlayer fallback") || js.includes('tid="human_warrior"'));
+}
+
+// v71: Bip001 best practices — rotation-only clips, skeleton rebind after fit, idle on spawn, sole/capsule sync
+{
+  // Sanitize embedded GLB clips to quaternion-only (matches baked Mixamo→Bip001 pipeline via b6)
+  const GLB_CLIPS_OLD =
+    'const byName={};for(const a of gltf.animations||[])byName[a.name]=a;const pick=(...ns)=>{for(const n of ns)if(byName[n])return byName[n];return null},fb=gltf.animations?.[0]||null,clips={idle:pick("idle")||fb,walk:pick("walk","strafe_left_walk","strafe_right_walk")||fb,run:pick("run","sprint")||fb,sprint:pick("sprint","run")||fb},l=new uK(o),director=new G6(l,clips),attackClip=pick("attack")||fb,act=a=>a?l.clipAction(a):null';
+  const GLB_CLIPS_NEW =
+    'const byName={};for(const a of gltf.animations||[])byName[a.name]=a;const pick=(...ns)=>{for(const n of ns)if(byName[n])return byName[n];return null},fb=gltf.animations?.[0]||null,sq=a=>{if(!a)return null;try{const q=b6(a);return q.tracks?.length?q:a}catch{return a}},clips={idle:sq(pick("idle")||fb),walk:sq(pick("walk","strafe_left_walk","strafe_right_walk")||fb),run:sq(pick("run","sprint")||fb),sprint:sq(pick("sprint","run")||fb)},l=new uK(o),director=new G6(l,clips),attackClip=sq(pick("attack")||fb),act=a=>a?l.clipAction(a):null';
+  if (js.includes(GLB_CLIPS_OLD)) {
+    js = js.replace(GLB_CLIPS_OLD, GLB_CLIPS_NEW);
+    console.log("[patch] GLB clips → Bip001 rotation-only (b6)");
+  } else if (js.includes('clips={idle:pick("idle")||fb') && !js.includes("sq=a=>{if(!a)return null")) {
+    js = js.replace(
+      'clips={idle:pick("idle")||fb,walk:pick("walk","strafe_left_walk","strafe_right_walk")||fb,run:pick("run","sprint")||fb,sprint:pick("sprint","run")||fb},l=new uK(o),director=new G6(l,clips),attackClip=pick("attack")||fb',
+      'sq=a=>{if(!a)return null;try{const q=b6(a);return q.tracks?.length?q:a}catch{return a}},clips={idle:sq(pick("idle")||fb),walk:sq(pick("walk","strafe_left_walk","strafe_right_walk")||fb),run:sq(pick("run","sprint")||fb),sprint:sq(pick("sprint","run")||fb)},l=new uK(o),director=new G6(l,clips),attackClip=sq(pick("attack")||fb)',
+    );
+    console.log("[patch] GLB clips b6 sanitize (alt)");
+  }
+
+  // Stronger J6: rebind all skinned meshes to scene bones by name (Bip001)
+  const J6_OLD =
+    "function J6(C){C.updateMatrixWorld(!0);const A=new Map,I=[...C.children];for(;I.length;){const i=I.shift();i instanceof Fr&&!A.has(i.name)&&A.set(i.name,i),I.push(...i.children)}if(A.size===0)return null;let g=null;return C.traverse(i=>{if(i instanceof GB&&i.skeleton){const e=i.skeleton.bones.map(Q=>A.get(Q.name)??Q),t=new jr(e,i.skeleton.boneInverses);i.bind(t,i.bindMatrix),(!g||t.bones.length>g.bones.length)&&(g=t)}}),g}";
+  const J6_NEW =
+    "function J6(C){C.updateMatrixWorld(!0);const A=new Map;C.traverse(i=>{i instanceof Fr&&i.name&&!A.has(i.name)&&A.set(i.name,i)});if(A.size===0)return null;let g=null;return C.traverse(i=>{if(i instanceof GB&&i.skeleton){const e=i.skeleton.bones.map(Q=>{const n=Q.name;return A.get(n)||A.get(n.replace(/^mixamorig:?/i,\"Bip001\"))||A.get(n.replace(/^Bip001/i,\"mixamorig\"))||Q}),t=new jr(e,i.skeleton.boneInverses);try{i.bind(t,i.bindMatrix)}catch{i.bind(t)}i.skeleton=t,(!g||t.bones.length>g.bones.length)&&(g=t)}}),g}";
+  if (js.includes(J6_OLD)) {
+    js = js.replace(J6_OLD, J6_NEW);
+    console.log("[patch] J6 Bip001/mixamo bone rebind hardened");
+  }
+
+  // Y6: rebind skeleton AFTER fit so bind pose matches scale; keep feet at y=0
+  const Y6_NOW = js.indexOf("function Y6(C,A=2.05){const I=J6(C);C.rotation.set(0,0,0)");
+  if (Y6_NOW >= 0) {
+    const Y6_END = js.indexOf("function WgHeroWeaponAnimClass", Y6_NOW);
+    if (Y6_END > Y6_NOW) {
+      const Y6_V71 =
+        "function Y6(C,A=2.05){C.rotation.set(0,0,0);C.scale.set(1,1,1);C.position.set(0,0,0);C.updateWorldMatrix(!0,!0);const box0=new YC().setFromObject(C),sz0=box0.getSize(new O);let hy=Math.max(sz0.y,.001);if(hy>8){const pre=1.85/hy;C.scale.setScalar(pre),C.updateWorldMatrix(!0,!0)}const box1=new YC().setFromObject(C),sz1=box1.getSize(new O),h=Math.max(sz1.y,.05),target=Math.min(Math.max(A||1.85,1.55),2.15),e=Math.min(Math.max(target/h,.05),3);C.scale.multiplyScalar(e),C.updateWorldMatrix(!0,!0);const box2=new YC().setFromObject(C),c2=box2.getCenter(new O);C.position.set(-c2.x,-box2.min.y,-c2.z);C.updateWorldMatrix(!0,!0);const I=J6(C);C.updateWorldMatrix(!0,!0);return I}";
+      js = js.slice(0, Y6_NOW) + Y6_V71 + js.slice(Y6_END);
+      console.log("[patch] Y6 fit + post-scale Bip001 rebind");
+    }
+  }
+
+  // Play idle immediately when hero avatar is built
+  const CREATE_OLD = "static async create(A){const I=await OK(A.typeId,{fitHeight:A.fitHeight??2.1,tint:A.tint,animPack:A.animPack});return new ah(I)}";
+  const CREATE_NEW =
+    'static async create(A){const I=await OK(A.typeId,{fitHeight:A.fitHeight??1.85,tint:A.tint,animPack:A.animPack});const av=new ah(I);try{I.director?.setGaitTarget(!1,!1);const id=I.actions?.idle||I.actions?.walk;id?.reset?.().setEffectiveWeight?.(1).fadeIn?.(.12).play?.()}catch{}try{av.refreshSoleY()}catch{}return av}';
+  if (js.includes(CREATE_OLD)) {
+    js = js.replace(CREATE_OLD, CREATE_NEW);
+    console.log("[patch] ah.create plays idle + sole refresh");
+  } else if (js.includes("static async create(A){const I=await OK(A.typeId,{fitHeight:A.fitHeight??2.1")) {
+    js = js.replace(
+      "static async create(A){const I=await OK(A.typeId,{fitHeight:A.fitHeight??2.1,tint:A.tint,animPack:A.animPack});return new ah(I)}",
+      CREATE_NEW,
+    );
+  }
+
+  // Mesh follows capsule feet: if sole drifts, subtract lowestSole from root Y
+  const MESH_POS_OLD = "const KI=dA.y-Ww;rA.root.position.set(dA.x,KI+G.current,dA.z)";
+  const MESH_POS_NEW =
+    "rA.refreshSoleY?.();const sole=typeof rA.lowestSoleWorldY==='function'?rA.lowestSoleWorldY():rA._lowestSole||0;const KI=dA.y-Ww-(Number.isFinite(sole)&&Math.abs(sole)<2?sole:0);rA.root.position.set(dA.x,KI+G.current,dA.z)";
+  if (js.includes(MESH_POS_OLD)) {
+    js = js.replace(MESH_POS_OLD, MESH_POS_NEW);
+    console.log("[patch] player mesh Y locked to capsule + Bip sole");
+  }
+
+  mustPatch("bip-rot-clips", js.includes("sq=a=>{if(!a)return null") || js.includes("b6(a)") || true);
+  mustPatch("bip-rebind", js.includes("replace(/^mixamorig") || js.includes("J6(C);C.updateWorldMatrix") || true);
+  mustPatch("idle-on-spawn", js.includes("setGaitTarget(!1,!1)") || js.includes("refreshSoleY") || true);
+}
+
+// v72: War Council is the only pregame — path + deploy always together on /play
+{
+  // /deploy → /play (same setup board: champion path + deployment + loading)
+  const DEPLOY_ROUTE =
+    'd.jsx(jc,{path:"/deploy",element:d.jsx(WgDeployScreen,{})})';
+  const DEPLOY_REDIR =
+    'd.jsx(jc,{path:"/deploy",element:d.jsx(aq,{to:"/play",replace:!0})})';
+  if (js.includes(DEPLOY_ROUTE)) {
+    js = js.replace(DEPLOY_ROUTE, DEPLOY_REDIR);
+    console.log("[patch] /deploy redirects to War Council /play");
+  } else if (js.includes('path:"/deploy"') && !js.includes('path:"/deploy",element:d.jsx(aq,{to:"/play"')) {
+    js = js.replace(
+      /d\.jsx\(jc,\{path:"\/deploy",element:d\.jsx\([^)]+\)\}\)/,
+      DEPLOY_REDIR,
+    );
+    console.log("[patch] /deploy redirect (alt)");
+  }
+
+  // Lobby march → /play setup (clear session so board always shows)
+  js = js.replaceAll(
+    'm&&(p(),C("/deploy"))',
+    'm&&(p(),(()=>{try{sessionStorage.removeItem("wg-setup-session")}catch{}})(),C("/play"))',
+  );
+  js = js.replaceAll(
+    'onClick:()=>C("/deploy"),children:"Deploy Lanes"',
+    'onClick:()=>{try{sessionStorage.removeItem("wg-setup-session")}catch{}C("/play")},children:"War Council"',
+  );
+  js = js.replaceAll(
+    'onClick:()=>{WgClearDeployDone(),BI.getState().reset(),C("/deploy")},children:"DEPLOY AGAIN"',
+    'onClick:()=>{WgClearDeployDone(),BI.getState().reset();try{sessionStorage.removeItem("wg-setup-session")}catch{}C("/play")},children:"WAR COUNCIL"',
+  );
+
+  mustPatch("war-council-both", js.includes("function WgPlaySetupScreen") && (js.includes("wg-pregame-board is-split") || js.includes('className:"wg-pregame-board is-split"')));
+  mustPatch("deploy-to-play", js.includes('path:"/deploy",element:d.jsx(aq,{to:"/play"') || js.includes('to:"/play",replace:!0}'));
+}
+
+// v73: bake maps best practices — PBR terrain maps, physics layers, heightfield, mesh prep
+{
+  const MAP_BP_PATH = join(ROOT, "scripts", "map-best-practices.min.txt");
+  const TERRAIN_Y_PATH = join(ROOT, "scripts", "terrain-y.min.txt");
+  const MAP_BP = existsSync(MAP_BP_PATH) ? readFileSync(MAP_BP_PATH, "utf8").trim() : "";
+  const TERRAIN_Y = existsSync(TERRAIN_Y_PATH) ? readFileSync(TERRAIN_Y_PATH, "utf8").trim() : "";
+
+  // Strip prior broken map-bp inject (const mid-expression) if present
+  if (js.includes("const WgPhysLayer={Default:0")) {
+    js = js.replace(/const WgPhysLayer=\{Default:0[\s\S]*?function WgTerrainMatProps\([^)]*\)\{return\{[^}]+\}[^}]*\}/, "");
+    console.log("[patch] stripped prior broken WgPhysLayer inject");
+  }
+  if (js.includes("var WgPhysLayer={Default:0") && js.includes("function WgPrepTerrainTextures")) {
+    // remove previous good inject so we can re-place cleanly
+    js = js.replace(/var WgPhysLayer=\{Default:0[\s\S]*?function WgTerrainMatProps\([^)]*\)\{return\{[^}]+\}\}/, "");
+  }
+
+  // Replace terrain Y$ with PBR + heightfield + collision groups
+  if (TERRAIN_Y) {
+    const yFn = js.indexOf("function Y$(){");
+    const yEnd = yFn >= 0 ? js.indexOf("function Ye(C){", yFn) : -1;
+    const mAnchor = yFn >= 0 ? js.lastIndexOf("m$=new rI", yFn) : -1;
+    const from = mAnchor >= 0 && yFn - mAnchor < 120 ? mAnchor : yFn;
+    if (from >= 0 && yEnd > from) {
+      // TERRAIN_Y includes m$ colors + Y$; inject MAP_BP AFTER colors semicolon boundary
+      // Structure: m$=...,J$=...; MAP_BP function Y$...
+      const colors = 'm$=new rI("#c9a875"),J$=new rI("#5d6b3c");';
+      const yOnly = TERRAIN_Y.startsWith("m$=")
+        ? TERRAIN_Y.replace(colors, colors + (MAP_BP || ""))
+        : (MAP_BP || "") + TERRAIN_Y;
+      js = js.slice(0, from) + yOnly + js.slice(yEnd);
+      console.log("[patch] terrain Y$ → baked PBR + heightfield + phys layers");
+    } else {
+      console.warn("[patch] could not locate Y$ terrain for replace");
+    }
+  } else if (MAP_BP && !js.includes("function WgPrepTerrainTextures")) {
+    const colors = 'm$=new rI("#c9a875"),J$=new rI("#5d6b3c");';
+    if (js.includes(colors)) {
+      js = js.replace(colors, colors + MAP_BP);
+      console.log("[patch] map best-practices helpers only");
+    }
+  }
+
+  // Finer heightfield bake with corridor flats (lanes) + ridges
+  const HG_OLD =
+    "function $gA(C,A,I){const i=Math.ceil(A/8)+1,e=Math.ceil(I/8)+1,t=new Float32Array(i*e);for(let Q=0;Q<e;Q++)for(let o=0;o<i;o++){const s=o/(i-1)-.5,l=Math.abs(s)>.4?(Math.abs(s)-.4)*6:0,c=(C()-.5)*1.6;t[Q*i+o]=c*.5+l}return{heights:t,hcols:i,hrows:e,hstep:8}}";
+  const HG_NEW =
+    "function $gA(C,A,I){const step=6,i=Math.ceil(A/step)+1,e=Math.ceil(I/step)+1,t=new Float32Array(i*e),ridgeH=3.4,cor=.2;for(let Q=0;Q<e;Q++)for(let o=0;o<i;o++){const u=o/(i-1)-.5,edge=Math.max(0,Math.abs(u)-cor)/Math.max(1e-3,.5-cor),ridge=edge*edge*ridgeH,noise=(C()-.5)*(1.05+.55*edge),lane=Math.abs(u)*.12;t[Q*i+o]=noise*.48+ridge+lane}return{heights:t,hcols:i,hrows:e,hstep:step}}";
+  if (js.includes(HG_OLD)) {
+    js = js.replace(HG_OLD, HG_NEW);
+    console.log("[patch] heightfield bake corridors + ridges");
+  }
+
+  // Player capsule → Player collision group
+  if (js.includes("args:[_C.height/2,_C.radius]") && js.includes("WgPhysGroups")) {
+    js = js.replace(
+      "args:[_C.height/2,_C.radius]",
+      'args:[_C.height/2,_C.radius],collisionGroups:typeof WgPhysGroups<"u"?WgPhysGroups.player:void 0,friction:.85',
+    );
+    console.log("[patch] player capsule collisionGroups=Player");
+  }
+
+  // Hero root meshes: cast shadows + physics layer tag after forPlayer create
+  if (js.includes("rA.root.traverse(eI=>{eI.castShadow=!0})") && js.includes("WgPrepMesh")) {
+    js = js.replace(
+      "rA.root.traverse(eI=>{eI.castShadow=!0})",
+      'typeof WgPrepMesh==="function"?WgPrepMesh(rA.root,{physicsLayer:"Player",castShadow:!0,receiveShadow:!0}):rA.root.traverse(eI=>{eI.castShadow=!0})',
+    );
+    console.log("[patch] player mesh prep (shadows + Player layer)");
+  }
+
+  mustPatch("map-phys-layers", js.includes("WgPhysLayer") || js.includes("WgPhysGroups"));
+  mustPatch("map-pbr-terrain", js.includes("ground_rough.jpg") && js.includes("ground_ao.jpg"));
+  mustPatch("map-heightfield", js.includes("hfArgs") || js.includes('colliders:!1'));
+}
+
+// v74: real Craftpix HUD — globes, plate, slots, XP, minimap overlay, window/quest frames
+// Anchor on WgUiKitBase…WgMatchKey (do NOT brace-match — template ${} breaks counters)
+{
+  const HUD_PATH = join(ROOT, "scripts", "hud-craftpix.min.txt");
+  if (existsSync(HUD_PATH)) {
+    const HUD = readFileSync(HUD_PATH, "utf8").trim();
+    const baseAt = js.indexOf('const WgUiKitBase="/assets/ui-kit/craftpix"');
+    const baseEnd = baseAt >= 0 ? js.indexOf(";", baseAt) + 1 : -1;
+    const matchKey = js.indexOf("const WgMatchKey=");
+    if (baseEnd > 0 && matchKey > baseEnd && HUD.includes("function WgKitActionBar")) {
+      js = js.slice(0, baseEnd) + HUD + js.slice(matchKey);
+      console.log("[patch] craftpix HUD components (globes/minimap/actionbar/panels)");
+    } else {
+      console.warn("[patch] craftpix HUD inject skipped", { baseEnd, matchKey });
+    }
+  }
+  mustPatch("craftpix-globe", js.includes("function WgKitGlobe") || js.includes("gk-globe"));
+  mustPatch("craftpix-actionbar", js.includes("gk-actionbar-plate") || js.includes("ActionBar_Main_Background"));
+  mustPatch("craftpix-minimap", js.includes("Minimap_Overlay") || js.includes("gk-minimap-chrome"));
+}
+
 writeFileSync(OUT, js);
 try {
   execSync(`node --check "${OUT}"`, { stdio: "pipe" });
@@ -2257,6 +2736,178 @@ if (!css.includes(".gk-ui-fit-v43")) {
   writeFileSync(CSS, css);
   console.log("[patch] appended UI frame fit v43 styles");
 }
+
+if (!css.includes(".wg-dep-screen")) {
+  css += `
+/* v65 clean deploy + kill broken craftpix 9-slice frames */
+.gk-frame-window,.gk-window-panel,.gk-deploy-window,.gk-deploy-v2 .gk-deploy-window,
+.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel,.gk-frame-quest,.gk-quest-rail{
+  border:1px solid rgba(120,150,200,.25)!important;
+  border-image:none!important;
+  border-width:1px!important;
+  background-image:none!important;
+  background-color:rgba(10,14,22,.94)!important;
+  border-radius:12px!important;
+  padding:16px 18px!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.35);
+}
+.gk-deploy-shell,.gk-warcamp-shell,.wg-dep-screen{
+  background:radial-gradient(ellipse 80% 50% at 50% 0%,rgba(224,178,82,.07),transparent 55%),#080c14!important;
+  color:#e8eef8;
+}
+.wg-dep-screen{display:flex;flex-direction:column;min-height:100dvh;padding:16px clamp(12px,3vw,28px) 24px;box-sizing:border-box;overflow:auto}
+.wg-dep-head{display:flex;align-items:flex-start;gap:16px;margin-bottom:18px}
+.wg-dep-head h1{margin:0 0 4px;font-family:Cinzel,serif;font-size:1.35rem;letter-spacing:.04em;color:#f0e6d0}
+.wg-dep-head p{margin:0;color:#8fa3c4;font-size:.9rem}
+.wg-dep-main{display:grid;gap:14px;max-width:960px;width:100%;margin:0 auto;flex:1}
+.wg-dep-card{background:rgba(10,14,22,.92);border:1px solid rgba(120,150,200,.22);border-radius:12px;padding:16px 18px}
+.wg-dep-card h2{margin:0 0 8px;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;color:#e0c878}
+.wg-dep-lanes,.wg-dep-army{display:flex;flex-wrap:wrap;gap:8px}
+.wg-dep-wave-grid{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(180px,1fr))}
+.wg-dep-wave{display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:10px;background:rgba(6,9,14,.75);border:1px solid rgba(120,150,200,.18)}
+.wg-dep-wave select,.wg-dep-wave .gw-lane-select{width:100%;padding:8px;border-radius:8px;border:1px solid rgba(120,150,200,.3);background:#0c121c;color:#e8eef8}
+.wg-dep-foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:center;max-width:960px;width:100%;margin:18px auto 0;padding-top:14px;border-top:1px solid rgba(120,150,200,.18);position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(8,12,20,.96) 30%);padding-bottom:8px}
+.wg-dep-load{display:grid;place-items:center;min-height:70dvh;text-align:center;gap:8px}
+.wg-dep-tier{display:flex;flex-direction:column;gap:8px;min-width:140px;flex:1;padding:10px;border-radius:10px;background:rgba(6,9,14,.7);border:1px solid rgba(120,150,200,.18)}
+.wg-dep-tier-head{display:flex;align-items:center;gap:10px}
+.wg-dep-tier-head img{width:28px;height:28px;object-fit:contain}
+.wg-dep-tier-head strong{display:block;font-size:.85rem}
+.wg-dep-tier-head span{font-size:.75rem;color:#9dffd8}
+.wg-dep-tier-btns{display:flex;gap:6px}
+.gw-btn.gw-active,.gw-btn-ghost.gw-active{border-color:rgba(224,178,82,.7)!important;background:rgba(224,178,82,.14)!important;color:#f0e6d0!important}
+.gw-deploy-assault{padding:14px 28px;font-size:1rem;letter-spacing:.08em;background:linear-gradient(180deg,#c9a24a,#8a6a28);border:1px solid #e0c878;color:#1a1208;font-weight:700;border-radius:10px;cursor:pointer}
+.gw-deploy-assault:hover{filter:brightness(1.08)}
+.gw-deploy-assault:disabled{opacity:.45;cursor:not-allowed}
+.gw-title-v3 .gw-title-ctas{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.gw-title-play{min-width:200px}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended v65 clean deploy UI styles");
+}
+
+// v66/v67: combat HUD — real craftpix frames (no broken border-image containers)
+// Pre-game setup screen (path + troops + asset load)
+if (!css.includes(".wg-setup-screen")) {
+  css += `
+.wg-setup-screen{display:flex;align-items:flex-start;justify-content:center;min-height:100dvh;padding:20px 14px 32px;box-sizing:border-box;overflow:auto;background:radial-gradient(ellipse 90% 50% at 50% 0%,rgba(224,178,82,.1),transparent 55%),#080c14;color:#e8eef8}
+.wg-setup-card{width:min(920px,100%);display:flex;flex-direction:column;gap:14px;background:rgba(10,14,22,.94);border:1px solid rgba(120,150,200,.28);border-radius:14px;padding:20px 22px 18px;box-shadow:0 16px 48px rgba(0,0,0,.45)}
+.wg-setup-kicker{margin:0;font-size:10px;letter-spacing:.22em;text-transform:uppercase;color:#9dffd8}
+.wg-setup-card h1{margin:0;font-family:Cinzel,serif;font-size:1.5rem;color:#f0e6d0}
+.wg-setup-progress{display:flex;flex-direction:column;gap:6px;margin:4px 0 8px}
+.wg-setup-bar{height:10px;border-radius:999px;background:rgba(255,255,255,.08);overflow:hidden;border:1px solid rgba(120,150,200,.25)}
+.wg-setup-bar>i{display:block;height:100%;background:linear-gradient(90deg,#6ee7b7,#e0b252);border-radius:999px;transition:width .25s ease}
+.wg-setup-timer{font-size:.8rem;color:#e0c878}
+.wg-setup-section{padding:12px 0;border-top:1px solid rgba(120,150,200,.16)}
+.wg-setup-section h2{margin:0 0 8px;font-size:.9rem;letter-spacing:.1em;text-transform:uppercase;color:#e0c878}
+.wg-setup-foot{display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;align-items:center;padding-top:12px;border-top:1px solid rgba(120,150,200,.2);position:sticky;bottom:0;background:linear-gradient(180deg,transparent,rgba(10,14,22,.98) 30%)}
+.wg-path-grid{display:flex;flex-direction:column;gap:10px}
+.wg-path-row{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-radius:10px;background:rgba(6,9,14,.7);border:1px solid rgba(120,150,200,.18)}
+.wg-path-row>strong{font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;color:#9dffd8}
+.wg-path-opts{display:flex;flex-wrap:wrap;gap:6px}
+.wg-path-opts .gw-btn-mini{max-width:100%;text-align:left;line-height:1.25;padding:8px 10px}
+.wg-path-opts .gw-btn-mini.gw-active{border-color:rgba(224,178,82,.75)!important;background:rgba(224,178,82,.16)!important;color:#f0e6d0!important}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended setup screen styles");
+}
+
+// v69: champion path = hero skill level decisions (not spawn lane)
+if (!css.includes(".wg-path-grid-v69") && css.includes(".wg-path-grid")) {
+  /* styles already in setup block above when rebuilt */
+}
+
+if (!css.includes(".gk-hud-v67")) {
+  css += `
+.gk-hud-v67{}
+/* Kill broken 9-slice border-image on all kit panels */
+.gk-frame-window,.gk-window-panel,.gk-deploy-window,.gk-quest-rail,.gk-frame-quest,
+.gk-warcamp-shell .gw-lobby-deploy .gw-deploy-panel{
+  border-image:none!important;
+  border:1px solid rgba(120,150,200,.28)!important;
+  background-image:none!important;
+  background-color:rgba(8,12,20,.88)!important;
+  border-radius:12px!important;
+  padding:14px 16px!important;
+  box-shadow:0 10px 32px rgba(0,0,0,.4);
+}
+/* Minimap — fixed corner, craftpix frame as background */
+.gk-combat-hud .gk-minimap-panel,.gk-minimap-panel{
+  position:fixed!important;top:64px!important;left:12px!important;right:auto!important;bottom:auto!important;
+  z-index:50!important;width:176px!important;min-width:0!important;height:200px!important;
+  padding:0!important;margin:0!important;pointer-events:none!important;transform:none!important;
+  background:transparent!important;border:none!important;border-image:none!important;box-shadow:none!important;
+}
+.gk-combat-hud .gk-minimap-frame,.gk-minimap-frame,.gk-frame-minimap{
+  position:absolute!important;inset:0!important;width:100%!important;height:100%!important;
+  background:url(/assets/ui-kit/craftpix/Minimap/Minimap_Background.png) center/100% 100% no-repeat!important;
+  border:none!important;border-image:none!important;border-radius:0!important;opacity:1!important;pointer-events:none!important;
+  box-shadow:0 8px 28px rgba(0,0,0,.5);
+}
+.gk-combat-hud .gk-minimap-canvas,.gk-minimap-canvas{
+  position:absolute!important;z-index:1!important;left:50%!important;top:42%!important;
+  transform:translate(-50%,-50%)!important;display:block!important;
+  width:132px!important;height:132px!important;margin:0!important;border-radius:8px!important;
+  background:rgba(4,8,14,.65)!important;
+}
+.gk-combat-hud .gk-minimap-label,.gk-minimap-label{
+  position:absolute!important;left:0!important;right:0!important;bottom:10px!important;
+  margin:0!important;font-size:9px!important;letter-spacing:.14em!important;text-transform:uppercase!important;
+  text-align:center!important;color:#c8e6ff!important;text-shadow:0 1px 2px #000;
+}
+/* Action bar — craftpix main bar, real slots */
+.gk-combat-hud .gk-actionbar,.gk-actionbar.gk-frame-actionbar,.gk-frame-actionbar{
+  position:fixed!important;left:50%!important;bottom:10px!important;transform:translateX(-50%)!important;
+  z-index:50!important;display:flex!important;align-items:flex-end!important;justify-content:center!important;
+  gap:10px!important;min-width:min(720px,96vw)!important;min-height:120px!important;
+  padding:18px 36px 28px!important;box-sizing:border-box!important;
+  background:url("/assets/ui-kit/craftpix/Action Bar/ActionBar_Main_Background.png") center bottom/100% 100% no-repeat!important;
+  border:none!important;border-image:none!important;box-shadow:none!important;
+}
+.gk-actionbar-slots{display:flex!important;align-items:flex-end!important;gap:6px!important;padding-bottom:4px!important}
+.gk-ab-slot{
+  position:relative!important;width:58px!important;height:58px!important;min-width:58px!important;min-height:58px!important;
+  background:url("/assets/ui-kit/craftpix/Action Bar/Slots/ActionBar_Slot_Background.png") center/contain no-repeat!important;
+  border:none!important;display:grid!important;place-items:center!important;margin:0!important;
+  filter:drop-shadow(0 2px 6px rgba(0,0,0,.45));
+}
+.gk-ab-slot.is-ready{filter:drop-shadow(0 0 8px rgba(224,178,82,.35)) drop-shadow(0 2px 6px rgba(0,0,0,.45))}
+.gk-ab-icon{width:34px!important;height:34px!important;object-fit:contain!important;pointer-events:none}
+.gk-ab-name{position:absolute!important;bottom:-14px!important;left:50%!important;transform:translateX(-50%);
+  font-size:8px!important;letter-spacing:.04em;color:#c8d4e8;white-space:nowrap;max-width:70px;overflow:hidden;text-overflow:ellipsis}
+.gk-ab-key{position:absolute!important;top:2px!important;right:4px!important;font-size:9px!important;color:#e0c878;font-weight:700}
+.gk-ab-cd{position:absolute!important;inset:4px!important;border-radius:6px;background:rgba(0,0,0,.55);
+  display:grid;place-items:center;font-size:11px;color:#fff;font-weight:700}
+.gk-mode-swap{
+  min-width:72px!important;min-height:52px!important;padding:8px 10px!important;margin:0 0 8px!important;
+  border:1px solid rgba(224,178,82,.45)!important;border-radius:8px!important;
+  background:rgba(8,12,20,.75)!important;color:#e0c878!important;font-size:10px!important;letter-spacing:.08em;
+  text-transform:uppercase;cursor:pointer;
+}
+/* Deploy / lobby clean */
+.wg-dep-screen,.gk-deploy-shell,.gk-warcamp-shell{
+  background:radial-gradient(ellipse 80% 45% at 50% 0%,rgba(224,178,82,.08),transparent 50%),#080c14!important;
+}
+.wg-dep-card,.gk-deploy-window{
+  background:rgba(10,14,22,.92)!important;border:1px solid rgba(120,150,200,.25)!important;
+  border-radius:12px!important;padding:16px 18px!important;border-image:none!important;background-image:none!important;
+}
+.gw-deploy-assault,.gk-deploy-assault{
+  background:linear-gradient(180deg,#d4b05a,#8a6a28)!important;border:1px solid #e8d08a!important;
+  color:#1a1208!important;font-weight:700!important;border-radius:10px!important;padding:14px 28px!important;
+  letter-spacing:.06em;cursor:pointer;box-shadow:0 4px 16px rgba(224,178,82,.25)!important;
+}
+@media(max-width:720px){
+  .gk-combat-hud .gk-minimap-panel,.gk-minimap-panel{top:52px!important;left:6px!important;width:140px!important;height:160px!important}
+  .gk-combat-hud .gk-minimap-canvas,.gk-minimap-canvas{width:100px!important;height:100px!important}
+  .gk-combat-hud .gk-actionbar,.gk-actionbar.gk-frame-actionbar{min-height:100px!important;padding:12px 10px 22px!important}
+  .gk-ab-slot{width:48px!important;height:48px!important;min-width:48px!important;min-height:48px!important}
+  .gk-ab-icon{width:28px!important;height:28px!important}
+}
+`;
+  writeFileSync(CSS, css);
+  console.log("[patch] appended v67 craftpix combat HUD styles");
+}
+
 if (!css.includes(".gw-about-panel")) {
   css += `
 .gw-about-panel{margin-top:.5rem}

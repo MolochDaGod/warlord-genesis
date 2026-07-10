@@ -1,7 +1,7 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 61,
+  "bundleVersion": 74,
   "bundleFile": "assets/index-warlord-fix3.js",
   "bundleSource": "assets/index-warlord-fix2.js",
   "cssFile": "assets/index-BNWYZMT1.css",
@@ -316,7 +316,7 @@
     },
     {
       "id": "deploy-screen",
-      "needle": "gk-deploy-v2"
+      "needle": "forcePlay"
     },
     {
       "id": "deploy-lane-cards",
@@ -416,7 +416,7 @@
     },
     {
       "id": "ui-kit-deploy-shell",
-      "needle": "gk-deploy-shell"
+      "needle": "wg-dep-screen"
     },
     {
       "id": "hero-mesh-haa",
@@ -673,9 +673,13 @@
     {
       "id": "lobby-ensure-ready",
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
+    },
+    {
+      "id": "deploy-play-gate",
+      "needle": "WgDeployDoneMem"
     }
   ],
-  "lastBuilt": "2026-07-07T06:28:47.185Z",
-  "bundleBytes": 4120205,
-  "bundleSha256": "ffe407ca172467a8"
+  "lastBuilt": "2026-07-10T09:50:21.687Z",
+  "bundleBytes": 4139131,
+  "bundleSha256": "5a5c993199394d1e"
 }

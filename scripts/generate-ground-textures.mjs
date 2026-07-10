@@ -2,7 +2,7 @@
 /**
  * Generate terrain diffuse + normal maps expected at /textures/ground_*.jpg
  */
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -41,6 +41,13 @@ $ng.Dispose()
 Save-Jpeg $nor '${OUT_DIR.replace(/\\/g, "\\\\")}\\\\ground_nor.jpg' 85L
 $nor.Dispose()
 `;
+
+const diffPath = join(OUT_DIR, "ground_diff.jpg");
+const norPath = join(OUT_DIR, "ground_nor.jpg");
+if (existsSync(diffPath) && existsSync(norPath)) {
+  console.log("[ground] textures/ground_diff.jpg + textures/ground_nor.jpg already present — skip");
+  process.exit(0);
+}
 
 mkdirSync(OUT_DIR, { recursive: true });
 const res = spawnSync("powershell", ["-NoProfile", "-Command", ps], { encoding: "utf8" });

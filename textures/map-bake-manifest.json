@@ -1,0 +1,24 @@
+{
+  "version": 1,
+  "bakedAt": "2026-07-10T09:41:54.673Z",
+  "size": 1024,
+  "maps": [
+    "ground_diff.jpg",
+    "ground_nor.jpg",
+    "ground_rough.jpg",
+    "ground_ao.jpg",
+    "concrete_diff.jpg",
+    "metal_diff.jpg",
+    "metal_nor.jpg"
+  ],
+  "colorSpace": {
+    "ground_diff": "srgb",
+    "ground_nor": "linear",
+    "ground_rough": "linear",
+    "ground_ao": "linear"
+  },
+  "physics": {
+    "terrainLayer": "Terrain",
+    "collision": "heightfield + wall cuboids"
+  }
+}

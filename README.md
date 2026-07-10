@@ -55,6 +55,20 @@ pnpm run api:migrate
 
 Fleet character migration: `node scripts/run-fleet-migration.mjs`
 
+## Legacy bundle patch pipeline
+
+For the shipped minified SPA (`assets/index-warlord-fix*`):
+
+```bash
+pnpm run build:ci   # patch + CSS + verify
+pnpm run patch
+pnpm run css:hud
+pnpm run css:pregame
+pnpm run clean:scratch
+```
+
+See [scripts/README.md](scripts/README.md).
+
 ## License
 
 MIT — see [LICENSE](LICENSE).

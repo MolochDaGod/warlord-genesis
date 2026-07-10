@@ -2,7 +2,7 @@
 /**
  * Procedural JPEGs for battle scene materials at /textures/{concrete,metal}_*.jpg
  */
-import { mkdirSync } from "node:fs";
+import { existsSync, mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 import { spawnSync } from "node:child_process";
@@ -48,6 +48,12 @@ $ng.Dispose()
 Save-Jpeg $nor '${OUT_DIR.replace(/\\/g, "\\\\")}\\\\metal_nor.jpg' 85L
 $nor.Dispose()
 `;
+
+const outputs = ["concrete_diff.jpg", "metal_diff.jpg", "metal_nor.jpg"].map((f) => join(OUT_DIR, f));
+if (outputs.every(existsSync)) {
+  console.log("[textures] concrete_diff.jpg, metal_diff.jpg, metal_nor.jpg already present — skip");
+  process.exit(0);
+}
 
 mkdirSync(OUT_DIR, { recursive: true });
 const res = spawnSync("powershell", ["-NoProfile", "-Command", ps], { encoding: "utf8" });
