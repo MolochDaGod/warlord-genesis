@@ -126,12 +126,23 @@ if (!authCatchAll?.destination?.includes("id.grudge-studio.com/api/auth")) {
   ok("auth catch-all → id.grudge-studio.com/api/auth");
 }
 const deprecatedApi = vercel.rewrites?.find(
-  (r) => r.source === "/api/:path*" && r.destination?.includes("api.grudge-studio.com"),
+  (r) =>
+    r.source === "/api/:path*" &&
+    (r.destination?.includes("api.grudge-studio.com") ||
+      r.destination === "https://grudge-studio.com/api/:path*"),
 );
 if (deprecatedApi) {
-  fail("remove deprecated api.grudge-studio.com catch-all from vercel.json");
+  fail(
+    "remove deprecated grudge-studio.com / api.grudge-studio.com catch-all from vercel.json (leaks retro ROM catalog as /api/games)",
+  );
 } else {
-  ok("no deprecated api.grudge-studio.com catch-all");
+  ok("no deprecated grudge-studio.com catch-all");
+}
+const gamesRewrite = vercel.rewrites?.find((r) => r.source === "/api/games" || r.source === "/api/games/:path*");
+if (!gamesRewrite?.destination?.includes("warlord-genesis-api")) {
+  fail("/api/games must proxy to warlord-genesis-api (not fleet retro host)");
+} else {
+  ok("/api/games → warlord-genesis-api");
 }
 const bundleAuthPath = join(ROOT, manifest.bundleFile);
 if (existsSync(bundleAuthPath)) {

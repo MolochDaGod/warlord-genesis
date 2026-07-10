@@ -20,6 +20,7 @@ import { getFleetEndpoints } from "../lib/grudgeOrigins";
 import { sailAethermoorUrl, GRUDGE_FLEET_URLS } from "../lib/fleetUrls";
 import { getStudioToken } from "../lib/grudgeStudio";
 import { ensureWarcampReady } from "../lib/ensureWarcampReady";
+import { markDeployDone } from "./Deploy";
 import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
 import "../components/ui/collection.css";
 
@@ -75,6 +76,7 @@ export function Lobby() {
     ensureWarcampReady();
     if (!evaluateWarcampReady().ready) return;
     lockLoadout();
+    markDeployDone();
     startGame();
     navigate("/play");
   };
@@ -214,7 +216,7 @@ export function Lobby() {
               </div>
             </div>
 
-            {tab !== "warcamp" && <PreMatchLaneDeploy compact />}
+            <PreMatchLaneDeploy compact />
 
             <div className="gw-mapsize">
               <span className="gw-mapsize-label">Opponent faction</span>
@@ -276,11 +278,25 @@ export function Lobby() {
             >
               MARCH TO WAR
             </button>
+            <button
+              type="button"
+              className="gw-btn gw-btn-ghost"
+              style={{ width: "100%", marginTop: 8 }}
+              onClick={() => {
+                ensureWarcampReady();
+                if (evaluateWarcampReady().ready) lockLoadout();
+                navigate("/mp");
+              }}
+            >
+              ONLINE WAR · ROOMS
+            </button>
             {!warlordReady && blockReason && (
               <span className="gw-deploy-hint">{warcampBlockMessage(blockReason)}</span>
             )}
             {warlordReady && (
-              <span className="gw-deploy-hint gw-deploy-hint--ok">Ready — lane troops configured, march when set.</span>
+              <span className="gw-deploy-hint gw-deploy-hint--ok">
+                Ready — gear, lane guards, and wave deploy set. March or open Online War.
+              </span>
             )}
           </div>
 

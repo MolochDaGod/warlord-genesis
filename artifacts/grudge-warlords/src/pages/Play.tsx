@@ -11,6 +11,9 @@ import { useMeta } from "../game/metaProgression";
 import { PackOpenOverlay } from "../components/ui/PackOpenOverlay";
 import { syncMatchResult } from "../lib/profileSync";
 import { DEPLOY_PATH } from "../lib/deployRoutes";
+import { ensureWarcampReady } from "../lib/ensureWarcampReady";
+import { isDeployDone, markDeployDone } from "./Deploy";
+import { useRoster } from "../game/roster";
 import { EM } from "../game/entities";
 import "../components/ui/collection.css";
 
@@ -96,9 +99,14 @@ function MatchEndOverlay() {
 }
 
 export function Play() {
+  const navigate = useNavigate();
   const phase = useGame((s) => s.phase);
   const mode = useCommand((s) => s.mode);
+  const startGame = useGame((s) => s.startGame);
+  const lockLoadout = useRoster((s) => s.lockLoadout);
   const [locked, setLocked] = useState(false);
+  const [boot, setBoot] = useState<boolean | null>(phase !== "menu" ? true : null);
+  const [gateErr, setGateErr] = useState("");
 
   useEffect(() => {
     void bootEngine();
@@ -110,11 +118,56 @@ export function Play() {
     return () => document.removeEventListener("pointerlockchange", onChange);
   }, []);
 
-  // Reached without a match in progress (e.g. direct reload) -> back to the camp.
+  useEffect(() => {
+    ensureWarcampReady();
+    if (phase !== "menu") {
+      setBoot(true);
+      setGateErr("");
+      return;
+    }
+    if (!isDeployDone()) {
+      navigate(DEPLOY_PATH, { replace: true });
+      return;
+    }
+    try {
+      lockLoadout();
+      startGame();
+      markDeployDone();
+      setBoot(true);
+      setGateErr("");
+    } catch (err) {
+      setBoot(false);
+      setGateErr((err as Error).message || "Battle boot failed");
+    }
+  }, [phase, navigate, startGame, lockLoadout]);
+
+  if (boot === null) {
+    return (
+      <div className="gw-screen gw-play-boot">
+        <div className="gw-play-boot-inner">
+          <span className="gw-play-boot-spinner" aria-hidden />
+          <span className="gw-hint">Loading battlefield…</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (!boot) {
+    return (
+      <div className="gw-screen gw-play-gate">
+        <div className="gw-play-gate-inner">
+          <h2 className="gw-engage-title">Cannot enter battle</h2>
+          <p className="gw-hint">{gateErr || "Complete deployment at the warcamp first."}</p>
+          <button type="button" className="gw-btn" onClick={() => navigate(DEPLOY_PATH)}>
+            Open march orders
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (phase === "menu") return <Navigate to={DEPLOY_PATH} replace />;
 
-  // The engage prompt is the pointer-lock target (#lock-target). It only shows
-  // when combat is expected but the mouse is not yet captured.
   const showEngage = phase === "battle" && !locked && mode === "combat";
 
   return (

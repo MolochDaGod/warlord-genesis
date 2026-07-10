@@ -155,7 +155,12 @@ rewrites.push(
   { source: "/auth/:path*", destination: `${AUTH_GATEWAY}/auth/:path*` },
   { source: "/login", destination: `${AUTH_GATEWAY}/login` },
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
-  { source: "/api/:path*", destination: "https://grudge-studio.com/api/:path*" },
+  // Game profiles / matches for this title — NOT grudge-studio.com (retro ROM catalog).
+  { source: "/api/games", destination: `${WARLORD_API}/api/games` },
+  { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
+  // Unknown fleet APIs → grudge-api (account/characters already rewritten above).
+  // Never proxy to grudge-studio.com — that host serves NES/NDS listings as /api/games.
+  { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
   {
     source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
     destination: "/index.html",
