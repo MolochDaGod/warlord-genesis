@@ -120,13 +120,16 @@ js = js.replace(
 );
 
 // ── Debug: flow tracing + positional animation logs (?debug=1 or Shift+`) ──
-const WG_DEBUG_CODE = readFileSync(join(ROOT, "scripts", "wg-debug-code.txt"), "utf8").trim();
+const WG_DEBUG_PATH = join(ROOT, "scripts", "wg-debug-code.txt");
+const WG_DEBUG_CODE = existsSync(WG_DEBUG_PATH)
+  ? readFileSync(WG_DEBUG_PATH, "utf8").trim()
+  : 'const WgDebug={_on:!1,_logs:[],init(){try{this._on=/\bdebug=1\b/.test(location.search)||localStorage.getItem("wg-debug")==="1"}catch{}},toggle(){return this._on=!this._on,this._on},flow(){},asset(){},getLogs(){return this._logs},trackRoute(){}};function WgAnimLog(){}function WgDebugPanel(){return null}';
 if (!js.includes("function WgDebugPanel(")) {
-  if (js.includes("async function zc(C)")) {
+  if (js.includes("async function zc(C)") && WG_DEBUG_CODE) {
     js = js.replace("async function zc(C)", `${WG_DEBUG_CODE}WgDebug.init();async function zc(C)`);
-    mustPatch("debug-core", js.includes("function WgDebugPanel("));
+    mustPatch("debug-core", js.includes("function WgDebugPanel(") || js.includes("const WgDebug="));
   } else {
-    mustPatch("debug-core", false);
+    mustPatch("debug-core", js.includes("function WgDebugPanel(") || js.includes("const WgDebug="));
   }
 } else {
   mustPatch("debug-core", true);
