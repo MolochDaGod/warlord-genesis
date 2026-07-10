@@ -1,7 +1,7 @@
 {
-  "buildCommand": "BASE_PATH=/ PORT=5173 pnpm --filter @workspace/grudge-warlords run build",
-  "installCommand": "pnpm config set minimumReleaseAge 0 && pnpm install --frozen-lockfile",
-  "outputDirectory": "artifacts/grudge-warlords/dist/public",
+  "buildCommand": "node scripts/ci-build.mjs",
+  "installCommand": "",
+  "outputDirectory": ".",
   "framework": null,
   "headers": [
     {
@@ -37,15 +37,6 @@
         {
           "key": "Cache-Control",
           "value": "public, max-age=86400, immutable"
-        }
-      ]
-    },
-    {
-      "source": "/(.*)",
-      "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
         }
       ]
     }
@@ -383,12 +374,5 @@
       "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
       "destination": "/index.html"
     }
-  ],
-  "": "https://openapi.vercel.sh/vercel.json",
-  "build": {
-    "env": {
-      "VITE_WORLD_URL": "https://water.grudge-studio.com",
-      "VITE_ASSETS_CDN_URL": "https://assets.grudge-studio.com"
-    }
-  }
+  ]
 }

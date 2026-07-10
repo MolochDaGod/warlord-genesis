@@ -702,6 +702,7 @@ body{background:#080c14}
 .wg-pregame-path .wg-path-grid{max-height:min(62vh,680px)}
 .wg-pregame-deploy{max-height:min(70vh,760px);overflow:auto}
 
+
 /* v74 craftpix hud — real assets */
 :root{
   --gk-kit:/assets/ui-kit/craftpix;
