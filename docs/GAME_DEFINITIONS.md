@@ -7,16 +7,23 @@ Canonical model for **https://warlord-genesis.vercel.app** (three-lane RTS warca
 ```
 /  (title + auth)
   → guest | Puter | Grudge ID SSO
-/lobby  (warcamp loadout)
+  → ENTER THE WARCAMP → /lobby
+  → QUICK BATTLE → /play?skirmish=1  (auto-arms kit + starts match)
+  → WAGE WAR ONLINE → /mp
+/lobby  (warcamp loadout)  ← canonical prep
   → pick faction · race · class · hero prefab · weapons · lane heroes
-  → onboarding / starter pack if needed
-/deploy  (optional pre-match lane cards)
-  → lock loadout · mark deploy done
+  → MARCH TO WAR → prepareAndStartMatch() → /play
+/deploy  (optional march-orders only)
+  → lock loadout · begin assault → /play
 /play  (battle)
-  → startGame() · match credits · waves · citadel siege
+  → if already in match (from lobby/deploy): render canvas
+  → else auto-prepare warcamp kit + startGame (deep link safe)
+  → never infinite-spin: failure → gate with Retry / Open warcamp
 ```
 
-Aliases: `/warcamp` → `/lobby`, `/battle` → `/play`.
+Aliases: `/warcamp` → `/lobby`, `/battle` → `/play`, `/start` & `/skirmish` → `/play?skirmish=1`.
+
+**Auth storage:** `clearSiteDataOnce` must never wipe `grudge_auth_token` / SSO keys.
 
 **Start requirements (client):**
 

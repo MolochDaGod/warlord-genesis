@@ -79,14 +79,28 @@ export function Intro() {
           </div>
         </div>
 
-        <button className="gw-btn gw-intro-cta" onClick={() => navigate(DEPLOY_PATH)}>
+        <button className="gw-btn gw-intro-cta" onClick={() => navigate("/lobby")}>
           ENTER THE WARCAMP
+        </button>
+        <button
+          className="gw-btn gw-btn-ghost gw-intro-cta-secondary"
+          onClick={() => navigate("/play?skirmish=1")}
+        >
+          QUICK BATTLE
         </button>
         <button
           className="gw-btn gw-btn-ghost gw-intro-cta-secondary"
           onClick={() => navigate("/mp")}
         >
           WAGE WAR ONLINE
+        </button>
+        <button
+          type="button"
+          className="gw-btn gw-btn-ghost gw-btn-mini"
+          style={{ marginTop: 8 }}
+          onClick={() => navigate(DEPLOY_PATH)}
+        >
+          MARCH ORDERS ONLY
         </button>
 
         <div className="gw-menu-actions">

@@ -22,13 +22,16 @@ function App() {
       <div className="gw-root">
         <Routes>
           <Route path="/" element={<Intro />} />
-          {/* /lobby is the canonical warcamp; /deploy is an alias used by fleet links */}
+          {/* Canonical flow: / → /lobby (warcamp) → /play. /deploy = quick march orders. */}
           <Route path="/lobby" element={<Lobby />} />
           <Route path={DEPLOY_PATH} element={<Deploy />} />
           <Route path="/play" element={<Play />} />
           <Route path="/mp" element={<MultiplayerPage />} />
           <Route path="/warcamp" element={<Navigate to="/lobby" replace />} />
           <Route path="/battle" element={<Navigate to="/play" replace />} />
+          {/* Deep links that used to 404 into intro — send to warcamp or play */}
+          <Route path="/start" element={<Navigate to="/play?skirmish=1" replace />} />
+          <Route path="/skirmish" element={<Navigate to="/play?skirmish=1" replace />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
         <GrudgeHub />

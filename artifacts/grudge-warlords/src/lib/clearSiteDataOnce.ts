@@ -1,64 +1,53 @@
 /**
- * One-shot wipe of origin storage for warlord-genesis.
- * Flag: localStorage `gw_site_data_cleared_v68` — runs at most once per browser profile.
+ * One-shot wipe of *game* storage only — never fleet/auth tokens.
+ * Flag: localStorage `gw_site_data_cleared_v69` — runs at most once per browser profile.
  *
- * Clears weak/empty gear saves from pre-v68 boots so ensureWarcampReady can reseed
- * the campaign-ready kit. Does not touch other origins.
+ * Purpose: reseed weak pre-v68 gear saves so ensureWarcampReady can apply the
+ * campaign kit. Auth / SSO must survive so Puter + Grudge ID handoff still works.
  */
 
-const FLAG = "gw_site_data_cleared_v68";
+const FLAG = "gw_site_data_cleared_v69";
+/** Older one-shot flags — leave them so we don't thrash wipes every version. */
+const LEGACY_FLAGS = ["gw_site_data_cleared_v68"] as const;
 
-/** Keys / prefixes that belong to this game (and fleet handoff used by it). */
-const PREFIXES = [
+/**
+ * Game-owned keys only. Do NOT match `grudge_*` / `puter*` / sso tokens —
+ * those are fleet identity (see grudge-production-wiring).
+ */
+const GAME_PREFIXES = [
   "gw_",
   "wg-",
   "wg_",
   "engine_boot_",
-  "grudge_",
-  "puter",
 ] as const;
 
+/** Fleet / auth keys that must never be cleared by this wipe. */
+const AUTH_SAFE = new Set([
+  "grudge_auth_token",
+  "grudge_session_token",
+  "grudge.token",
+  "sso_token",
+  "grudge_account_id",
+  "grudge_device_id",
+  "grudge_user",
+  FLAG,
+  ...LEGACY_FLAGS,
+]);
+
 function shouldClearKey(key: string): boolean {
-  for (const p of PREFIXES) {
-    if (key.startsWith(p) || key.toLowerCase().startsWith(p)) return true;
+  if (AUTH_SAFE.has(key)) return false;
+  // Explicit auth-ish prefixes
+  if (/^(grudge_auth|grudge_session|sso_|puter\.|clerk)/i.test(key)) return false;
+  for (const p of GAME_PREFIXES) {
+    if (key.startsWith(p)) return true;
   }
-  // Exact known keys that may not match prefixes above
   return (
     key === "DIFFICULTY" ||
-    key.includes("warlord") ||
-    key.includes("grudge-warlords") ||
-    key.includes("weapon_tuning")
+    key === "gw_roster_v1" ||
+    key === "gw_roster_v2" ||
+    key === "gw_meta_v1" ||
+    /^weapon_tuning/i.test(key)
   );
-}
-
-function wipeStorage(store: Storage | undefined, label: string): number {
-  if (!store) return 0;
-  let n = 0;
-  const keys: string[] = [];
-  try {
-    for (let i = 0; i < store.length; i++) {
-      const k = store.key(i);
-      if (k) keys.push(k);
-    }
-  } catch {
-    return 0;
-  }
-  for (const k of keys) {
-    if (!shouldClearKey(k) && label === "local") {
-      // On full site-data clear for this origin, still drop unknown gw leftovers only.
-      // Skip unrelated third-party if any shared host (shouldn't on vercel.app).
-      continue;
-    }
-    try {
-      if (label === "session" || shouldClearKey(k)) {
-        store.removeItem(k);
-        n += 1;
-      }
-    } catch {
-      /* ignore */
-    }
-  }
-  return n;
 }
 
 /**
@@ -69,17 +58,22 @@ export function clearSiteDataOnce(): boolean {
   if (typeof window === "undefined") return false;
   try {
     if (localStorage.getItem(FLAG) === "1") return false;
+    // If user already ran v68 wipe, just set v69 flag without re-wiping auth.
+    if (localStorage.getItem("gw_site_data_cleared_v68") === "1") {
+      localStorage.setItem(FLAG, "1");
+      return false;
+    }
   } catch {
     return false;
   }
 
   let cleared = 0;
+
   try {
-    // Full origin wipe for session (deploy flags, match resume)
     const sessionKeys: string[] = [];
     for (let i = 0; i < sessionStorage.length; i++) {
       const k = sessionStorage.key(i);
-      if (k) sessionKeys.push(k);
+      if (k && shouldClearKey(k)) sessionKeys.push(k);
     }
     for (const k of sessionKeys) {
       sessionStorage.removeItem(k);
@@ -93,32 +87,11 @@ export function clearSiteDataOnce(): boolean {
     const localKeys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k !== FLAG) localKeys.push(k);
+      if (k && shouldClearKey(k)) localKeys.push(k);
     }
     for (const k of localKeys) {
-      if (shouldClearKey(k)) {
-        localStorage.removeItem(k);
-        cleared += 1;
-      }
-    }
-  } catch {
-    /* ignore */
-  }
-
-  try {
-    // IndexedDB best-effort (asset caches)
-    if (typeof indexedDB !== "undefined" && indexedDB.databases) {
-      void indexedDB.databases().then((dbs) => {
-        for (const db of dbs) {
-          if (db.name && /grudge|warlord|gw_|three|rapier/i.test(db.name)) {
-            try {
-              indexedDB.deleteDatabase(db.name);
-            } catch {
-              /* ignore */
-            }
-          }
-        }
-      });
+      localStorage.removeItem(k);
+      cleared += 1;
     }
   } catch {
     /* ignore */
@@ -130,8 +103,10 @@ export function clearSiteDataOnce(): boolean {
     /* ignore */
   }
 
-  console.info(
-    `[warlord-genesis] site data cleared once (${cleared} keys). Reload /play for fresh warcamp kit.`,
-  );
-  return true;
+  if (cleared > 0) {
+    console.info(
+      `[warlord-genesis] game storage cleared once (${cleared} keys; auth tokens preserved).`,
+    );
+  }
+  return cleared > 0;
 }

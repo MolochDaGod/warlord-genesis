@@ -19,7 +19,7 @@ import { viewerUrl } from "../lib/grudgeViewer";
 import { getFleetEndpoints } from "../lib/grudgeOrigins";
 import { sailAethermoorUrl, GRUDGE_FLEET_URLS } from "../lib/fleetUrls";
 import { getStudioToken } from "../lib/grudgeStudio";
-import { ensureWarcampReady } from "../lib/ensureWarcampReady";
+import { ensureWarcampReady, prepareAndStartMatch } from "../lib/ensureWarcampReady";
 import { markDeployDone } from "./Deploy";
 import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
 import "../components/ui/collection.css";
@@ -77,9 +77,14 @@ export function Lobby() {
     if (!evaluateWarcampReady().ready) return;
     lockLoadout();
     markDeployDone();
-    const ok = startGame();
-    if (!ok) {
-      // Play page will re-run prepareAndStartMatch; still navigate so /play repairs.
+    // Prefer full repair+start so /play does not re-boot mid-navigate.
+    const prepared = prepareAndStartMatch();
+    if (!prepared.ok) {
+      const ok = startGame();
+      if (!ok) {
+        // Still open /play — it will show a clear gate + retry, not an infinite spinner.
+        console.warn("[warlord-genesis] march: start failed", prepared.error);
+      }
     }
     navigate("/play");
   };

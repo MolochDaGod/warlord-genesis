@@ -21,6 +21,8 @@ import {
 } from "../lib/capabilities";
 import "../components/ui/collection.css";
 
+type BootState = "checking" | "ready" | "blocked";
+
 /** Victory / defeat banner shown over the battlefield once the match resolves. */
 function MatchEndOverlay() {
   const navigate = useNavigate();
@@ -28,7 +30,6 @@ function MatchEndOverlay() {
   const score = useGame((s) => s.score);
   const kills = useGame((s) => s.kills);
   const difficulty = useGame((s) => s.difficulty);
-  const startGame = useGame((s) => s.startGame);
   const grantMatchRewards = useMeta((s) => s.grantMatchRewards);
   const lastMatchReward = useMeta((s) => s.lastMatchReward);
   const rewardedRef = useRef<string | null>(null);
@@ -86,31 +87,52 @@ function MatchEndOverlay() {
           </div>
         )}
         <button
+          type="button"
           className="gw-btn"
           onClick={() => {
-            const ok = startGame();
-            if (!ok) {
-              const r = prepareAndStartMatch();
-              if (!r.ok) console.error(r.error);
-            }
+            const r = prepareAndStartMatch();
+            if (!r.ok) console.error(r.error);
           }}
         >
           WAGE WAR AGAIN
         </button>
         <button
+          type="button"
           className="gw-btn gw-btn-ghost"
           onClick={() => {
             useGame.getState().reset();
-            navigate(DEPLOY_PATH);
+            navigate("/lobby");
           }}
         >
-          RETURN TO CAMP
+          RETURN TO WARCAMP
         </button>
       </div>
     </div>
   );
 }
 
+function tryBootMatch(): { ok: boolean; error?: string } {
+  try {
+    const result = prepareAndStartMatch();
+    if (result.ok) {
+      markDeployDone();
+      console.info("[warlord-genesis] /play ready", result);
+    }
+    return result;
+  } catch (err) {
+    return { ok: false, error: (err as Error).message || "Battle boot failed" };
+  }
+}
+
+/**
+ * /play — battle surface.
+ *
+ * Flow:
+ *  1. Capability preflight (WebGL required)
+ *  2. If already in battle (lobby/deploy started match) → show canvas
+ *  3. Else auto-prepare warcamp kit + startGame (deep link /play?skirmish=1)
+ *  4. Never infinite-spin: hard failure → gate with retry + warcamp link
+ */
 export function Play() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
@@ -120,11 +142,17 @@ export function Play() {
   const maxHealth = useGame((s) => s.maxHealth);
   const damageMult = useGame((s) => s.damageMult);
   const defense = useGame((s) => s.defense);
+
   const [locked, setLocked] = useState(false);
-  const [boot, setBoot] = useState<boolean | null>(null);
+  const [boot, setBoot] = useState<BootState>("checking");
   const [gateErr, setGateErr] = useState("");
   const [caps, setCaps] = useState<CapabilityReport | null>(null);
-  const autoSkirmish = params.get("skirmish") === "1" || params.get("quick") === "1";
+  const bootAttempted = useRef(false);
+
+  const quick =
+    params.get("skirmish") === "1" ||
+    params.get("quick") === "1" ||
+    params.get("auto") === "1";
 
   const capReport = useMemo(() => runCapabilityPreflight(), []);
 
@@ -138,38 +166,55 @@ export function Play() {
     return () => document.removeEventListener("pointerlockchange", onChange);
   }, []);
 
+  // Single boot attempt (not re-run on every phase tick).
   useEffect(() => {
+    if (bootAttempted.current) return;
+    bootAttempted.current = true;
+
     setCaps(capReport);
     if (!capReport.ok) {
-      setBoot(false);
+      setBoot("blocked");
       setGateErr(capReport.blockers.join(" · ") || "Required browser features missing");
       return;
     }
 
-    // Already mid-match (hot reload / remount).
-    if (phase !== "menu") {
-      setBoot(true);
+    // Lobby / deploy already started the match.
+    if (useGame.getState().phase !== "menu") {
+      setBoot("ready");
       setGateErr("");
       return;
     }
 
-    try {
-      // Always auto-prepare a strong default start so /play is never a naked hero.
-      const result = prepareAndStartMatch();
-      if (!result.ok) {
-        setBoot(false);
-        setGateErr(result.error || "Battle boot failed");
-        return;
-      }
-      markDeployDone();
-      setBoot(true);
+    const result = tryBootMatch();
+    if (result.ok && useGame.getState().phase !== "menu") {
+      setBoot("ready");
       setGateErr("");
-      console.info("[warlord-genesis] /play ready", result);
-    } catch (err) {
-      setBoot(false);
-      setGateErr((err as Error).message || "Battle boot failed");
+      return;
     }
-  }, [phase, capReport, autoSkirmish]);
+
+    // One hard retry after a frame (roster hydration race).
+    requestAnimationFrame(() => {
+      const again = tryBootMatch();
+      if (again.ok && useGame.getState().phase !== "menu") {
+        setBoot("ready");
+        setGateErr("");
+      } else {
+        setBoot("blocked");
+        setGateErr(
+          again.error ||
+            result.error ||
+            "Could not arm warcamp. Open the warcamp and march again.",
+        );
+      }
+    });
+  }, [capReport, quick]);
+
+  // If phase becomes battle later (external start), unlock UI.
+  useEffect(() => {
+    if (phase !== "menu" && boot === "checking") {
+      setBoot("ready");
+    }
+  }, [phase, boot]);
 
   if (caps && !caps.ok) {
     return (
@@ -179,26 +224,24 @@ export function Play() {
           const next = runCapabilityPreflight();
           setCaps(next);
           if (next.ok) {
-            const result = prepareAndStartMatch();
-            setBoot(result.ok);
+            const result = tryBootMatch();
+            setBoot(result.ok ? "ready" : "blocked");
             setGateErr(result.error || "");
-            if (result.ok) markDeployDone();
           }
         }}
       />
     );
   }
 
-  if (boot === null) {
+  if (boot === "checking") {
     return (
       <div className="gw-screen gw-play-boot">
         <div className="gw-play-boot-inner">
           <span className="gw-play-boot-spinner" aria-hidden />
-          <span className="gw-hint">Checking systems · arming warcamp kit…</span>
+          <span className="gw-hint">Arming warcamp · entering the field…</span>
           {caps && (
             <span className="gw-hint" style={{ opacity: 0.65, marginTop: 8, fontSize: 12 }}>
-              WebGL {caps.webgl.ok ? "ok" : "fail"} · WebGPU{" "}
-              {caps.webgpu ? "available" : "n/a"} · WASM / workers verified
+              WebGL {caps.webgl.ok ? "ok" : "fail"} · WebGPU {caps.webgpu ? "available" : "n/a"}
             </span>
           )}
         </div>
@@ -206,43 +249,44 @@ export function Play() {
     );
   }
 
-  if (!boot) {
+  if (boot === "blocked" || phase === "menu") {
     return (
       <div className="gw-screen gw-play-gate">
         <div className="gw-play-gate-inner">
           <h2 className="gw-engage-title">Cannot enter battle</h2>
-          <p className="gw-hint">{gateErr || "Complete deployment at the warcamp first."}</p>
+          <p className="gw-hint">
+            {gateErr || "Complete warcamp loadout, then march to war."}
+          </p>
           <button
             type="button"
             className="gw-btn"
             onClick={() => {
-              const result = prepareAndStartMatch();
-              if (result.ok) {
-                markDeployDone();
-                setBoot(true);
+              const result = tryBootMatch();
+              if (result.ok && useGame.getState().phase !== "menu") {
+                setBoot("ready");
                 setGateErr("");
               } else {
+                setBoot("blocked");
                 setGateErr(result.error || "Still blocked");
               }
             }}
           >
             Retry auto-deploy
           </button>
-          <button type="button" className="gw-btn gw-btn-ghost" onClick={() => navigate(DEPLOY_PATH)}>
-            Open march orders
+          <button
+            type="button"
+            className="gw-btn gw-btn-ghost"
+            onClick={() => navigate("/lobby")}
+          >
+            Open warcamp
           </button>
-        </div>
-      </div>
-    );
-  }
-
-  if (phase === "menu") {
-    // Should not stick here after prepareAndStartMatch — one more hard attempt.
-    return (
-      <div className="gw-screen gw-play-boot">
-        <div className="gw-play-boot-inner">
-          <span className="gw-play-boot-spinner" aria-hidden />
-          <span className="gw-hint">Entering the field…</span>
+          <button
+            type="button"
+            className="gw-btn gw-btn-ghost"
+            onClick={() => navigate(DEPLOY_PATH)}
+          >
+            March orders
+          </button>
         </div>
       </div>
     );
@@ -257,10 +301,10 @@ export function Play() {
       {showEngage && (
         <div id="lock-target" className="gw-engage">
           <div className="gw-engage-inner">
-            <span className="gw-engage-sub">The host awaits your command</span>
+            <span className="gw-engage-sub">Three lanes · one citadel</span>
             <h2 className="gw-engage-title">TAKE THE FIELD</h2>
             <span className="gw-hint">
-              Click to lock the mouse · press ` to switch to command · HP{" "}
+              Click anywhere to lock the mouse and fight · press ` for warlord command mode · HP{" "}
               {Math.round(health)}/{Math.round(maxHealth)} · ×{damageMult.toFixed(2)} dmg ·{" "}
               {Math.round(defense * 100)}% DR
             </span>

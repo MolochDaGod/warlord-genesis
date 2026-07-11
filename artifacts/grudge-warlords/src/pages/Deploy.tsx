@@ -66,7 +66,10 @@ export function Deploy() {
 
   const assault = () => {
     ensureWarcampReady();
-    if (!evaluateWarcampReady().ready) return;
+    if (!evaluateWarcampReady().ready) {
+      setLoadMsg("Loadout incomplete — return to warcamp");
+      return;
+    }
     try {
       sessionStorage.setItem(CHAMPION_LANE_KEY, String(lane));
       sessionStorage.setItem(DEPLOY_DONE_KEY, "1");
@@ -74,10 +77,10 @@ export function Deploy() {
       /* ignore */
     }
     lockLoadout();
-    const ok = startGame();
-    if (!ok) {
-      const r = prepareAndStartMatch();
-      if (!r.ok) {
+    const r = prepareAndStartMatch();
+    if (!r.ok) {
+      const ok = startGame();
+      if (!ok) {
         setLoadMsg(r.error || "Cannot start — check warcamp loadout");
         return;
       }
