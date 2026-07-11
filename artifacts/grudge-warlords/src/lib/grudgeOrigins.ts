@@ -6,7 +6,9 @@
 import { deployUrl } from "./deployRoutes";
 import { GRUDGE_FLEET_URLS } from "./fleetUrls";
 
-const ORIGINS_API = "https://api.grudge-studio.com/origins";
+/** Live registry (may 404 if worker path missing — always fall back). */
+const ORIGINS_API = "https://api.grudge-studio.com/api/origins";
+const ORIGINS_API_LEGACY = "https://api.grudge-studio.com/origins";
 const CACHE_KEY = "grudge_origins_v1";
 const CACHE_TTL_MS = 60_000;
 
@@ -34,6 +36,43 @@ export interface OriginsCatalog {
   origins: FleetOrigin[];
 }
 
+/** Static fleet map so lobby never hard-depends on the origins worker. */
+const FALLBACK_CATALOG: OriginsCatalog = {
+  ok: true,
+  version: "fallback-static",
+  updatedAt: Date.now(),
+  origins: [
+    {
+      id: "api",
+      label: "Game API",
+      kind: "http",
+      url: "https://api.grudge-studio.com",
+      status: "live",
+      roles: ["api", "game-data"],
+      healthUrl: "https://api.grudge-studio.com/api/health",
+      updatedAt: Date.now(),
+    },
+    {
+      id: "identity",
+      label: "Grudge ID",
+      kind: "http",
+      url: "https://id.grudge-studio.com",
+      status: "live",
+      roles: ["auth", "identity"],
+      updatedAt: Date.now(),
+    },
+    {
+      id: "ws",
+      label: "WebSocket edge",
+      kind: "ws",
+      url: "wss://grudge-api-production-0d46.up.railway.app",
+      status: "live",
+      roles: ["realtime"],
+      updatedAt: Date.now(),
+    },
+  ],
+};
+
 function readCache(): OriginsCatalog | null {
   try {
     const raw = sessionStorage.getItem(CACHE_KEY);
@@ -54,17 +93,27 @@ function writeCache(catalog: OriginsCatalog): void {
   }
 }
 
-/** Fetch the full fleet origins catalog (cached 60s). */
+/** Fetch the full fleet origins catalog (cached 60s). Never throws. */
 export async function fetchOrigins(force = false): Promise<OriginsCatalog> {
   if (!force) {
     const cached = readCache();
     if (cached) return cached;
   }
-  const res = await fetch(ORIGINS_API, { credentials: "omit" });
-  if (!res.ok) throw new Error(`Origins catalog unavailable (${res.status})`);
-  const catalog = (await res.json()) as OriginsCatalog;
-  writeCache(catalog);
-  return catalog;
+  for (const url of [ORIGINS_API, ORIGINS_API_LEGACY]) {
+    try {
+      const res = await fetch(url, { credentials: "omit" });
+      if (!res.ok) continue;
+      const catalog = (await res.json()) as OriginsCatalog;
+      if (catalog?.origins?.length) {
+        writeCache(catalog);
+        return catalog;
+      }
+    } catch {
+      /* try next */
+    }
+  }
+  writeCache(FALLBACK_CATALOG);
+  return FALLBACK_CATALOG;
 }
 
 /** Pick the best live origin for a role (world, pvp, api, auth, …). */

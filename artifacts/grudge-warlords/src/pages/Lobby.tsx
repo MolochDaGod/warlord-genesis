@@ -69,12 +69,26 @@ export function Lobby() {
     if (user?.gbuxBalance != null) syncGbuxFromAccount(Number(user.gbuxBalance));
   }, [user?.gbuxBalance, syncGbuxFromAccount]);
 
-  const playerFaction = GRUDGE_FACTION_BY_ID[factionId];
-  const enemyFaction = GRUDGE_FACTION_BY_ID[enemyFactionId];
+  // Never crash the warcamp if stored faction ids are stale/corrupt.
+  const playerFaction =
+    GRUDGE_FACTION_BY_ID[factionId] ?? GRUDGE_FACTIONS[0] ?? {
+      id: "crusade",
+      name: "Crusade",
+      color: "#d4a84b",
+    };
+  const enemyFaction =
+    GRUDGE_FACTION_BY_ID[enemyFactionId] ??
+    GRUDGE_FACTIONS.find((f) => f.id !== playerFaction.id) ??
+    GRUDGE_FACTIONS[1] ??
+    playerFaction;
 
   const march = () => {
     ensureWarcampReady();
-    if (!evaluateWarcampReady().ready) return;
+    const gate = evaluateWarcampReady();
+    if (!gate.ready) {
+      console.warn("[warlord-genesis] march blocked", gate.blockReason);
+      return;
+    }
     lockLoadout();
     markDeployDone();
     // Prefer full repair+start so /play does not re-boot mid-navigate.
@@ -82,7 +96,6 @@ export function Lobby() {
     if (!prepared.ok) {
       const ok = startGame();
       if (!ok) {
-        // Still open /play — it will show a clear gate + retry, not an infinite spinner.
         console.warn("[warlord-genesis] march: start failed", prepared.error);
       }
     }

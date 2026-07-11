@@ -28,13 +28,19 @@ export function StarterPick() {
 
   const pick = (prefabId: string) => {
     const p = PREFABS.find((x) => x.id === prefabId);
-    if (!p) return;
+    if (!p) {
+      // Content pack missing — still clear overlay so warcamp is usable.
+      completeStarterPick(prefabId);
+      return;
+    }
     completeStarterPick(prefabId);
     setFaction(p.faction);
     setPrefab(prefabId);
     applyCanonicalLoadoutToRoster(prefabId, setMelee, setRanged, setGearTier);
     seedDefaultLaneGuards(p.faction);
   };
+
+  const totalCards = byFaction.reduce((n, x) => n + x.prefabs.length, 0);
 
   return (
     <div className="gw-starter-overlay">
@@ -46,18 +52,33 @@ export function StarterPick() {
           hidden/active mesh presets (same as the character viewer). Upgrade with cards, GBUX,
           and daily packs — collect 10 shards to unlock more lane guards and roster heroes.
         </p>
-        {byFaction.map(({ faction, prefabs }) => (
-          <section key={faction.id} className="gw-starter-faction">
-            <h2 className="gw-starter-faction-name" style={{ color: faction.color }}>
-              {faction.name}
-            </h2>
-            <div className="gw-starter-grid">
-              {prefabs.map((p) => (
-                <CharacterCard key={p.id} prefab={p} compact onSelect={() => pick(p.id)} />
-              ))}
-            </div>
-          </section>
-        ))}
+        {totalCards === 0 ? (
+          <div style={{ textAlign: "center", padding: "1.5rem 0" }}>
+            <p className="gw-starter-sub">Champion codex failed to load. Continue with the default warlord.</p>
+            <button
+              type="button"
+              className="gw-btn"
+              onClick={() => pick("sir-aldric-valorheart")}
+            >
+              Continue as Sir Aldric
+            </button>
+          </div>
+        ) : (
+          byFaction.map(({ faction, prefabs }) =>
+            prefabs.length === 0 ? null : (
+              <section key={faction.id} className="gw-starter-faction">
+                <h2 className="gw-starter-faction-name" style={{ color: faction.color }}>
+                  {faction.name}
+                </h2>
+                <div className="gw-starter-grid">
+                  {prefabs.map((p) => (
+                    <CharacterCard key={p.id} prefab={p} compact onSelect={() => pick(p.id)} />
+                  ))}
+                </div>
+              </section>
+            ),
+          )
+        )}
       </div>
     </div>
   );

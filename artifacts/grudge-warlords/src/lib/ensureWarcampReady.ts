@@ -36,6 +36,8 @@ export function ensureWarcampReady(): void {
   meta.ensureStarterUnlocked();
 
   // First visit / broken meta: auto-unlock default crusade champion (level 3).
+  // Always complete onboarding so /lobby is never stuck behind an empty starter overlay
+  // when PREFAB tables fail to load (CDN / content pack issues).
   if (!meta.onboardingDone || !meta.starterPrefabId) {
     const pick =
       (roster.prefabId && PREFAB_BY_ID[roster.prefabId] && roster.prefabId) ||
@@ -44,6 +46,13 @@ export function ensureWarcampReady(): void {
       unlockFleetWarlord(pick);
       roster.setPrefab(pick);
       meta.completeStarterPick(pick);
+    } else {
+      // Last resort: mark onboarding done so warcamp UI is usable with defaults.
+      try {
+        meta.completeStarterPick(DEFAULT_STARTER);
+      } catch {
+        /* ignore */
+      }
     }
   }
 
