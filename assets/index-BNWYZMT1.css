@@ -34,3 +34,408 @@
 /* Pre-game cleaner */
 .gw-lobby .gw-cs-preview-col{max-width:280px}
 .gw-warlord-preview{height:min(320px,38vh)!important;min-height:220px!important}
+
+/* ═══════════════════════════════════════════════════════════════════
+   v84 UI SCALE SYSTEM — containers, density, fluid type, safe areas
+   Single source of truth for page outline + professional proportions
+   ═══════════════════════════════════════════════════════════════════ */
+:root{
+  --wg-safe-t: env(safe-area-inset-top, 0px);
+  --wg-safe-b: env(safe-area-inset-bottom, 0px);
+  --wg-safe-l: env(safe-area-inset-left, 0px);
+  --wg-safe-r: env(safe-area-inset-right, 0px);
+  /* Page containers */
+  --wg-page-max: 1440px;
+  --wg-page-max-narrow: 960px;
+  --wg-page-gutter: clamp(12px, 2.2vw, 28px);
+  --wg-section-gap: clamp(12px, 1.6vw, 24px);
+  --wg-card-radius: 12px;
+  --wg-panel-radius: 10px;
+  /* Density */
+  --wg-space-1: 4px;
+  --wg-space-2: 8px;
+  --wg-space-3: 12px;
+  --wg-space-4: 16px;
+  --wg-space-5: 24px;
+  --wg-space-6: 32px;
+  /* Type scale (readable, not shouty) */
+  --wg-text-xs: clamp(10px, 0.85vw, 11px);
+  --wg-text-sm: clamp(11px, 0.95vw, 13px);
+  --wg-text-md: clamp(13px, 1.05vw, 15px);
+  --wg-text-lg: clamp(16px, 1.4vw, 20px);
+  --wg-text-xl: clamp(20px, 2.2vw, 28px);
+  --wg-text-display: clamp(28px, 5vw, 56px);
+  /* Preview / media */
+  --wg-preview-h: clamp(200px, 32vh, 340px);
+  --wg-preview-h-sm: clamp(160px, 26vh, 240px);
+  /* HUD density */
+  --wg-hud-scale: clamp(0.82, 0.75 + 0.25 * (100vw / 1600), 1);
+  --wg-hud-edge: clamp(8px, 1.2vw, 16px);
+  --wg-z-hud: 10;
+  --wg-z-sticky: 20;
+  --wg-z-overlay: 40;
+  --wg-z-modal: 60;
+}
+
+/* Global page shell */
+html, body, #root{
+  height: 100%;
+  max-height: 100dvh;
+}
+body{
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Full-screen routes */
+.gw-screen{
+  inset: 0;
+  padding:
+    max(var(--wg-page-gutter), var(--wg-safe-t))
+    max(var(--wg-page-gutter), var(--wg-safe-r))
+    max(var(--wg-page-gutter), var(--wg-safe-b))
+    max(var(--wg-page-gutter), var(--wg-safe-l));
+  box-sizing: border-box;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+/* Centered content shells (intro / win-lose) */
+.gw-screen-inner,
+.gw-intro-inner{
+  width: min(100%, var(--wg-page-max-narrow));
+  margin-inline: auto;
+  padding: clamp(20px, 4vh, 40px) clamp(16px, 3vw, 28px);
+  box-sizing: border-box;
+}
+.gw-intro-inner{ max-width: var(--wg-page-max-narrow); }
+.gw-intro-tagline{
+  font-size: var(--wg-text-sm);
+  line-height: 1.55;
+  max-width: 36rem;
+  margin-inline: auto;
+}
+.gw-intro-cta,
+.gw-landing-cta{
+  padding: clamp(12px, 1.6vh, 16px) clamp(28px, 5vw, 56px) !important;
+  font-size: clamp(14px, 1.4vw, 18px) !important;
+  min-height: 44px;
+}
+.gw-intro-features{
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)) !important;
+  gap: var(--wg-space-3) !important;
+  width: 100%;
+}
+
+/* ── Lobby outline ── */
+.gw-lobby,
+.gw-lobby-v2{
+  display: flex !important;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  max-height: 100dvh;
+  padding: 0 !important;
+  overflow: hidden;
+}
+.gw-lobby-top{
+  flex: 0 0 auto;
+  position: sticky;
+  top: 0;
+  z-index: var(--wg-z-sticky);
+  display: flex;
+  align-items: center;
+  gap: var(--wg-space-3);
+  padding:
+    max(10px, var(--wg-safe-t))
+    max(var(--wg-page-gutter), var(--wg-safe-r))
+    10px
+    max(var(--wg-page-gutter), var(--wg-safe-l)) !important;
+  min-height: 56px;
+}
+.gw-lobby-title{
+  font-size: var(--wg-text-lg) !important;
+  letter-spacing: 0.18em !important;
+  line-height: 1.15;
+}
+.gw-lobby-tagline{
+  font-size: var(--wg-text-xs) !important;
+  letter-spacing: 0.06em;
+  opacity: 0.85;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: min(48vw, 420px);
+}
+.gw-lobby-top-actions{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+  max-width: min(46vw, 420px);
+}
+.gw-lobby-top-actions .gw-btn,
+.gw-lobby-top-actions .gw-btn-mini{
+  padding: 6px 10px !important;
+  font-size: var(--wg-text-xs) !important;
+  min-height: 34px;
+  white-space: nowrap;
+}
+
+/* Main lobby content container */
+.gw-lobby-grid,
+.gw-lobby-grid-v2{
+  flex: 1 1 auto;
+  min-height: 0;
+  width: min(100%, var(--wg-page-max));
+  margin: 0 auto;
+  padding:
+    var(--wg-section-gap)
+    max(var(--wg-page-gutter), var(--wg-safe-r))
+    max(var(--wg-space-5), var(--wg-safe-b))
+    max(var(--wg-page-gutter), var(--wg-safe-l)) !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px) !important;
+  gap: var(--wg-section-gap) !important;
+  align-items: start;
+  overflow-y: auto;
+  overflow-x: hidden;
+  overscroll-behavior: contain;
+}
+
+/* Character select shell */
+.gw-cs-v2,
+.gw-cs{
+  width: 100%;
+  max-width: 100%;
+}
+.gw-cs-body{
+  display: grid !important;
+  grid-template-columns: minmax(200px, min(32vw, 280px)) minmax(0, 1fr) !important;
+  gap: var(--wg-section-gap) !important;
+  width: 100%;
+  align-items: start;
+}
+.gw-cs-preview-col{
+  max-width: none !important;
+  width: 100%;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wg-space-3);
+  position: sticky;
+  top: 8px;
+}
+.gw-cs-preview,
+.gw-cs-preview-wrap{
+  width: 100% !important;
+  max-width: 100% !important;
+  height: auto !important;
+}
+/* Single intelligent preview height — kills 280/320/min(42vh) wars */
+.gw-warlord-preview,
+.gw-warlord-preview--live,
+.gw-hero-showcase-3d,
+.gw-cs-preview{
+  width: 100% !important;
+  height: var(--wg-preview-h) !important;
+  min-height: 180px !important;
+  max-height: 360px !important;
+  border-radius: var(--wg-card-radius) !important;
+  box-sizing: border-box;
+}
+.gw-warlord-preview canvas,
+.gw-cs-preview canvas,
+.gw-hero-showcase-3d canvas{
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+}
+.gw-lobby .gw-cs-preview-col{ max-width: none !important; }
+
+/* Side panel / deploy summary cards */
+.gw-lobby-side,
+.gw-deploy-summary,
+.gw-lo,
+.gw-prematch-lane{
+  border-radius: var(--wg-card-radius) !important;
+  padding: clamp(10px, 1.4vw, 16px) !important;
+  box-sizing: border-box;
+}
+.gw-lo-body{
+  grid-template-columns: minmax(120px, 160px) minmax(0, 1fr) !important;
+  max-height: min(280px, 36vh) !important;
+  gap: 10px !important;
+}
+.gw-lo-list{ max-height: min(220px, 30vh) !important; }
+
+/* Faction / race / class pickers — fluid chips */
+.gw-cs-factions{
+  max-width: 100% !important;
+  gap: 8px !important;
+}
+.gw-cs-faction{
+  flex: 1 1 140px !important;
+  min-width: 0;
+  padding: 8px 10px !important;
+}
+.gw-cs-faction-name{ font-size: var(--wg-text-sm) !important; }
+.gw-cs-faction-motto{ font-size: var(--wg-text-xs) !important; }
+.gw-cs-race-btn,
+.gw-cs-class{
+  padding: 6px 10px !important;
+  font-size: var(--wg-text-xs) !important;
+  min-height: 32px;
+}
+
+/* March / primary CTAs */
+.gw-lobby .gw-btn:not(.gw-btn-ghost):not(.gw-btn-mini),
+.gw-lane-btn-block .gw-btn,
+.gk-deploy-shell .gw-btn{
+  min-height: 44px;
+  font-size: var(--wg-text-sm) !important;
+  padding: 10px 18px !important;
+}
+
+/* ── Deploy screen ── */
+.gk-deploy-shell,
+.gw-deploy-screen,
+.wg-dep-screen{
+  width: min(100%, var(--wg-page-max));
+  margin-inline: auto;
+  padding: var(--wg-page-gutter) !important;
+  box-sizing: border-box;
+}
+
+/* ── Battle HUD scale ── */
+.gw-hud,
+.gw-hud.gk-combat-hud,
+.gw-hud.gw-moba-battle{
+  --_s: var(--wg-hud-scale);
+  font-size: calc(14px * var(--_s));
+}
+.gw-top{
+  top: calc(var(--wg-hud-edge) + var(--wg-safe-t)) !important;
+  gap: calc(10px * var(--wg-hud-scale)) !important;
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: top center;
+  max-width: min(920px, calc(100vw - 24px));
+}
+.gw-mode-badge{
+  top: calc(var(--wg-hud-edge) + var(--wg-safe-t)) !important;
+  left: calc(var(--wg-hud-edge) + var(--wg-safe-l)) !important;
+  transform: scale(var(--wg-hud-scale)) !important;
+  transform-origin: top left;
+}
+.gw-objective{
+  top: calc(64px * var(--wg-hud-scale) + var(--wg-safe-t)) !important;
+  max-width: min(340px, 42vw) !important;
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: top center;
+}
+.gw-bottom-left{
+  left: calc(var(--wg-hud-edge) + var(--wg-safe-l)) !important;
+  bottom: calc(var(--wg-hud-edge) + var(--wg-safe-b)) !important;
+  transform: scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom left;
+  min-width: 0 !important;
+  max-width: min(240px, 32vw);
+}
+.gw-bottom-right{
+  right: calc(var(--wg-hud-edge) + var(--wg-safe-r)) !important;
+  bottom: calc(var(--wg-hud-edge) + var(--wg-safe-b)) !important;
+  transform: scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom right;
+  max-width: min(220px, 30vw);
+}
+.gw-weapon-skills{
+  bottom: calc(88px * var(--wg-hud-scale) + var(--wg-safe-b)) !important;
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom center;
+  max-width: min(720px, calc(100vw - 32px));
+}
+.gw-skills{
+  bottom: calc(24px * var(--wg-hud-scale) + var(--wg-safe-b)) !important;
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom center;
+}
+.gw-action-strip{
+  bottom: calc(14px + var(--wg-safe-b)) !important;
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom center;
+  max-width: min(800px, calc(100vw - 24px));
+}
+.gw-messages{
+  bottom: calc(150px * var(--wg-hud-scale) + var(--wg-safe-b)) !important;
+  max-width: min(380px, 70vw);
+  transform: translateX(-50%) scale(var(--wg-hud-scale)) !important;
+  transform-origin: bottom center;
+}
+.gw-respawn{
+  transform: scale(var(--wg-hud-scale));
+}
+
+/* ── Breakpoints ── */
+@media (max-width: 1100px){
+  .gw-lobby-grid,
+  .gw-lobby-grid-v2{
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 280px) !important;
+  }
+}
+@media (max-width: 900px){
+  .gw-lobby-grid,
+  .gw-lobby-grid-v2{
+    grid-template-columns: 1fr !important;
+  }
+  .gw-cs-body{
+    grid-template-columns: 1fr !important;
+  }
+  .gw-cs-preview-col{
+    position: static;
+    max-width: min(100%, 420px);
+    margin-inline: auto;
+  }
+  .gw-warlord-preview,
+  .gw-cs-preview,
+  .gw-hero-showcase-3d{
+    height: var(--wg-preview-h-sm) !important;
+  }
+  .gw-lobby-tagline{ display: none; }
+  .gw-lobby-top-actions{ max-width: 55vw; }
+  .gw-top{ max-width: calc(100vw - 16px); }
+  .gw-objective{ max-width: min(300px, 70vw) !important; }
+}
+@media (max-width: 640px){
+  :root{
+    --wg-page-gutter: 10px;
+    --wg-hud-scale: 0.8;
+  }
+  .gw-lobby-title{ letter-spacing: 0.12em !important; font-size: 14px !important; }
+  .gw-lobby-top-actions .gw-btn-mini{ padding: 5px 8px !important; }
+  .gw-cs-factions{ flex-direction: column; }
+  .gw-cs-faction{ flex: 1 1 auto !important; }
+  .gw-lo-body{ grid-template-columns: 1fr !important; max-height: none !important; }
+}
+@media (min-width: 1600px){
+  :root{
+    --wg-page-max: 1560px;
+    --wg-preview-h: clamp(240px, 30vh, 380px);
+  }
+}
+/* Ultrawide: keep content readable */
+@media (min-aspect-ratio: 21/9){
+  .gw-lobby-grid,
+  .gw-lobby-grid-v2,
+  .gw-screen-inner{
+    max-width: 1400px;
+  }
+}
+
+/* Prevent accidental horizontal scroll from absolute HUD */
+.gw-hud{ overflow: hidden; }
+/* Buttons touch-friendly without looking huge */
+.gw-btn, .gw-back, .hud-action-btn, .studio-tab{
+  touch-action: manipulation;
+}

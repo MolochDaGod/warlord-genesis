@@ -285,8 +285,10 @@
 }
 
 .gw-cs-preview {
-  width: 200px;
-  height: 264px;
+  width: 100%;
+  height: var(--wg-preview-h, clamp(200px, 32vh, 340px));
+  min-height: 180px;
+  max-height: 360px;
   border-radius: 12px;
   overflow: hidden;
   border: 1px solid rgba(120, 150, 200, 0.22);

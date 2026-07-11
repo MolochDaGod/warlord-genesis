@@ -112,7 +112,7 @@ export function Lobby() {
         </button>
         <div className="gw-lobby-title-block">
           <span className="gw-lobby-title">The Warcamp</span>
-          <span className="gw-lobby-tagline">GRUDGE6 viewer characters · Bip001 meshes in battle</span>
+          <span className="gw-lobby-tagline">Choose your warlord · arm loadout · march three lanes</span>
         </div>
         <div className="gw-lobby-top-actions">
           <a
