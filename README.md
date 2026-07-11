@@ -63,20 +63,32 @@ npx vercel --prod --yes --scope grudgenexus
 - **Output (vite):** `artifacts/grudge-warlords/dist/public`
 - **Shipped SPA:** `index.html` + `assets/index-warlord-fix3.js` (static ship mode when present)
 
-### Domains
+### Domains & Cloudflare Tunnel
+
+| Host | Path |
+|------|------|
+| `warlord-genesis.vercel.app` | Native Vercel alias (always on) |
+| `warstrat.grudge-studio.com` | **Cloudflare Tunnel** → Vercel origin |
 
 ```bash
-# Attach branded host to this project
-npx vercel domains add warstrat.grudge-studio.com warlord-genesis --scope grudgenexus
+# Tunnel (created once): warstrat / 1e118485-5a41-4788-b4b0-2aa1a22d1e77
+pnpm run tunnel:dns          # CNAME warstrat → tunnel
+pnpm run tunnel              # cloudflared connector (keep running or install as service)
+
+# Env + secrets on Vercel Production
+# Copy fleet secrets into .env.production.local (gitignored), then:
+pnpm run env:attach
 ```
 
-Cloudflare DNS (`grudge-studio.com` zone) — CNAME:
+Tunnel config: [`cloudflared/config.yml`](cloudflared/config.yml)  
+Proxies `warstrat.grudge-studio.com` → `https://warlord-genesis.vercel.app` with correct `Host` header.
 
-```
-warstrat  CNAME  cname.vercel-dns.com  (proxied optional)
-```
+Windows service (optional, elevated):
 
-Keep **warlord-genesis.vercel.app** as the always-on Vercel alias.
+```powershell
+cloudflared service install
+# or: nssm install warstrat-tunnel "C:\Users\david\Tools\cloudflared.exe" tunnel --config ... run warstrat
+```
 
 ## Architecture
 

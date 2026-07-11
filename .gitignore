@@ -56,3 +56,14 @@ textures/*.tmp.png
 
 # Partial source imports (regenerate via import:baseline)
 src/grudge-warlords/_baseline-ref/
+
+.env.production.local
+.env.local
+
+
+# Tunnel secrets
+cloudflared/credentials.json
+cloudflared/*.json
+.env.production.local
+.env.local
+

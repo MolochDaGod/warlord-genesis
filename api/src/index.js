@@ -15,9 +15,12 @@ const PORT = Number(process.env.PORT) || 8787;
 
 const allowedOrigins = [
   "https://warlord-genesis.vercel.app",
+  "https://warstrat.grudge-studio.com",
+  "https://www.warstrat.grudge-studio.com",
   "https://grudgewarlords.com",
   "https://www.grudgewarlords.com",
   /^https:\/\/warlord-genesis.*\.vercel\.app$/,
+  /^https:\/\/.*\.warstrat\.grudge-studio\.com$/,
   /^http:\/\/localhost(:\d+)?$/,
 ];
 

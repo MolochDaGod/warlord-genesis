@@ -1,0 +1,15 @@
+# Cloudflare Tunnel — warstrat.grudge-studio.com → Warlord Genesis (Vercel)
+# Tunnel ID: 1e118485-5a41-4788-b4b0-2aa1a22d1e77
+tunnel: 1e118485-5a41-4788-b4b0-2aa1a22d1e77
+credentials-file: C:\Users\david\.cloudflared\1e118485-5a41-4788-b4b0-2aa1a22d1e77.json
+
+ingress:
+  - hostname: warstrat.grudge-studio.com
+    service: https://warlord-genesis.vercel.app
+    originRequest:
+      httpHostHeader: warlord-genesis.vercel.app
+      originServerName: warlord-genesis.vercel.app
+      noTLSVerify: false
+      connectTimeout: 30s
+      keepAliveConnections: 16
+  - service: http_status:404
