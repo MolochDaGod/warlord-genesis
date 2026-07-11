@@ -4,7 +4,7 @@ import { useRoster } from "../../game/roster";
 import { useWeaponTuning, type TuningField } from "../../game/weaponTuning";
 import { getPreset, isMeleeWeapon } from "../../game/anim/presets";
 import { EM } from "../../game/entities";
-import { ABILITIES, DIFFICULTY, type AbilityId } from "../../game/config";
+import { ABILITIES, type AbilityId } from "../../game/config";
 import { MAX_HERO_LEVEL, xpBar } from "../../game/heroSkillTree";
 import { warlordSkillsForLoadout } from "../../game/warlordWeaponSkills";
 import { CLASS_BY_ID } from "@workspace/game-content";
@@ -223,23 +223,32 @@ function ObjectivePanel() {
       : "Enemy is claiming it…"
     : "Hold the centre to claim";
 
+  // Only block center FOV for critical state — idle relic countdown stays out of the way
+  const critical =
+    allyCoreExposed ||
+    enemyCoreOpen ||
+    relicActive ||
+    buffAllyTimer > 0 ||
+    buffEnemyTimer > 0 ||
+    comebackAlly;
+
+  if (!critical && !objectiveLabel) return null;
+
   return (
-    <div className="gw-objective">
-      {objectiveLabel && (
+    <div className={`gw-objective${critical ? " is-critical" : " is-quiet"}`}>
+      {critical && objectiveLabel && (
         <div className="gw-obj-main">
           <span className="gw-obj-label">Objective</span>
           <span className="gw-obj-text">{objectiveLabel}</span>
         </div>
       )}
-      {allyCoreExposed && <div className="gw-obj-warn">⚠ YOUR CITADEL IS EXPOSED</div>}
-      {enemyCoreOpen && <div className="gw-obj-good">ENEMY CITADEL VULNERABLE</div>}
+      {allyCoreExposed && <div className="gw-obj-warn">YOUR CITADEL IS EXPOSED</div>}
+      {enemyCoreOpen && <div className="gw-obj-good">ENEMY CITADEL OPEN</div>}
 
-      <div className={`gw-relic${relicActive ? " gw-relic-active" : ""}`}>
-        <span className="gw-relic-title">⬡ {relicActive ? "RELIC RISEN" : "Relic"}</span>
-        <span className="gw-relic-sub">
-          {relicActive ? `${captureNote} · ${relicTimer}s` : `Rises in ${relicTimer}s`}
-        </span>
-        {relicActive && (
+      {relicActive && (
+        <div className="gw-relic gw-relic-active">
+          <span className="gw-relic-title">RELIC</span>
+          <span className="gw-relic-sub">{captureNote} · {relicTimer}s</span>
           <div className="gw-relic-bar">
             <span
               style={{
@@ -248,15 +257,17 @@ function ObjectivePanel() {
               }}
             />
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
-      <div className="gw-obj-tags">
-        {buffAllyTimer > 0 && <span className="gw-tag gw-tag-good">Relic Might {buffAllyTimer}s</span>}
-        {buffEnemyTimer > 0 && <span className="gw-tag gw-tag-bad">Enemy Might {buffEnemyTimer}s</span>}
-        {comebackAlly && <span className="gw-tag gw-tag-good">Rally Bonus</span>}
-        {allyTech > 0 && <span className="gw-tag">Army Tech T{allyTech}</span>}
-      </div>
+      {(buffAllyTimer > 0 || buffEnemyTimer > 0 || comebackAlly || allyTech > 0) && (
+        <div className="gw-obj-tags">
+          {buffAllyTimer > 0 && <span className="gw-tag gw-tag-good">Might {buffAllyTimer}s</span>}
+          {buffEnemyTimer > 0 && <span className="gw-tag gw-tag-bad">Enemy {buffEnemyTimer}s</span>}
+          {comebackAlly && <span className="gw-tag gw-tag-good">Rally</span>}
+          {allyTech > 0 && <span className="gw-tag">Tech T{allyTech}</span>}
+        </div>
+      )}
     </div>
   );
 }
@@ -283,7 +294,6 @@ export function HUD() {
   const allyCoreMax = useGame((s) => s.allyCoreMax);
   const enemyCoreHp = useGame((s) => s.enemyCoreHp);
   const enemyCoreMax = useGame((s) => s.enemyCoreMax);
-  const difficulty = useGame((s) => s.difficulty);
   const heroDead = useGame((s) => s.heroDead);
   const respawnTimer = useGame((s) => s.respawnTimer);
   const messages = useGame((s) => s.messages);
@@ -294,82 +304,80 @@ export function HUD() {
   if (phase !== "battle") return null;
 
   const summary = mode === "command" && selection.length ? selectionSummary(selection) : [];
+  const isCombat = mode === "combat";
+  const isCommand = mode === "command";
 
   return (
-    <div className={`gw-hud gw-mode-${mode}`}>
-      <div className="gw-crosshair">
-        <span /><span /><span /><span />
-      </div>
-
-      <Marquee />
-
-      <SkillTreePicker />
-
-      {armedBuild && mode === "command" && (
-        <div className="gw-build-banner">
-          <span className="gw-build-label">Placing</span>
-          <span className="gw-build-name">{armedBuild.ref.toUpperCase()}</span>
-          <span className="gw-build-hint">Click terrain · Esc cancel · 1–5 switch build</span>
+    <div className={`gw-hud gk-root gk-combat-hud gw-moba-battle gw-mode-${mode}`}>
+      {/* Crosshair only in FPS combat — not during RTS command */}
+      {isCombat && (
+        <div className="gw-crosshair" aria-hidden>
+          <span /><span /><span /><span />
         </div>
       )}
 
+      <Marquee />
+      <SkillTreePicker />
+
+      {armedBuild && isCommand && (
+        <div className="gw-build-banner">
+          <span className="gw-build-label">Placing</span>
+          <span className="gw-build-name">{armedBuild.ref.toUpperCase()}</span>
+          <span className="gw-build-hint">Click terrain · Esc cancel · 1–5 switch</span>
+        </div>
+      )}
+
+      {/* Compact mode pill — top-left, not center-blocking */}
       <div className={`gw-mode-badge gw-mode-badge-${mode}`}>
         <span className="gw-mode-key">`</span>
-        <span className="gw-mode-text">{mode === "combat" ? "WARRIOR" : "WARLORD"}</span>
-        {mode === "command" && selection.length > 0 && (
-          <span className="gw-mode-sel">{selection.length} SELECTED</span>
+        <span className="gw-mode-text">{isCombat ? "COMBAT" : "COMMAND"}</span>
+        {isCommand && selection.length > 0 && (
+          <span className="gw-mode-sel">{selection.length}</span>
         )}
       </div>
 
-      {/* Citadels */}
+      {/* Top bar: citadel HP only — score tucked small */}
       <div className="gw-top">
         <PortraitFrame
           variant="lg"
           crest="#e0b252"
-          label="Your Citadel"
-          value={`${Math.ceil(allyCoreHp)} / ${allyCoreMax}`}
-          pct={(allyCoreHp / allyCoreMax) * 100}
+          label="Ally Core"
+          value={`${Math.ceil(allyCoreHp)}`}
+          pct={(allyCoreHp / Math.max(1, allyCoreMax)) * 100}
           fill="green"
         />
-        <span className="gw-vs">VS</span>
+        <div className="gw-top-center-meta">
+          <span className="gw-vs">VS</span>
+          <span className="gw-score-inline">{score} · {kills} kills</span>
+        </div>
         <PortraitFrame
           variant="lg"
           crest="#c0392b"
-          label="Enemy Citadel"
-          value={`${Math.ceil(enemyCoreHp)} / ${enemyCoreMax}`}
-          pct={(enemyCoreHp / enemyCoreMax) * 100}
+          label="Enemy Core"
+          value={`${Math.ceil(enemyCoreHp)}`}
+          pct={(enemyCoreHp / Math.max(1, enemyCoreMax)) * 100}
           fill="red"
         />
-        <div className="gw-panel gw-score">
-          <span className="gw-label">Score</span>
-          <span className="gw-value">{score}</span>
-        </div>
-        <div className={`gw-panel gw-difficulty gw-difficulty-${difficulty}`}>
-          <span className="gw-label">Difficulty</span>
-          <span className="gw-value">{DIFFICULTY[difficulty].name}</span>
-        </div>
       </div>
 
+      {/* Objective only when critical (exposed core / relic active / vulnerable) */}
       <ObjectivePanel />
 
-      {/* Respawn banner */}
       {heroDead && (
         <div className="gw-status">
           <div className="gw-respawn">
-            <span className="gw-respawn-title">YOU HAVE FALLEN</span>
-            <span className="gw-respawn-sub">Returning in {Math.ceil(respawnTimer)}s</span>
+            <span className="gw-respawn-title">FALLEN</span>
+            <span className="gw-respawn-sub">Respawn {Math.ceil(respawnTimer)}s</span>
           </div>
         </div>
       )}
 
-      {/* Messages */}
       <div className="gw-messages">
         {messages.map((m) => (
           <div key={m.id} className={`gw-msg gw-msg-${m.kind}`}>{m.text}</div>
         ))}
       </div>
 
-      {/* Selection panel */}
       {summary.length > 0 && (
         <div className="gw-selection">
           {summary.map((s) => (
@@ -381,24 +389,24 @@ export function HUD() {
         </div>
       )}
 
-      {/* Bottom-left: hero armor + command legend */}
+      {/* Player frame — bottom-left */}
       <div className="gw-bottom-left">
         <PortraitFrame
           variant="sm"
           crest={CLASS_BY_ID[classId].color}
           level={String(heroLevel)}
-          label={`Hero Lv ${heroLevel}/${MAX_HERO_LEVEL}`}
-          value={String(Math.ceil(health))}
-          pct={(health / maxHealth) * 100}
+          label={`Lv ${heroLevel}`}
+          value={`${Math.ceil(health)} / ${Math.ceil(maxHealth)}`}
+          pct={(health / Math.max(1, maxHealth)) * 100}
           fill={health > maxHealth * 0.35 ? "green" : "orange"}
         />
         <BarFrame
-          label={heroLevel >= MAX_HERO_LEVEL ? "MAX LEVEL" : "Experience"}
-          value={heroLevel >= MAX_HERO_LEVEL ? "◆" : `${xp.cur} / ${xp.need}`}
+          label={heroLevel >= MAX_HERO_LEVEL ? "MAX" : "XP"}
+          value={heroLevel >= MAX_HERO_LEVEL ? "◆" : `${xp.cur}/${xp.need}`}
           pct={xp.pct}
           fill="orange"
         />
-        {mode === "command" && (
+        {isCommand && (
           <div className="gw-orders">
             {ORDERS.map((o) => (
               <div key={o.key} className="gw-order">
@@ -410,38 +418,40 @@ export function HUD() {
         )}
       </div>
 
-      {/* Hero ability cooldowns (combat only) */}
-      {mode === "combat" && (
-        <>
+      {/* Single combat action strip: weapon skills + dash/slam */}
+      {isCombat && (
+        <div className="gw-action-strip">
           <WeaponSkillsBar />
           <SkillsBar />
-        </>
+        </div>
       )}
 
-      {/* Weapon placement tuner (combat only, toggled with P) */}
-      {mode === "combat" && <WeaponTuningPanel />}
+      {isCombat && <WeaponTuningPanel />}
 
-      {/* Bottom-right: ammo (ranged) or weapon label (melee) + credits */}
       <div className="gw-bottom-right">
         {heroMelee ? (
           <BarFrame label={heroPreset.weaponLabel.toUpperCase()} value="∞" pct={100} fill="blue" />
         ) : (
           <BarFrame
-            label={reloading ? "RELOADING" : "QUIVER"}
-            value={reloading ? "··" : `${ammo} / ${reserve}`}
-            pct={reloading ? 0 : (ammo / magazine) * 100}
+            label={reloading ? "RELOAD" : "AMMO"}
+            value={reloading ? "··" : `${ammo}/${reserve}`}
+            pct={reloading ? 0 : (ammo / Math.max(1, magazine)) * 100}
             fill="blue"
           />
         )}
         <div className="gw-credits"><span className="gw-cr-icon">◈</span> {credits}</div>
-        <span className="gw-sub">{kills} SLAIN</span>
       </div>
 
-      <HeroUpgradePanel />
-      <ProductionBuildingPanel />
-      <LaneDeployment />
-      <BuildBar />
-      <Shop />
+      {/* RTS panels only in command mode — keep combat FOV clean */}
+      {isCommand && (
+        <>
+          <HeroUpgradePanel />
+          <ProductionBuildingPanel />
+          <LaneDeployment />
+          <BuildBar />
+          <Shop />
+        </>
+      )}
     </div>
   );
 }

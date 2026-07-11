@@ -89,7 +89,8 @@ function bakedClipUrl(rel: string): string {
     .split("/")
     .map((seg) => encodeURIComponent(seg))
     .join("/");
-  return `${ASSET_CDN}/anims/baked/${encoded}.json`;
+  // Same-origin first — CDN anims/baked often 404 on assets.grudge-studio.com
+  return `/anims/baked/${encoded}.json`;
 }
 
 function powerOfTenScale(reference: number, current: number): number {
@@ -227,17 +228,25 @@ function buildSceneBoneNames(scene: THREE.Object3D): string[] {
   return names;
 }
 
-/** Load a rotation-only baked clip from the GRUDGE CDN (shared by skills + locomotion). */
+/** Load rotation-only baked clip — /anims/baked on deploy, warn+null on 404. */
 export async function loadBakedClipByRel(
   rel: string,
   scene: THREE.Object3D | null = null,
-): Promise<THREE.AnimationClip> {
+): Promise<THREE.AnimationClip | null> {
   const url = bakedClipUrl(rel);
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`Baked clip ${url} HTTP ${res.status}`);
-  const json = (await res.json()) as THREE.AnimationClipJSON;
-  const raw = THREE.AnimationClip.parse(json);
-  return normalizeBakedBip001Clip(toRotationOnlyClip(raw), scene);
+  try {
+    const res = await fetch(url);
+    if (!res.ok) {
+      console.warn(`[grudge6] baked clip missing ${url} (${res.status})`);
+      return null;
+    }
+    const json = (await res.json()) as THREE.AnimationClipJSON;
+    const raw = THREE.AnimationClip.parse(json);
+    return normalizeBakedBip001Clip(toRotationOnlyClip(raw), scene);
+  } catch (err) {
+    console.warn(`[grudge6] baked clip failed ${url}`, err);
+    return null;
+  }
 }
 
 export type Grudge6LocoState = "idle" | "walk" | "run" | "attack";
@@ -297,18 +306,27 @@ async function loadPackBundle(
     loadBakedClipByRel(loco.sprint, root),
     loadBakedClipByRel(ATTACK_BY_PACK[pack], root),
   ]);
-  const clips: LocoClips = { idle: idleClip, walk: walkClip, run: runClip, sprint: sprintClip };
+  const fallback =
+    idleClip ?? walkClip ?? runClip ?? sprintClip ?? attackClip;
+  if (!fallback) throw new Error(`[grudge6] no baked clips for pack ${pack}`);
+  const clips: LocoClips = {
+    idle: idleClip ?? fallback,
+    walk: walkClip ?? fallback,
+    run: runClip ?? fallback,
+    sprint: sprintClip ?? runClip ?? fallback,
+  };
   const director = new AnimationDirector(mixer, clips);
-  const idleAction = mixer.clipAction(idleClip);
+  const idleAction = mixer.clipAction(clips.idle);
   warnLowBind(`${pack}/idle`, idleAction, root);
+  const bind = (c: THREE.AnimationClip | null) => (c ? mixer.clipAction(c) : null);
   return {
     director,
-    attackClip,
+    attackClip: attackClip ?? fallback,
     actions: {
       idle: idleAction,
-      walk: mixer.clipAction(walkClip),
-      run: mixer.clipAction(runClip),
-      attack: mixer.clipAction(attackClip),
+      walk: bind(walkClip) ?? undefined,
+      run: bind(runClip) ?? undefined,
+      attack: bind(attackClip) ?? undefined,
     },
   };
 }
@@ -385,13 +403,19 @@ export async function loadGrudge6CharacterInstance(
     attackClip: bundle.attackClip,
     actions: bundle.actions,
     swapAnimPack: async (nextPack: AnimPack) => {
-      prepared.director.dispose();
-      mixer.stopAllAction();
+      // Load first — never dispose working director on failed fetch
       const next = await loadPackBundle(root, mixer, nextPack);
+      try {
+        prepared.director.dispose();
+      } catch {
+        /* ignore */
+      }
+      mixer.stopAllAction();
       prepared.director = next.director;
       prepared.attackClip = next.attackClip;
       prepared.actions = next.actions;
       prepared.director.setGaitTarget(false, false);
+      prepared.actions.idle?.reset().fadeIn(0.12).play();
     },
     dispose: () => {
       try {
@@ -486,16 +510,25 @@ async function prepareFromGltfRoot(
       attack: mixer.clipAction(attackClip),
     },
     swapAnimPack: async (pack: AnimPack) => {
-      prepared.director.dispose();
-      mixer.stopAllAction();
       const next = await loadPackBundle(root, mixer, pack);
+      try {
+        prepared.director.dispose();
+      } catch {
+        /* ignore */
+      }
+      mixer.stopAllAction();
       prepared.director = next.director;
       prepared.attackClip = next.attackClip;
       prepared.actions = next.actions;
+      prepared.director.setGaitTarget(false, false);
+      prepared.actions.idle?.reset().fadeIn(0.12).play();
     },
   };
-  if (animations.length === 0) {
-    prepared.actions.idle?.play();
+  try {
+    prepared.director.setGaitTarget(false, false);
+    prepared.actions.idle?.reset().setEffectiveWeight(1).fadeIn(0.12).play();
+  } catch {
+    /* ignore */
   }
   return prepared;
 }

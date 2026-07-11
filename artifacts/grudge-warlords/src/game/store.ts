@@ -346,6 +346,19 @@ export const useGame = create<GameState>((set, get) => ({
     const heroSkillPicks = autoSkill ? [autoSkill] : [];
     const heroBonuses = computeHeroBonuses(r.classId, heroSkillPicks, 1);
     const heroMaxHealth = maxHealth + heroBonuses.bonusHp;
+    // Preserve pre-match lane creep picks (lobby/deploy UI). Only fill missing slots.
+    const prevLanes = get().laneDeployment;
+    const fallbackDep = playerDefaultDeployment({
+      meleeGuard: r.laneMeleeHeroId,
+      rangedGuard: r.laneRangedHeroId,
+    });
+    const preservedLanes: LaneDeployment = {
+      lanes: {
+        0: prevLanes.lanes[0] ?? fallbackDep.lanes[0],
+        1: prevLanes.lanes[1] ?? fallbackDep.lanes[1],
+        2: prevLanes.lanes[2] ?? fallbackDep.lanes[2],
+      },
+    };
     set({
       ...initial,
       mapSize: size,
@@ -359,12 +372,9 @@ export const useGame = create<GameState>((set, get) => ({
       heroSkillPicks,
       heroBonuses,
       pendingSkillPick: null,
-      laneDeployment: playerDefaultDeployment({
-        meleeGuard: r.laneMeleeHeroId,
-        rangedGuard: r.laneRangedHeroId,
-      }),
+      laneDeployment: preservedLanes,
       deploymentRound: 1,
-      deploymentHighlight: true,
+      deploymentHighlight: false,
       maxHealth: heroMaxHealth,
       health: heroMaxHealth,
       damageMult: ls.damageMult * (1 + heroBonuses.damageMult),
@@ -373,9 +383,9 @@ export const useGame = create<GameState>((set, get) => ({
       ammo: rw.magazine,
       reserve: rw.reserve,
       reloading: false,
+      messages: [],
     });
-    get().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL", "good");
-    get().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)", "info");
+    get().pushMessage("RAZE THE ENEMY CITADEL", "good");
     return true;
   },
   reset: () => {
@@ -689,8 +699,9 @@ export const useGame = create<GameState>((set, get) => ({
 
   pushMessage: (text, kind = "info") => {
     const id = ++msgId;
-    set({ messages: [...get().messages, { id, text, kind }] });
-    setTimeout(() => get().popMessage(id), 2600);
+    const next = [...get().messages, { id, text, kind }].slice(-3);
+    set({ messages: next });
+    setTimeout(() => get().popMessage(id), 2200);
   },
   popMessage: (id) => set({ messages: get().messages.filter((m) => m.id !== id) }),
 }));

@@ -144,6 +144,18 @@ importers:
 
   artifacts/grudge-warlords:
     dependencies:
+      '@fontsource/cinzel-decorative':
+        specifier: ^5.2.5
+        version: 5.2.8
+      '@fontsource/eb-garamond':
+        specifier: ^5.2.5
+        version: 5.2.7
+      '@fontsource/inter':
+        specifier: ^5.2.5
+        version: 5.2.8
+      maath:
+        specifier: ^0.10.8
+        version: 0.10.8(@types/three@0.184.1)(three@0.184.0)
       react-router-dom:
         specifier: ^7.18.0
         version: 7.18.0(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -1451,6 +1463,15 @@ packages:
 
   '@floating-ui/utils@0.2.11':
     resolution: {integrity: sha512-RiB/yIh78pcIxl6lLMG0CgBXAZ2Y0eVHqMPYugu+9U0AeT6YBeiJpf7lbdJNIugFP5SIjwNRgo4DhR1Qxi26Gg==}
+
+  '@fontsource/cinzel-decorative@5.2.8':
+    resolution: {integrity: sha512-BtrvcprcCd0DyAcIXZRohfMyh+n/MwNvmhmAZ0kXDe9T1w2XSOodb3RNoD1uHm3TlGw7fjTU0YepgAQbPW0sFw==}
+
+  '@fontsource/eb-garamond@5.2.7':
+    resolution: {integrity: sha512-V42tTlHDbnDo0+lENnXKWMx63Llq6Gfl2l7ozkoeRQN60S0jm6hEgCLlOT/5YyKAN9QZ0e2ofpy0rGKlz9jBrw==}
+
+  '@fontsource/inter@5.2.8':
+    resolution: {integrity: sha512-P6r5WnJoKiNVV+zvW2xM13gNdFhAEpQ9dQJHt3naLvfg+LkF2ldgSLiF4T41lf1SQCM9QmkqPTn4TH568IRagg==}
 
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
@@ -4832,6 +4853,12 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.11': {}
+
+  '@fontsource/cinzel-decorative@5.2.8': {}
+
+  '@fontsource/eb-garamond@5.2.7': {}
+
+  '@fontsource/inter@5.2.8': {}
 
   '@gerrit0/mini-shiki@3.23.0':
     dependencies:

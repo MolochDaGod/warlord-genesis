@@ -1,6 +1,9 @@
-@import url("https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&display=swap");
+/* Fonts bundled via src/lib/fonts.ts (@fontsource) */
 
 :root {
+  --gk-font-display: "Cinzel Decorative", "Cinzel", Georgia, serif;
+  --gk-font-body: "EB Garamond", Georgia, serif;
+  --gk-font-ui: "Inter", system-ui, sans-serif;
   --gk-bg: #160d0b;
   --gk-surface: #241412;
   --gk-accent: #c0392b;
@@ -15,7 +18,7 @@
   inset: 0;
   overflow: hidden;
   background: var(--gk-bg);
-  font-family: "EB Garamond", Georgia, serif;
+  font-family: var(--gk-font-body);
   color: var(--gk-ink);
   user-select: none;
 }
@@ -2331,4 +2334,179 @@ kbd {
 }
 .gw-mode-combat .gw-hero-level-track {
   grid-template-columns: repeat(5, 1fr);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   MOBA battle HUD polish — clean FOV, mode-split panels
+   ═══════════════════════════════════════════════════════════ */
+.gw-hud.gk-combat-hud,
+.gw-hud.gw-moba-battle {
+  pointer-events: none;
+}
+.gw-hud.gk-combat-hud > * {
+  pointer-events: none;
+}
+.gw-hud.gk-combat-hud button,
+.gw-hud.gk-combat-hud input,
+.gw-hud.gk-combat-hud .gw-selection,
+.gw-hud.gk-combat-hud .gw-skilltree-overlay,
+.gw-hud.gk-combat-hud .gw-shop,
+.gw-hud.gk-combat-hud .gw-lane-deploy,
+.gw-hud.gk-combat-hud .gw-build-bar,
+.gw-hud.gk-combat-hud .gw-production,
+.gw-hud.gk-combat-hud .gw-hero-upgrade,
+.gw-hud.gk-combat-hud .gw-tuner {
+  pointer-events: auto;
+}
+
+.gw-top {
+  top: 10px !important;
+  gap: 10px !important;
+  scale: 0.92;
+  transform-origin: top center;
+  transform: translateX(-50%) !important;
+}
+.gw-top-center-meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 72px;
+}
+.gw-score-inline {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  color: rgba(200, 190, 160, 0.75);
+  text-transform: uppercase;
+}
+.gw-vs {
+  font-size: 11px;
+  opacity: 0.55;
+}
+
+.gw-mode-badge {
+  top: 12px !important;
+  left: 12px !important;
+  right: auto !important;
+  transform: none !important;
+  padding: 4px 8px !important;
+  font-size: 10px !important;
+  background: rgba(8, 10, 16, 0.82) !important;
+  border: 1px solid rgba(224, 178, 82, 0.28) !important;
+  border-radius: 6px !important;
+  gap: 6px !important;
+}
+
+.gw-objective {
+  top: 78px !important;
+  max-width: min(360px, 40vw) !important;
+  padding: 6px 10px !important;
+  background: rgba(8, 10, 16, 0.72);
+  border: 1px solid rgba(120, 140, 180, 0.18);
+  border-radius: 8px;
+}
+.gw-objective.is-quiet {
+  display: none !important;
+}
+.gw-objective.is-critical {
+  border-color: rgba(224, 178, 82, 0.4);
+}
+.gw-obj-warn,
+.gw-obj-good {
+  font-size: 11px !important;
+  letter-spacing: 0.12em;
+}
+
+.gw-messages {
+  bottom: 168px !important;
+  max-width: min(420px, 70vw);
+}
+.gw-msg {
+  font-size: 11px !important;
+  padding: 4px 10px !important;
+  background: rgba(8, 10, 16, 0.78) !important;
+  border-radius: 4px;
+}
+
+.gw-action-strip {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  z-index: 12;
+  pointer-events: none;
+}
+.gw-action-strip .gw-weapon-skills,
+.gw-action-strip .gw-skills {
+  position: static !important;
+  left: auto !important;
+  bottom: auto !important;
+  transform: none !important;
+  pointer-events: auto;
+}
+.gw-weapon-skills {
+  gap: 6px !important;
+  padding: 4px 8px !important;
+  background: rgba(10, 8, 6, 0.78) !important;
+  border: 1px solid rgba(224, 178, 82, 0.3) !important;
+  border-radius: 8px !important;
+  backdrop-filter: blur(6px);
+}
+.gw-skills {
+  gap: 10px !important;
+}
+
+.gw-bottom-left {
+  left: 12px !important;
+  bottom: 12px !important;
+  min-width: 180px !important;
+  gap: 6px !important;
+  scale: 0.95;
+  transform-origin: bottom left;
+}
+.gw-bottom-right {
+  right: 12px !important;
+  bottom: 12px !important;
+  gap: 6px !important;
+  scale: 0.95;
+  transform-origin: bottom right;
+}
+
+.gw-status {
+  z-index: 30 !important;
+}
+.gw-respawn {
+  padding: 16px 28px !important;
+  background: rgba(20, 6, 8, 0.88) !important;
+  border: 1px solid rgba(224, 80, 60, 0.45) !important;
+  border-radius: 10px !important;
+}
+.gw-respawn-title {
+  font-size: 18px !important;
+  letter-spacing: 0.2em;
+}
+
+/* Command-mode panels sit lower-right so they don't cover citadel top bar */
+.gw-mode-command .gw-lane-deploy,
+.gw-mode-command .gw-shop,
+.gw-mode-command .gw-production,
+.gw-mode-command .gw-hero-upgrade {
+  max-height: min(48vh, 420px);
+  overflow: auto;
+}
+
+/* Hide dual stacked skill bars outside the action strip (legacy positions) */
+.gk-combat-hud > .gw-weapon-skills:not(.gw-action-strip .gw-weapon-skills),
+.gk-combat-hud > .gw-skills:not(.gw-action-strip .gw-skills) {
+  /* handled by nesting under .gw-action-strip */
+}
+
+/* Engagement: softer scrim so playable area is readable */
+.gw-engage {
+  background: radial-gradient(ellipse at center, transparent 30%, rgba(4, 6, 12, 0.55) 100%) !important;
 }

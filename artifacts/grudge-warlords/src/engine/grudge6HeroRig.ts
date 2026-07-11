@@ -92,11 +92,24 @@ export class Grudge6HeroRig {
     animPack?: AnimPackId;
   }): Promise<Grudge6HeroRig> {
     const prepared = await loadGrudge6Character(opts.typeId, {
-      fitHeight: opts.fitHeight ?? 2.1,
+      fitHeight: opts.fitHeight ?? 1.85,
       tint: opts.tint,
       animPack: opts.animPack,
     });
-    return new Grudge6HeroRig(prepared);
+    const rig = new Grudge6HeroRig(prepared);
+    try {
+      prepared.director.setGaitTarget(false, false);
+      const idle = prepared.actions.idle ?? prepared.actions.walk;
+      idle?.reset?.().setEffectiveWeight?.(1).fadeIn?.(0.12).play?.();
+    } catch {
+      /* ignore */
+    }
+    try {
+      rig.refreshSoleY();
+    } catch {
+      /* ignore */
+    }
+    return rig;
   }
 
   static async forPlayer(opts: {
@@ -105,11 +118,26 @@ export class Grudge6HeroRig {
     animPack: AnimPackId;
     tint?: string;
   }): Promise<Grudge6HeroRig> {
-    return Grudge6HeroRig.create({
-      typeId: playerWarlordTypeId(opts.raceId, opts.classId),
-      animPack: opts.animPack,
-      tint: opts.tint,
-    });
+    try {
+      let race = opts.raceId || "human";
+      let cls = opts.classId || "warrior";
+      let typeId = playerWarlordTypeId(race, cls);
+      if (!resolveUnitDef(typeId)?.grudge) typeId = "human_warrior";
+      const pack = opts.animPack || "sword_shield";
+      return await Grudge6HeroRig.create({
+        typeId,
+        animPack: pack,
+        tint: opts.tint,
+        fitHeight: 1.85,
+      });
+    } catch (err) {
+      console.warn("[grudge-warlords] forPlayer fallback human_warrior", err);
+      return Grudge6HeroRig.create({
+        typeId: "human_warrior",
+        animPack: "sword_shield",
+        fitHeight: 1.85,
+      });
+    }
   }
 
   static async forEnemyWarlord(tint = "#d65a47"): Promise<Grudge6HeroRig> {
@@ -161,12 +189,8 @@ export class Grudge6HeroRig {
     await Promise.all(
       skills.map(async (sk) => {
         if (this.skillClips.has(sk.baked)) return;
-        try {
-          const clip = await loadBakedClipByRel(sk.baked, this.root);
-          if (gen === this.skillLoadGen) this.skillClips.set(sk.baked, clip);
-        } catch (err) {
-          console.warn("[grudge-warlords] skill clip failed", sk.baked, err);
-        }
+        const clip = await loadBakedClipByRel(sk.baked, this.root);
+        if (clip && gen === this.skillLoadGen) this.skillClips.set(sk.baked, clip);
       }),
     );
   }

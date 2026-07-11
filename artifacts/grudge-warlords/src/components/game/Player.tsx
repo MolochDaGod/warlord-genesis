@@ -392,9 +392,9 @@ export function Player() {
     return () => document.removeEventListener("pointerlockchange", onChange);
   }, [gl]);
 
-  // Death / revive animation driven by hero death flag + teleport on respawn.
+  // Death / revive — always teleport to base on revive even if animator still loading
   useEffect(() => {
-    const a = animatorRef.current;
+    const a = animatorRef.current ?? animator;
     if (heroDead && !dead.current) {
       dead.current = true;
       a?.die();
@@ -404,6 +404,9 @@ export function Player() {
       const s = heroSpawnPos();
       body.current?.setTranslation({ x: s.x, y: s.y, z: s.z }, true);
       body.current?.setLinvel({ x: 0, y: 0, z: 0 }, true);
+      body.current?.setAngvel({ x: 0, y: 0, z: 0 }, true);
+    } else if (!heroDead && a && dead.current === false) {
+      // no-op keep alive
     }
     if (phase === "menu") prevHealth.current = useGame.getState().health;
   }, [heroDead, animator, phase]);

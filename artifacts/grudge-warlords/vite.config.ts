@@ -11,11 +11,32 @@ if (Number.isNaN(port) || port <= 0) {
   throw new Error(`Invalid PORT value: "${process.env.PORT}"`);
 }
 
+/** three-stdlib@2.36 KTX2Loader imports a missing WorkerPool — alias to three.js JSM. */
+function fixThreeStdlibWorkerPool() {
+  const workerPool = path.resolve(
+    import.meta.dirname,
+    "node_modules/three/examples/jsm/utils/WorkerPool.js",
+  );
+  return {
+    name: "fix-three-stdlib-workerpool",
+    resolveId(source: string, importer?: string) {
+      if (
+        (source === "../utils/WorkerPool.js" || source.endsWith("/utils/WorkerPool.js")) &&
+        importer?.includes("three-stdlib")
+      ) {
+        return workerPool;
+      }
+      return null;
+    },
+  };
+}
+
 export default defineConfig({
   base: basePath,
   plugins: [
     react(),
     tailwindcss(),
+    fixThreeStdlibWorkerPool(),
     runtimeErrorOverlay(),
     ...(process.env.NODE_ENV !== "production" &&
     process.env.REPL_ID !== undefined

@@ -16,6 +16,7 @@ import { CampMarkers } from "./CampMarkers";
 import { Buildings } from "./Buildings";
 import { Effects } from "./Effects";
 import { Projectiles } from "./Projectiles";
+import { WeaponTrail } from "../../engine/vfx/WeaponTrail";
 import { CommandLayer, SelectionRings } from "./Command";
 import { MatchDirector } from "./MatchDirector";
 import { MapMoat } from "./MapMoat";
@@ -62,6 +63,7 @@ function SceneContent() {
       <Units />
       <EnemyHero />
       <Effects />
+      <WeaponTrail />
       <Projectiles />
       <SelectionRings />
       <CommandLayer />

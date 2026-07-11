@@ -4,6 +4,7 @@ import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { EM } from "../../game/entities";
 import { PROJECTILES, type ProjectileModel, type ProjectileDef } from "../../game/config";
+import { projectileArcPosition } from "../../engine/math/splines";
 
 const BASE = import.meta.env.BASE_URL;
 const POOL_PER_MODEL = 14;
@@ -195,11 +196,7 @@ export function Projectiles() {
         EM.projectiles.splice(i, 1);
         continue;
       }
-      p.pos.copy(p.from).addScaledVector(p.dir, p.traveled);
-      if (p.arc > 0 && p.dist > 1e-3) {
-        const f = p.traveled / p.dist;
-        p.pos.y += p.arc * 4 * f * (1 - f);
-      }
+      projectileArcPosition(p.from, p.dir, p.traveled, p.dist, p.arc, p.pos);
       // Motion trail — heavier splash shells leave a denser ember wake.
       const def = PROJECTILES[p.model];
       const trailRate = def.splash ? 0.38 : 0.22;

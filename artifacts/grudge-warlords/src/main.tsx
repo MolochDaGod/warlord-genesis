@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import { clearSiteDataOnce } from "./lib/clearSiteDataOnce";
 import App from "./App";
+import "./lib/fonts";
 import "./index.css";
 
 // One-shot wipe of stale gw_*/wg-* storage (pre-v68 weak gear saves).

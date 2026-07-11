@@ -39,7 +39,8 @@ export const PLAYER = {
   radius: 0.4,
   height: 1.2,
   attackRange: 90,
-  respawnTime: 5,
+  /** MOBA-style base respawn (seconds). */
+  respawnTime: 8,
   // --- Controller feel ---
   /** Ground acceleration toward target velocity (units/s^2). Higher = snappier. */
   groundAccel: 65,
