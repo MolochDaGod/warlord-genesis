@@ -652,6 +652,28 @@ const _6_PATCHED =
   else mustPatch("texture-flipY", flipped > 0);
 }
 
+
+// CRITICAL: baked clips live on this deploy at /anims/baked/* — CDN assets.grudge-studio.com/anims/baked 404s.
+// swapAnimPack used to dispose the director THEN fetch clips; a 404 left heroes dead (no anim / empty mesh).
+if (js.includes('function sIA(C){const A=C.split("/").map(I=>encodeURIComponent(I)).join("/");return`${YB}/anims/baked/${A}.json`}')) {
+  js = js.replace(
+    'function sIA(C){const A=C.split("/").map(I=>encodeURIComponent(I)).join("/");return`${YB}/anims/baked/${A}.json`}',
+    'function sIA(C){const A=C.split("/").map(I=>encodeURIComponent(I)).join("/");return`/anims/baked/${A}.json`}',
+  );
+  mustPatch("same-origin-baked-anims", true);
+} else {
+  mustPatch("same-origin-baked-anims", js.includes("return`/anims/baked/"));
+}
+
+const SWAP_OLD = "swapAnimPack:async h=>{l.director.dispose(),g.stopAllAction();const D=await oK(C,g,h);l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions}";
+const SWAP_NEW = "swapAnimPack:async h=>{const D=await oK(C,g,h);try{l.director.dispose()}catch{}g.stopAllAction();l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions;try{l.director.setGaitTarget(!1,!1),l.actions.idle?.reset?.().fadeIn?.(.12).play?.()}catch{}}";
+if (js.includes(SWAP_OLD)) {
+  js = js.replace(SWAP_OLD, SWAP_NEW);
+  mustPatch("swap-anim-load-first", true);
+} else {
+  mustPatch("swap-anim-load-first", js.includes("const D=await oK(C,g,h);try{l.director.dispose()}"));
+}
+
 // Hero GLB always from same-origin deploy (real glTF files in /models/heroes/grudge6)
 // Ensure URL uses UK race folder keys (orcs, western-kingdoms, …)
 if (js.includes("function WgHeroGlbUrl(C,A){const I=UK[C]||C,g=WgHeroClassFile[A]||A;return`/models/heroes/grudge6/${I}_${g}.glb`}")) {
