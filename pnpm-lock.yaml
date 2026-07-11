@@ -289,6 +289,9 @@ importers:
       '@workspace/gw-sim':
         specifier: workspace:*
         version: link:../../lib/gw-sim
+      '@workspace/r3f-fleet':
+        specifier: workspace:*
+        version: link:../../lib/r3f-fleet
       class-variance-authority:
         specifier: 'catalog:'
         version: 0.7.1
@@ -397,6 +400,9 @@ importers:
       '@workspace/game-content':
         specifier: workspace:*
         version: link:../../lib/game-content
+      '@workspace/r3f-fleet':
+        specifier: workspace:*
+        version: link:../../lib/r3f-fleet
       '@workspace/world-content':
         specifier: workspace:*
         version: link:../../lib/world-content
@@ -660,6 +666,8 @@ importers:
   lib/grudge-engine: {}
 
   lib/gw-sim: {}
+
+  lib/r3f-fleet: {}
 
   lib/world-content: {}
 

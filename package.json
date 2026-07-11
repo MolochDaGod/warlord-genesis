@@ -4,7 +4,7 @@
   "packageManager": "pnpm@9.15.9",
   "license": "MIT",
   "private": true,
-  "description": "Grudge Warlords warcamp client — https://warlord-genesis.vercel.app",
+  "description": "Warlord Genesis / Warstrat — https://warlord-genesis.vercel.app · https://warstrat.grudge-studio.com",
   "type": "module",
   "scripts": {
     "preinstall": "node -e \"const ua=process.env.npm_config_user_agent||''; if(!ua.includes('pnpm')){console.error('Use pnpm instead');process.exit(1)}\"",

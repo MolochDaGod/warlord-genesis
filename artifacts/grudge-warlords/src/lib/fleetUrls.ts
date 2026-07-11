@@ -10,8 +10,25 @@ export const GRUDGE_FLEET_URLS = {
   /** Tactical-Infinity open world (Aethermoor sailing). */
   water: "https://water.grudge-studio.com",
   warlords: "https://grudgewarlords.com",
+  /** Warlord Genesis — branded production host */
+  warstrat: "https://warstrat.grudge-studio.com",
+  /** Warlord Genesis — Vercel default alias */
+  warlordGenesis: "https://warlord-genesis.vercel.app",
   origins: "https://api.grudge-studio.com/origins",
 } as const;
+
+/** Hostnames that serve this SPA (static — no native WS upgrade). */
+export const WARLORD_GENESIS_HOSTS = [
+  "warlord-genesis.vercel.app",
+  "warstrat.grudge-studio.com",
+] as const;
+
+export function isWarlordGenesisHost(hostname: string): boolean {
+  return (
+    hostname.endsWith(".vercel.app") ||
+    (WARLORD_GENESIS_HOSTS as readonly string[]).includes(hostname)
+  );
+}
 
 const DEV_WATER = "http://localhost:5174";
 

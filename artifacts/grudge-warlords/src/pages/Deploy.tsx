@@ -8,7 +8,7 @@ import { useGame } from "../game/store";
 import { useRoster } from "../game/roster";
 import { useMeta } from "../game/metaProgression";
 import { useSession } from "../game/session";
-import { ensureWarcampReady } from "../lib/ensureWarcampReady";
+import { ensureWarcampReady, prepareAndStartMatch } from "../lib/ensureWarcampReady";
 import { evaluateWarcampReady } from "../hooks/useWarcampReady";
 import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
 import { GRUDGE_FACTION_BY_ID } from "../engine/grudge6";
@@ -74,7 +74,14 @@ export function Deploy() {
       /* ignore */
     }
     lockLoadout();
-    startGame();
+    const ok = startGame();
+    if (!ok) {
+      const r = prepareAndStartMatch();
+      if (!r.ok) {
+        setLoadMsg(r.error || "Cannot start — check warcamp loadout");
+        return;
+      }
+    }
     navigate("/play");
   };
 

@@ -434,6 +434,72 @@ function clipFromGltf(
   return normalizeBakedBip001Clip(toRotationOnlyClip(hit), root);
 }
 
+async function prepareFromGltfRoot(
+  root: THREE.Group,
+  animations: THREE.AnimationClip[],
+  opts: { fitHeight: number; tint: string; animPack: AnimPack },
+): Promise<PreparedGrudge6Character> {
+  root.traverse((child) => {
+    if (child instanceof THREE.SkinnedMesh || child instanceof THREE.Mesh) {
+      child.castShadow = true;
+      child.receiveShadow = true;
+    }
+  });
+  normalizeCharacterGroup(root, opts.fitHeight);
+  if (opts.tint && opts.tint !== "#ffffff") {
+    root.traverse((node) => {
+      if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
+        const mat = node.material as THREE.MeshLambertMaterial;
+        if (mat?.color) mat.color.multiply(new THREE.Color(opts.tint));
+      }
+    });
+  }
+  const mixer = new THREE.AnimationMixer(root);
+  let idleClip: THREE.AnimationClip;
+  let walkClip: THREE.AnimationClip;
+  let runClip: THREE.AnimationClip;
+  let attackClip: THREE.AnimationClip;
+  if (animations.length > 0) {
+    idleClip = clipFromGltf(animations, "idle", root);
+    walkClip = clipFromGltf(animations, "walk", root);
+    runClip = clipFromGltf(animations, "run", root);
+    attackClip = clipFromGltf(animations, "attack", root);
+  } else {
+    // Static staged heroes (local Vercel GLBs) — idle-only mixer keeps lobby preview alive.
+    idleClip = new THREE.AnimationClip("idle", 1, []);
+    walkClip = idleClip;
+    runClip = idleClip;
+    attackClip = idleClip;
+  }
+  const sprintClip = runClip.clone();
+  const clips: LocoClips = { idle: idleClip, walk: walkClip, run: runClip, sprint: sprintClip };
+  const director = new AnimationDirector(mixer, clips);
+  const prepared: PreparedGrudge6Character = {
+    root,
+    mixer,
+    director,
+    attackClip,
+    actions: {
+      idle: mixer.clipAction(idleClip),
+      walk: mixer.clipAction(walkClip),
+      run: mixer.clipAction(runClip),
+      attack: mixer.clipAction(attackClip),
+    },
+    swapAnimPack: async (pack: AnimPack) => {
+      prepared.director.dispose();
+      mixer.stopAllAction();
+      const next = await loadPackBundle(root, mixer, pack);
+      prepared.director = next.director;
+      prepared.attackClip = next.attackClip;
+      prepared.actions = next.actions;
+    },
+  };
+  if (animations.length === 0) {
+    prepared.actions.idle?.play();
+  }
+  return prepared;
+}
+
 async function tryBuildFromBakedPrefab(
   prefabId: string,
   opts: { fitHeight: number; tint: string; animPack: AnimPack },
@@ -441,58 +507,31 @@ async function tryBuildFromBakedPrefab(
   try {
     const asset = prefabBakedAsset(prefabId);
     const gltf = await gltfLoader.loadAsync(`${ASSET_CDN}${asset.glbUrl}`);
-    const root = gltf.scene as THREE.Group;
-    root.traverse((child) => {
-      if (child instanceof THREE.SkinnedMesh || child instanceof THREE.Mesh) {
-        child.castShadow = true;
-        child.receiveShadow = true;
-      }
-    });
-    normalizeCharacterGroup(root, opts.fitHeight);
-    if (opts.tint && opts.tint !== "#ffffff") {
-      root.traverse((node) => {
-        if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-          const mat = node.material as THREE.MeshLambertMaterial;
-          if (mat?.color) mat.color.multiply(new THREE.Color(opts.tint));
-        }
-      });
-    }
-    const mixer = new THREE.AnimationMixer(root);
-    const idleClip = clipFromGltf(gltf.animations, "idle", root);
-    const walkClip = clipFromGltf(gltf.animations, "walk", root);
-    const runClip = clipFromGltf(gltf.animations, "run", root);
-    const attackClip = clipFromGltf(gltf.animations, "attack", root);
-    const sprintClip = runClip.clone();
-    const clips: LocoClips = { idle: idleClip, walk: walkClip, run: runClip, sprint: sprintClip };
-    const bundle = {
-      director: new AnimationDirector(mixer, clips),
-      attackClip,
-      actions: {
-        idle: mixer.clipAction(idleClip),
-        walk: mixer.clipAction(walkClip),
-        run: mixer.clipAction(runClip),
-        attack: mixer.clipAction(attackClip),
-      },
-    };
-    const prepared: PreparedGrudge6Character = {
-      root,
-      mixer,
-      director: bundle.director,
-      attackClip: bundle.attackClip,
-      actions: bundle.actions,
-      swapAnimPack: async (pack: AnimPack) => {
-        prepared.director.dispose();
-        mixer.stopAllAction();
-        const next = await loadPackBundle(root, mixer, pack);
-        prepared.director = next.director;
-        prepared.attackClip = next.attackClip;
-        prepared.actions = next.actions;
-      },
-    };
-    return prepared;
+    return prepareFromGltfRoot(gltf.scene as THREE.Group, gltf.animations, opts);
   } catch {
     return null;
   }
+}
+
+/** Fast lobby path — staged race×class GLBs under /models/heroes/grudge6/. */
+async function tryBuildFromLocalHeroGlb(
+  repoRaceId: string,
+  classId: string,
+  opts: { fitHeight: number; tint: string; animPack: AnimPack },
+): Promise<PreparedGrudge6Character | null> {
+  const urls = [
+    `/models/heroes/grudge6/${repoRaceId}_${classId}.glb`,
+    `${ASSET_CDN}/models/heroes/grudge6/${repoRaceId}_${classId}.glb`,
+  ];
+  for (const url of urls) {
+    try {
+      const gltf = await gltfLoader.loadAsync(url);
+      return prepareFromGltfRoot(gltf.scene.clone(true) as THREE.Group, gltf.animations, opts);
+    } catch {
+      // try next
+    }
+  }
+  return null;
 }
 
 async function buildCharacter(
@@ -506,6 +545,14 @@ async function buildCharacter(
   const animPack = opts.animPack;
   const fitHeight = opts.fitHeight ?? 2.05;
   const tint = opts.tint ?? def.grudge.skinTint ?? "#ffffff";
+
+  // Prefer lightweight staged GLBs for lobby/battle boot (local Vercel + CDN).
+  const localHero = await tryBuildFromLocalHeroGlb(repoRaceId, classId, {
+    fitHeight,
+    tint,
+    animPack,
+  });
+  if (localHero) return localHero;
 
   if (prefabId) {
     const baked = await tryBuildFromBakedPrefab(prefabId, { fitHeight, tint, animPack });

@@ -24,6 +24,12 @@ export interface SimUnitDef {
   reward: number;
 }
 
+/**
+ * Canonical combat stats — MUST stay aligned with
+ * `artifacts/grudge-warlords/src/game/config.ts` UNIT_TYPES for
+ * footman / archer / knight (and shop costs below).
+ * See docs/GAME_DEFINITIONS.md.
+ */
 export const UNIT_DEFS: Record<UnitKey, SimUnitDef> = {
   hero: {
     key: "hero",
@@ -39,9 +45,9 @@ export const UNIT_DEFS: Record<UnitKey, SimUnitDef> = {
   },
   creepMelee: {
     key: "creepMelee",
-    hp: 90,
+    hp: 95, // matches SP militia
     speed: 5,
-    damage: 11,
+    damage: 10,
     attackRange: 2.1,
     attackCooldown: 1,
     aggroRange: 8,
@@ -51,35 +57,35 @@ export const UNIT_DEFS: Record<UnitKey, SimUnitDef> = {
   },
   creepRanged: {
     key: "creepRanged",
-    hp: 64,
-    speed: 5.1,
-    damage: 13,
-    attackRange: 12,
-    attackCooldown: 1.3,
-    aggroRange: 13,
+    hp: 72, // matches SP skirmisher baseline
+    speed: 5.4,
+    damage: 14,
+    attackRange: 13,
+    attackCooldown: 1.05,
+    aggroRange: 15,
     radius: 0.48,
     ranged: true,
     reward: 22,
   },
   footman: {
     key: "footman",
-    hp: 160,
-    speed: 5.6,
-    damage: 18,
-    attackRange: 2.4,
+    hp: 150,
+    speed: 5.4,
+    damage: 16,
+    attackRange: 2.3,
     attackCooldown: 0.85,
-    aggroRange: 11,
+    aggroRange: 10,
     radius: 0.55,
     ranged: false,
     reward: 30,
   },
   archer: {
     key: "archer",
-    hp: 95,
-    speed: 5.2,
-    damage: 22,
+    hp: 90,
+    speed: 5,
+    damage: 20,
     attackRange: 15,
-    attackCooldown: 1.1,
+    attackCooldown: 1.15,
     aggroRange: 17,
     radius: 0.5,
     ranged: true,
@@ -87,12 +93,12 @@ export const UNIT_DEFS: Record<UnitKey, SimUnitDef> = {
   },
   knight: {
     key: "knight",
-    hp: 340,
-    speed: 4.7,
-    damage: 28,
-    attackRange: 2.7,
+    hp: 320,
+    speed: 4.6,
+    damage: 26,
+    attackRange: 2.6,
     attackCooldown: 1.1,
-    aggroRange: 11,
+    aggroRange: 10,
     radius: 0.65,
     ranged: false,
     reward: 45,
@@ -123,9 +129,10 @@ export const SHOP: { unit: UnitKey; name: string; cost: number }[] = [
 ];
 
 export const ECONOMY = {
+  /** Match-session currency only — not GBUX / fleet gold. */
   startCredits: 300,
-  /** Passive gold per second, per player. */
-  incomePerSec: 9,
+  /** Passive credits per second (aligned with SP ECONOMY.incomePerSec). */
+  incomePerSec: 7,
   /** Seconds between automatic lane-creep waves per team. */
   waveInterval: 22,
   /** Creeps spawned per lane each wave (melee first, then ranged). */

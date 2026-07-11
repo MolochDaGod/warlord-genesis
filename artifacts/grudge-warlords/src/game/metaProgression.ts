@@ -236,7 +236,8 @@ export const useMeta = create<MetaState>((set, get) => ({
     if (!PREFAB_BY_ID[prefabId]) return;
     const cards = [...get().cards];
     const c = ensureCard(cards, "character", prefabId);
-    c.level = 1;
+    // Level 3 → gear tier 3: strong enough for first /play without grinding shards.
+    c.level = Math.max(c.level, 3);
     c.shards = 0;
     set({
       onboardingDone: true,
@@ -346,13 +347,15 @@ export const useMeta = create<MetaState>((set, get) => ({
     if (!s.onboardingDone && !s.starterPrefabId) return;
     const prefabId = s.starterPrefabId;
     if (!prefabId || !PREFAB_BY_ID[prefabId]) return;
-    if (s.isCharacterUnlocked(prefabId)) return;
     const cards = [...s.cards];
     const c = ensureCard(cards, "character", prefabId);
-    c.level = 1;
-    c.shards = 0;
-    set({ cards, onboardingDone: true, starterPrefabId: prefabId });
-    get().seedDefaultLaneGuards(PREFAB_BY_ID[prefabId]!.faction as GrudgeFactionId);
+    // Repair desync + lift under-leveled starters to campaign-ready tier.
+    if (c.level < 3) {
+      c.level = 3;
+      c.shards = 0;
+      set({ cards, onboardingDone: true, starterPrefabId: prefabId });
+      get().seedDefaultLaneGuards(PREFAB_BY_ID[prefabId]!.faction as GrudgeFactionId);
+    }
   },
 }));
 
@@ -398,8 +401,9 @@ export function unlockFleetWarlord(prefabId: string): void {
   const state = useMeta.getState();
   const cards = [...state.cards];
   const c = ensureCard(cards, "character", prefabId);
-  if (c.level < 1) {
-    c.level = 1;
+  // Campaign-ready floor so fleet-hydrated captains are not under-geared on /play.
+  if (c.level < 3) {
+    c.level = 3;
     c.shards = 0;
   }
 

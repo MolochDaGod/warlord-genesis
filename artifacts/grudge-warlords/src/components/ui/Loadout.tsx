@@ -43,7 +43,19 @@ export function Loadout() {
     let cancelled = false;
     loadEquipmentItems()
       .then((all) => {
-        if (!cancelled) setItems(all);
+        if (cancelled) return;
+        setItems(all);
+        // Auto-fill empty paper-doll slots with first item per slot (warcamp default kit).
+        const eq = useRoster.getState().equipment;
+        const bySlot = new Map<string, typeof all[0]>();
+        for (const it of all) {
+          if (!bySlot.has(it.slot)) bySlot.set(it.slot, it);
+        }
+        for (const [slot, it] of bySlot) {
+          if (!eq[slot as keyof typeof eq]) {
+            useRoster.getState().equip(slot as Parameters<typeof equip>[0], it);
+          }
+        }
       })
       .catch((e: unknown) => {
         if (!cancelled) setError(e instanceof Error ? e.message : "Failed to load gear");
@@ -54,7 +66,7 @@ export function Loadout() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [equip]);
 
   const slotItems = useMemo(
     () => items.filter((it) => it.slot === activeSlot),

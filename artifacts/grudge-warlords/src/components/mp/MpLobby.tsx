@@ -97,7 +97,9 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
           <StatusPill />
         </div>
         <p className="mp-sub">
-          Quick match into 1v1, 2v2, or 3v3 clashes, or open a private war room and invite by code.
+          Quick match into 1v1, 2v2, or 3v3 clashes, or open a private war room.
+          If the match server is offline, rooms run locally and bots fill empty seats — Start Match
+          launches a skirmish march.
         </p>
 
         <div className="mp-grid">

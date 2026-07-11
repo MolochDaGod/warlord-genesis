@@ -9,7 +9,13 @@
 
 import type { WeaponClass } from "./anim/types";
 
-const DATA_BASE = "https://molochdagod.github.io/ObjectStore/api/v1";
+/** Prefer ObjectStore worker, then same-origin proxy, then Pages mirror (last resort). */
+const DATA_BASES = [
+  "https://objectstore.grudge-studio.com/api/v1",
+  "/api/objectstore/v1",
+  "https://assets.grudge-studio.com/api/v1",
+  "https://molochdagod.github.io/ObjectStore/api/v1",
+] as const;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const CACHE_PREFIX = "gw_equip_";
 
@@ -138,11 +144,190 @@ function writeCache(key: string, data: unknown) {
 async function fetchJson(key: string): Promise<Record<string, unknown>> {
   const cached = readCache(key);
   if (cached) return cached as Record<string, unknown>;
-  const res = await fetch(`${DATA_BASE}/${key}.json`);
-  if (!res.ok) throw new Error(`Failed to load ${key} (${res.status})`);
-  const raw = (await res.json()) as Record<string, unknown>;
-  writeCache(key, raw);
-  return raw;
+  let lastErr: Error | null = null;
+  for (const base of DATA_BASES) {
+    try {
+      const res = await fetch(`${base}/${key}.json`, { credentials: "omit" });
+      if (!res.ok) {
+        lastErr = new Error(`Failed to load ${key} from ${base} (${res.status})`);
+        continue;
+      }
+      const raw = (await res.json()) as Record<string, unknown>;
+      writeCache(key, raw);
+      return raw;
+    } catch (e) {
+      lastErr = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastErr ?? new Error(`Failed to load ${key}`);
+}
+
+/**
+ * Full warcamp paper-doll kit — strong enough for first-match lane combat.
+ * Tuned so tier-1 aggregate ≈ +450 HP, ~0.35 defense, ≥1.3× damage mult.
+ */
+export function starterFallbackItems(): LoadoutItem[] {
+  return [
+    {
+      id: "starter-blade",
+      name: "Warcamp Blade",
+      slot: "weapon",
+      category: "swords",
+      weaponClass: "sword",
+      lore: "Issue steel from the warcamp armory — campaign-ready edge.",
+      stats: {
+        damageBase: 95,
+        damagePerTier: 14,
+        hpBase: 40,
+        hpPerTier: 12,
+        defenseBase: 8,
+        defensePerTier: 2,
+      },
+    },
+    {
+      id: "starter-shield",
+      name: "Warcamp Shield",
+      slot: "offhand",
+      category: "shields",
+      lore: "Reinforced kite shield for the opening march.",
+      stats: { defenseBase: 48, defensePerTier: 10, hpBase: 55, hpPerTier: 16 },
+    },
+    {
+      id: "starter-helm",
+      name: "Warcamp Helm",
+      slot: "helm",
+      category: "iron",
+      stats: { defenseBase: 28, defensePerTier: 6, hpBase: 50, hpPerTier: 14 },
+    },
+    {
+      id: "starter-shoulder",
+      name: "Warcamp Pauldrons",
+      slot: "shoulder",
+      category: "iron",
+      stats: { defenseBase: 22, defensePerTier: 5, hpBase: 35, hpPerTier: 10 },
+    },
+    {
+      id: "starter-chest",
+      name: "Warcamp Hauberk",
+      slot: "chest",
+      category: "iron",
+      stats: { defenseBase: 52, defensePerTier: 10, hpBase: 90, hpPerTier: 22 },
+    },
+    {
+      id: "starter-hands",
+      name: "Warcamp Gauntlets",
+      slot: "hands",
+      category: "iron",
+      stats: { defenseBase: 18, defensePerTier: 4, hpBase: 28, hpPerTier: 8 },
+    },
+    {
+      id: "starter-legs",
+      name: "Warcamp Greaves",
+      slot: "legs",
+      category: "iron",
+      stats: { defenseBase: 32, defensePerTier: 6, hpBase: 48, hpPerTier: 12 },
+    },
+    {
+      id: "starter-feet",
+      name: "Warcamp Boots",
+      slot: "feet",
+      category: "iron",
+      stats: { defenseBase: 16, defensePerTier: 4, hpBase: 24, hpPerTier: 7 },
+    },
+    {
+      id: "starter-ring",
+      name: "Signet of the March",
+      slot: "ring",
+      category: "jewelry",
+      stats: { damageBase: 18, damagePerTier: 4, hpBase: 35, hpPerTier: 10, defenseBase: 8, defensePerTier: 2 },
+    },
+    {
+      id: "starter-neck",
+      name: "Campaign Torc",
+      slot: "necklace",
+      category: "jewelry",
+      stats: { defenseBase: 16, defensePerTier: 4, hpBase: 40, hpPerTier: 10, damageBase: 10, damagePerTier: 2 },
+    },
+    {
+      id: "starter-relic",
+      name: "Relic of First Blood",
+      slot: "relic",
+      category: "relics",
+      lore: "Standard issue campaign relic — first deployment.",
+      stats: { damageBase: 22, damagePerTier: 5, hpBase: 45, hpPerTier: 12, defenseBase: 12, defensePerTier: 3 },
+    },
+  ];
+}
+
+/** Equip every starter slot into an Equipment bag (overwrites empty slots only if fillEmpty). */
+export function buildStarterEquipment(fillEmptyOnly = false, existing: Equipment = {}): Equipment {
+  const next: Equipment = fillEmptyOnly ? { ...existing } : {};
+  for (const item of starterFallbackItems()) {
+    if (fillEmptyOnly && next[item.slot]) continue;
+    next[item.slot] = item;
+  }
+  return next;
+}
+
+/** True when fewer than half the paper-doll slots are filled (weak / naked start). */
+export function equipmentIsWeak(eq: Equipment): boolean {
+  let n = 0;
+  for (const slot of SLOT_IDS) if (eq[slot]) n += 1;
+  return n < 6;
+}
+
+function normalizeCatalog(
+  weapons: Record<string, unknown>,
+  armor: Record<string, unknown>,
+): LoadoutItem[] {
+  const items: LoadoutItem[] = [];
+
+  const cats = (weapons["categories"] ?? {}) as Record<string, { items?: RawItem[] }>;
+  for (const [catKey, cat] of Object.entries(cats)) {
+    const offhand = catKey === "shields" || catKey.endsWith("Tomes") || catKey.toLowerCase().includes("tome");
+    for (const it of cat.items ?? []) {
+      if (!it?.id || !it?.name) continue;
+      items.push({
+        id: it.id,
+        name: it.name,
+        slot: offhand ? "offhand" : "weapon",
+        category: catKey,
+        lore: it.lore,
+        primaryStat: it.primaryStat,
+        secondaryStat: it.secondaryStat,
+        weaponClass: offhand ? undefined : WEAPON_CLASS[catKey] ?? "unarmed",
+        stats: it.stats ?? {},
+      });
+    }
+  }
+
+  const mats = (armor["materials"] ?? armor["categories"] ?? {}) as Record<
+    string,
+    { items?: RawItem[] }
+  >;
+  for (const [matKey, mat] of Object.entries(mats)) {
+    for (const it of mat.items ?? []) {
+      if (!it?.id || !it?.name) continue;
+      const typeKey = it.type ?? (it as RawItem & { slot?: string }).slot;
+      const slot =
+        (typeKey && ARMOR_SLOT[typeKey]) ||
+        (typeKey && ARMOR_SLOT[typeKey.charAt(0).toUpperCase() + typeKey.slice(1)]) ||
+        undefined;
+      if (!slot) continue;
+      items.push({
+        id: it.id,
+        name: it.name,
+        slot,
+        category: matKey,
+        lore: it.lore,
+        primaryStat: it.attribute,
+        secondaryStat: it.effect,
+        stats: it.stats ?? {},
+      });
+    }
+  }
+
+  return items;
 }
 
 let itemsPromise: Promise<LoadoutItem[]> | null = null;
@@ -151,46 +336,19 @@ let itemsPromise: Promise<LoadoutItem[]> | null = null;
 export function loadEquipmentItems(): Promise<LoadoutItem[]> {
   if (itemsPromise) return itemsPromise;
   itemsPromise = (async () => {
-    const [weapons, armor] = await Promise.all([fetchJson("weapons"), fetchJson("armor")]);
-    const items: LoadoutItem[] = [];
-
-    const cats = (weapons["categories"] ?? {}) as Record<string, { items?: RawItem[] }>;
-    for (const [catKey, cat] of Object.entries(cats)) {
-      const offhand = catKey === "shields" || catKey.endsWith("Tomes");
-      for (const it of cat.items ?? []) {
-        items.push({
-          id: it.id,
-          name: it.name,
-          slot: offhand ? "offhand" : "weapon",
-          category: catKey,
-          lore: it.lore,
-          primaryStat: it.primaryStat,
-          secondaryStat: it.secondaryStat,
-          weaponClass: offhand ? undefined : WEAPON_CLASS[catKey] ?? "unarmed",
-          stats: it.stats ?? {},
-        });
+    try {
+      const [weapons, armor] = await Promise.all([fetchJson("weapons"), fetchJson("armor")]);
+      const items = normalizeCatalog(weapons, armor);
+      if (items.length === 0) return starterFallbackItems();
+      // Ensure every paper-doll slot has at least one option.
+      const slots = new Set(items.map((i) => i.slot));
+      for (const fb of starterFallbackItems()) {
+        if (!slots.has(fb.slot)) items.push(fb);
       }
+      return items;
+    } catch {
+      return starterFallbackItems();
     }
-
-    const mats = (armor["materials"] ?? {}) as Record<string, { items?: RawItem[] }>;
-    for (const [matKey, mat] of Object.entries(mats)) {
-      for (const it of mat.items ?? []) {
-        const slot = it.type ? ARMOR_SLOT[it.type] : undefined;
-        if (!slot) continue;
-        items.push({
-          id: it.id,
-          name: it.name,
-          slot,
-          category: matKey,
-          lore: it.lore,
-          primaryStat: it.attribute,
-          secondaryStat: it.effect,
-          stats: it.stats ?? {},
-        });
-      }
-    }
-
-    return items;
   })();
   return itemsPromise;
 }
@@ -225,18 +383,22 @@ export interface LoadoutStats {
 export function computeLoadoutStats(eq: Equipment, tier: number): LoadoutStats {
   let hp = 0;
   let def = 0;
+  let dmg = 0;
   for (const slot of SLOT_IDS) {
     const it = eq[slot];
     if (!it) continue;
     hp += tierVal(it.stats, "hpBase", "hpPerTier", tier);
     def += tierVal(it.stats, "defenseBase", "defensePerTier", tier);
+    dmg += tierVal(it.stats, "damageBase", "damagePerTier", tier);
   }
-  const w = eq.weapon;
-  const wdmg = w ? tierVal(w.stats, "damageBase", "damagePerTier", tier) : 0;
+  // Never reduce base weapon damage: 0 gear → 1.0×; full warcamp kit → ~1.5–2.2×.
+  const damageMult = Math.max(1, Math.round((1 + dmg / 120) * 100) / 100);
+  // Defense scales to a meaningful mitigation band (~0.25–0.55 with full kit).
+  const defense = Math.min(0.55, Math.round(def * 0.0018 * 1000) / 1000);
   return {
     bonusHp: Math.round(hp),
-    damageMult: wdmg > 0 ? Math.round((wdmg / 50) * 100) / 100 : 1,
-    defense: Math.min(0.6, Math.round(def * 0.0015 * 1000) / 1000),
-    weaponClass: w?.weaponClass ?? null,
+    damageMult,
+    defense,
+    weaponClass: eq.weapon?.weaponClass ?? null,
   };
 }

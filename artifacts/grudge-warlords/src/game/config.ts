@@ -31,14 +31,15 @@ export interface GrudgeUnitMeta {
 // have been removed; runtime map data lives on `EM.map`.
 
 export const PLAYER = {
-  maxHealth: 240,
-  speed: 7,
-  sprintSpeed: 11,
-  jumpForce: 6,
+  /** Base HP before gear/skills — high enough that a naked boot still survives creep waves. */
+  maxHealth: 420,
+  speed: 7.4,
+  sprintSpeed: 11.5,
+  jumpForce: 6.2,
   radius: 0.4,
   height: 1.2,
   attackRange: 90,
-  respawnTime: 7,
+  respawnTime: 5,
   // --- Controller feel ---
   /** Ground acceleration toward target velocity (units/s^2). Higher = snappier. */
   groundAccel: 65,
@@ -67,13 +68,13 @@ export const PLAYER = {
 export type WeaponId = "rifle";
 
 export const WEAPON = {
-  damage: 38,
-  fireRate: 0.11,
-  magazine: 30,
-  reserve: 240,
-  reloadTime: 1.4,
+  damage: 48,
+  fireRate: 0.1,
+  magazine: 32,
+  reserve: 280,
+  reloadTime: 1.25,
   range: 90,
-  spread: 0.012,
+  spread: 0.011,
 };
 
 // Hero melee loadouts (Sword & Shield, Two-Handed Hammer, ...). Melee kits do not
@@ -83,23 +84,23 @@ export const MELEE = {
   // Sword & shield: fast crescent slash projectiles that fly forward and slice
   // through everything in a narrow band.
   slash: {
-    swingRate: 0.5,
-    damage: 40,
-    speed: 42,
-    range: 30,
-    width: 2.2,
+    swingRate: 0.45,
+    damage: 52,
+    speed: 44,
+    range: 32,
+    width: 2.4,
     color: "#cfeaff",
   },
   // Two-handed: a slower, heavier slash plus a ground shockwave ring that
   // expands outward dealing area damage.
   slam: {
-    swingRate: 0.92,
-    damage: 46,
-    speed: 26,
-    range: 22,
-    width: 3.2,
-    shockDamage: 72,
-    shockRadius: 9,
+    swingRate: 0.85,
+    damage: 62,
+    speed: 28,
+    range: 24,
+    width: 3.4,
+    shockDamage: 88,
+    shockRadius: 10,
     shockDuration: 0.55,
     color: "#ffd0a6",
   },
@@ -319,6 +320,12 @@ export interface UnitDef {
   grudge?: GrudgeUnitMeta;
 }
 
+/**
+ * Canonical unit definitions for single-player.
+ * Shop footman/archer/knight combat stats must match `lib/gw-sim/src/config.ts` UNIT_DEFS.
+ * Race ids in roster use short form (human); mesh kits use GRUDGE_RACE_TO_KIT (western-kingdoms…).
+ * Docs: docs/GAME_DEFINITIONS.md
+ */
 export const UNIT_TYPES: Record<string, UnitDef> = {
   // --- Player-summoned, commandable allies ---
   skirmisher: {
@@ -831,7 +838,8 @@ export interface DifficultyDef {
   aiFocusCreeps: number;
 }
 
-export const DEFAULT_DIFFICULTY: Difficulty = "normal";
+/** First campaign boot defaults to Skirmish so new players learn without a wall. */
+export const DEFAULT_DIFFICULTY: Difficulty = "easy";
 export const DIFFICULTY_ORDER: Difficulty[] = ["easy", "normal", "hard", "brutal"];
 
 export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
@@ -861,10 +869,11 @@ export const DIFFICULTY: Record<Difficulty, DifficultyDef> = {
     id: "normal",
     name: "Warband",
     blurb: "A fair, balanced campaign.",
-    enemyHpMult: 1,
-    enemyDmgMult: 1,
+    // Slightly softer than 1.0 so full warcamp kit stays heroic without trivializing hard/brutal.
+    enemyHpMult: 0.95,
+    enemyDmgMult: 0.92,
     enemyCreepsPerLane: 5,
-    enemyCreepInterval: 24,
+    enemyCreepInterval: 26,
     enemyEliteEveryNthPush: 3,
     heroAggroMult: 1,
     heroRetreatFrac: 0.25,

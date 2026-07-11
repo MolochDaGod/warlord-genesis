@@ -171,7 +171,8 @@ interface GameState {
   messages: FloatMsg[];
 
   // actions
-  startGame: () => void;
+  /** Returns false if loadout/unlock gates fail (never silent-success). */
+  startGame: () => boolean;
   reset: () => void;
   setMapSize: (size: MapSize) => void;
   setDifficulty: (d: Difficulty) => void;
@@ -312,8 +313,18 @@ export const useGame = create<GameState>((set, get) => ({
   startGame: () => {
     const r = useRoster.getState();
     const meta = useMeta.getState();
-    if (!isLoadoutReady(r.meleeId, r.rangedId, r.prefabId)) return;
-    if (!meta.isCharacterUnlocked(r.prefabId)) return;
+    if (!isLoadoutReady(r.meleeId, r.rangedId, r.prefabId)) {
+      console.warn("[warlord-genesis] startGame blocked: loadout not ready", {
+        meleeId: r.meleeId,
+        rangedId: r.rangedId,
+        prefabId: r.prefabId,
+      });
+      return false;
+    }
+    if (!meta.isCharacterUnlocked(r.prefabId)) {
+      console.warn("[warlord-genesis] startGame blocked: character locked", r.prefabId);
+      return false;
+    }
 
     // Generate a fresh procedural battlefield at the chosen size.
     const size = get().mapSize;
@@ -365,6 +376,7 @@ export const useGame = create<GameState>((set, get) => ({
     });
     get().pushMessage("THE WAR BEGINS — RAZE THEIR CITADEL", "good");
     get().pushMessage("YOUR GRUDGE6 HEROES MARCH THE LANES — CONFIGURE WAVE CREEPS (`)", "info");
+    return true;
   },
   reset: () => {
     const size = get().mapSize;

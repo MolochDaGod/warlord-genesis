@@ -1359,10 +1359,96 @@ kbd {
   display: block;
   padding: 0;
   overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 100%;
+  height: 100%;
 }
 .gw-lobby-v2 {
   align-items: stretch;
   justify-content: flex-start;
+}
+/* Warlord 3D preview — fixed viewport so R3F canvas always has size */
+.gw-warlord-preview {
+  position: relative;
+  width: 100%;
+  height: min(360px, 42vh);
+  min-height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(224, 178, 82, 0.22);
+  background: #0e0a08;
+}
+.gw-warlord-preview canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+.gw-warlord-preview-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  background: rgba(8, 10, 16, 0.55);
+  color: var(--gk-muted, #9ab);
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 2;
+}
+.gw-warlord-preview-overlay--error {
+  background: rgba(40, 12, 12, 0.72);
+  color: #f5a8a8;
+  pointer-events: auto;
+}
+.gw-warlord-preview--fallback {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 16px;
+}
+.gw-warlord-preview-fallback-title {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: var(--gk-accent-2, #e0b252);
+}
+/* War Gear panel — keep visible in long scroll lobby */
+.gw-lo {
+  width: 100%;
+  margin-top: 1rem;
+  padding: 0.85rem 1rem 1.1rem;
+  border-radius: 12px;
+  border: 1px solid rgba(120, 150, 200, 0.2);
+  background: rgba(10, 16, 28, 0.88);
+}
+.gw-lo-body {
+  display: grid;
+  grid-template-columns: minmax(140px, 180px) minmax(0, 1fr);
+  gap: 12px;
+  max-height: 320px;
+}
+.gw-lo-list {
+  max-height: 260px;
+  overflow-y: auto;
+}
+.gw-cs-v2 {
+  width: 100%;
+  max-width: 100%;
+  align-items: stretch;
+}
+.gw-cs-body {
+  display: grid;
+  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+@media (max-width: 900px) {
+  .gw-cs-body {
+    grid-template-columns: 1fr;
+  }
 }
 .gw-lobby-top {
   position: sticky;

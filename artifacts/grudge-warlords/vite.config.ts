@@ -35,8 +35,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(import.meta.dirname, "src"),
       "@assets": path.resolve(import.meta.dirname, "..", "..", "attached_assets"),
-      // workspace libs (r3f-fleet) import "three" as peer — resolve from app
+      // Workspace libs import peer deps — resolve from this package.
       three: path.resolve(import.meta.dirname, "node_modules/three"),
+      "@react-three/fiber": path.resolve(import.meta.dirname, "node_modules/@react-three/fiber"),
+      "@react-three/drei": path.resolve(import.meta.dirname, "node_modules/@react-three/drei"),
     },
     dedupe: ["react", "react-dom", "three", "@react-three/fiber", "@react-three/drei"],
   },
@@ -66,3 +68,4 @@ export default defineConfig({
     allowedHosts: true,
   },
 });
+

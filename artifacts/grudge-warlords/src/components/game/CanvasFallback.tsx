@@ -11,9 +11,12 @@ export function WebGLFallback({ reason }: { reason?: string }) {
           {reason ? ` (${reason})` : ""}
         </p>
         <div className="gw-controls-grid" style={{ gridTemplateColumns: "1fr" }}>
+          <div>Required: WebGL / WebGL2 + WebAssembly (Rapier physics)</div>
           <div>Enable hardware acceleration in your browser settings</div>
           <div>Update your graphics drivers, then reload</div>
-          <div>Try a recent version of Chrome, Edge, or Firefox</div>
+          <div>Try a recent Chrome, Edge, or Firefox on HTTPS</div>
+          <div>Optional: WebGPU improves future paths (not required for /play)</div>
+          <div>Build-only: Node ≥ 20 + pnpm 9 (not needed in the browser)</div>
         </div>
         <button className="gw-btn" onClick={() => window.location.reload()}>
           RELOAD

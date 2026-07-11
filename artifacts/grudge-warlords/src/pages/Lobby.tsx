@@ -77,7 +77,10 @@ export function Lobby() {
     if (!evaluateWarcampReady().ready) return;
     lockLoadout();
     markDeployDone();
-    startGame();
+    const ok = startGame();
+    if (!ok) {
+      // Play page will re-run prepareAndStartMatch; still navigate so /play repairs.
+    }
     navigate("/play");
   };
 
