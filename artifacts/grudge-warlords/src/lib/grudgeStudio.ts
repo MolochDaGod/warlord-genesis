@@ -103,12 +103,23 @@ async function fetchStudioUser(token: string): Promise<GrudgeUser> {
   return toGrudgeUser(me);
 }
 
+/** Auth success message types used across fleet clients (modern + legacy). */
+const AUTH_SUCCESS_TYPES = new Set([
+  "grudge-auth:success",
+  "grudge:auth:success",
+  "GRUDGE_AUTH_SUCCESS",
+]);
+
 /** Open the Grudge Studio popup and resolve with the returned session token. */
 function openAuthPopup(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const origin = window.location.origin;
+    // Canonical login path — same page as full-page SSO /login?redirect_uri=
+    const authUrl =
+      `${AUTH_ORIGIN}/login?origin=${encodeURIComponent(origin)}` +
+      `&app=genesis`;
     const popup = window.open(
-      `${AUTH_ORIGIN}/?origin=${encodeURIComponent(origin)}`,
+      authUrl,
       "grudge-auth",
       "width=480,height=720",
     );
@@ -126,7 +137,7 @@ function openAuthPopup(): Promise<string> {
     const onMessage = (e: MessageEvent) => {
       if (e.origin !== AUTH_ORIGIN) return;
       const data = e.data as { type?: string; token?: string } | null;
-      if (!data || data.type !== "grudge-auth:success" || !data.token) return;
+      if (!data?.token || !data.type || !AUTH_SUCCESS_TYPES.has(data.type)) return;
       settled = true;
       cleanup();
       try {

@@ -153,7 +153,13 @@ rewrites.push(
   { source: "/auth/callback", destination: "/index.html" },
   { source: "/api/auth/:path*", destination: `${AUTH_GATEWAY}/api/auth/:path*` },
   { source: "/auth/:path*", destination: `${AUTH_GATEWAY}/auth/:path*` },
+  // Login SPA is proxied from id hub. Relative assets on /login must also proxy or
+  // they hit this game's SPA catch-all as text/html (broken bg, logos, brand).
   { source: "/login", destination: `${AUTH_GATEWAY}/login` },
+  { source: "/auth-bg-racalvin.jpg", destination: `${AUTH_GATEWAY}/auth-bg-racalvin.jpg` },
+  { source: "/grudge-id-logo.png", destination: `${AUTH_GATEWAY}/grudge-id-logo.png` },
+  { source: "/brand/logo.png", destination: `${AUTH_GATEWAY}/brand/logo.png` },
+  { source: "/brand/:path*", destination: `${AUTH_GATEWAY}/brand/:path*` },
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
   // Game profiles / matches for this title — NOT grudge-studio.com (retro ROM catalog).
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
@@ -162,7 +168,7 @@ rewrites.push(
   // Never proxy to grudge-studio.com — that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
   {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg).*)",
+    source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
     destination: "/index.html",
   },
 );
