@@ -27,8 +27,28 @@
     </style>
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js"></script>
+    <!--
+      Bundle renamed to fix95 so sticky caches of index-warlord-fix3.js?v=91 cannot run.
+      Inline guard: drop any SW and refuse to keep a tab that still references the dead v=91 tag.
+    -->
+    <script>
+      (function () {
+        try {
+          if (navigator.serviceWorker) {
+            navigator.serviceWorker.getRegistrations().then(function (regs) {
+              regs.forEach(function (r) { r.unregister(); });
+            });
+          }
+          if (window.caches && caches.keys) {
+            caches.keys().then(function (keys) {
+              keys.forEach(function (k) { caches.delete(k); });
+            });
+          }
+        } catch (e) { /* ignore */ }
+      })();
+    </script>
     <script type="module" crossorigin src="/assets/index-warlord-fix95.js?v=95"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?v=94">
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?v=95">
   </head>
   <body>
     <div id="root"></div>
