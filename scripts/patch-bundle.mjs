@@ -678,14 +678,30 @@ if (js.includes('function sIA(C){const A=C.split("/").map(I=>encodeURIComponent(
   mustPatch("same-origin-baked-anims", js.includes("return`/anims/baked/"));
 }
 
-const SWAP_OLD = "swapAnimPack:async h=>{l.director.dispose(),g.stopAllAction();const D=await oK(C,g,h);l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions}";
-const SWAP_NEW = "swapAnimPack:async h=>{const D=await oK(C,g,h);try{l.director.dispose()}catch{}g.stopAllAction();l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions;try{l.director.setGaitTarget(!1,!1),l.actions.idle?.reset?.().fadeIn?.(.12).play?.()}catch{}}";
-if (js.includes(SWAP_OLD)) {
-  js = js.replace(SWAP_OLD, SWAP_NEW);
-  mustPatch("swap-anim-load-first", true);
-} else {
-  mustPatch("swap-anim-load-first", js.includes("const D=await oK(C,g,h);try{l.director.dispose()}"));
+const SWAP_PATTERNS = [
+  {
+    old: "swapAnimPack:async h=>{l.director.dispose(),g.stopAllAction();const D=await oK(C,g,h);l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions}",
+    neu: "swapAnimPack:async h=>{const D=await oK(C,g,h);try{l.director.dispose()}catch{}g.stopAllAction();l.director=D.director,l.attackClip=D.attackClip,l.actions=D.actions;try{l.director.setGaitTarget(!1,!1),l.actions.idle?.reset?.().fadeIn?.(.12).play?.()}catch{}}",
+  },
+  {
+    old: "swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}",
+    neu: "swapAnimPack:async w=>{const u=await pY(l,w);try{h.director.dispose()}catch{}l.stopAllAction();h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions;try{h.director.setGaitTarget(!1,!1),h.actions.idle?.reset?.().fadeIn?.(.12).play?.()}catch{}}",
+  },
+];
+let swapPatched = false;
+for (const { old, neu } of SWAP_PATTERNS) {
+  if (js.includes(old)) {
+    js = js.replace(old, neu);
+    swapPatched = true;
+    break;
+  }
 }
+mustPatch(
+  "swap-anim-load-first",
+  swapPatched ||
+    js.includes("const D=await oK(C,g,h);try{l.director.dispose()}") ||
+    js.includes("const u=await pY(l,w);try{h.director.dispose()}"),
+);
 
 // Hero GLB always from same-origin deploy (real glTF files in /models/heroes/grudge6)
 // Ensure URL uses UK race folder keys (orcs, western-kingdoms, …)
@@ -2423,17 +2439,33 @@ if (bundleHash !== prevSha) {
 manifest.lastBuilt = new Date().toISOString();
 manifest.bundleBytes = js.length;
 manifest.bundleSha256 = bundleHash;
+manifest.bundleSource = "assets/index-warlord-fix3.js";
+manifest.cssFile = "assets/index-BNWYZMT1.css";
+manifest.buildMode = "gw-core";
+
+const GW_CORE_REL = manifest.bundleFile ?? "assets/gw-core-20260712.js";
+const GW_CORE = join(ROOT, GW_CORE_REL.replace(/^\//, ""));
+writeFileSync(GW_CORE, js);
+copyFileSync(OUT, join(ROOT, "assets", "index-warlord-fix95.js"));
+console.log("[patch] shipped", GW_CORE_REL, "+ fix95 redirect alias");
+
+const prevHash = manifest.bundleCacheHash ?? "b5";
+const cacheHash = prevHash.startsWith("b")
+  ? `b${Number.parseInt(prevHash.slice(1), 10) + 1}`
+  : "b6";
+manifest.bundleCacheHash = cacheHash;
 writeFileSync(MANIFEST_PATH, JSON.stringify(manifest, null, 2) + "\n");
-console.log("[patch] wrote", OUT, `(${js.length} bytes, sha ${bundleHash}, v${manifest.bundleVersion})`);
+console.log("[patch] wrote", OUT, `(${js.length} bytes, sha ${bundleHash}, v${manifest.bundleVersion}, cache ${cacheHash})`);
 
 let html = readFileSync(INDEX, "utf8");
-const BUNDLE_BUST = String(manifest.bundleVersion);
-html = html.replace(
-  /index-warlord-fix\d\.js(?:\?v=[^"']+)?/g,
-  `index-warlord-fix3.js?v=${BUNDLE_BUST}`,
-);
-html = html.replace(/index-BNWYZMT1\.css(?:\?v=\d+)?/, `index-BNWYZMT1.css?v=${BUNDLE_BUST}`);
+const gwBase = GW_CORE_REL.replace(/^assets\//, "").replace(/\?.*$/, "");
+html = html.replace(/gw-core-\d+\.js(?:\?[^"']+)?/g, `${gwBase}?h=${cacheHash}`);
+html = html.replace(/index-warlord-fix\d+\.js(?:\?[^"']+)?/g, `${gwBase}?h=${cacheHash}`);
+html = html.replace(/index-DXiNT7LA\.css(?:\?[^"']+)?/g, `index-BNWYZMT1.css?h=${cacheHash}`);
+html = html.replace(/index-BNWYZMT1\.css(?:\?[^"']+)?/g, `index-BNWYZMT1.css?h=${cacheHash}`);
+html = html.replace(/grudge-game-bootstrap\.js(?:\?[^"']+)?/g, `grudge-game-bootstrap.js?h=${cacheHash}`);
 writeFileSync(INDEX, html);
+console.log("[patch] index.html →", gwBase, "css=index-BNWYZMT1.css", "h=" + cacheHash);
 
 let css = readFileSync(CSS, "utf8");
 if (!css.includes(".gw-title-v3")) {

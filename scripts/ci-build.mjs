@@ -29,9 +29,19 @@ function run(cmd, { optional = false } = {}) {
   }
 }
 
-// Fast path: production ships a prebuilt bundle (vite → assets/).
+// Ship patched game bundle (fix2 → fix3 → gw-core). Skips only when source missing.
+const FIX2 = join(ROOT, "assets", "index-warlord-fix2.js");
+if (existsSync(FIX2)) {
+  console.log("[ci-build] patching fix2 → gw-core");
+  run("node scripts/patch-bundle.mjs");
+  run("node scripts/generate-vercel-config.mjs", { optional: true });
+  run("node scripts/verify-deploy.mjs");
+  console.log("[ci-build] done");
+  process.exit(0);
+}
+
 if (existsSync(BUNDLE)) {
-  console.log("[ci-build] prebuilt bundle present — static ship mode");
+  console.log("[ci-build] prebuilt bundle only — static ship mode (no fix2 source)");
   run("node scripts/generate-vercel-config.mjs", { optional: true });
   run("node scripts/verify-deploy.mjs");
   console.log("[ci-build] done");

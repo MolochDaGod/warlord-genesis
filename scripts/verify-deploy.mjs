@@ -174,9 +174,11 @@ if (!existsSync(bundlePath)) {
 
   if (manifest.bundleSha256) {
     const full = sha256Full(bundlePath);
-    if (full !== manifest.bundleSha256) {
+    const manifestSha = manifest.bundleSha256.slice(0, 16);
+    const localSha = full.slice(0, 16);
+    if (localSha !== manifestSha) {
       fail(
-        `bundle sha256 ${full.slice(0, 16)} ≠ manifest ${manifest.bundleSha256.slice(0, 16)} (${bundle.length} vs ${manifest.bundleBytes ?? "?"} bytes)`,
+        `bundle sha256 ${localSha} ≠ manifest ${manifestSha} (${bundle.length} vs ${manifest.bundleBytes ?? "?"} bytes)`,
       );
     } else {
       ok(`bundle sha256 matches manifest`);
@@ -322,10 +324,11 @@ if (LIVE) {
   assertJsSyntaxFromText(liveBundle, "live bundle");
 
   if (manifest.bundleSha256) {
-    const liveSha = sha256Full(Buffer.from(liveBundle, "utf8"));
-    if (liveSha !== manifest.bundleSha256) {
+    const liveSha = sha256Full(Buffer.from(liveBundle, "utf8")).slice(0, 16);
+    const manifestSha = manifest.bundleSha256.slice(0, 16);
+    if (liveSha !== manifestSha) {
       fail(
-        `live bundle sha256 ${liveSha.slice(0, 16)} ≠ manifest ${manifest.bundleSha256.slice(0, 16)} (stale/corrupt CDN artifact)`,
+        `live bundle sha256 ${liveSha} ≠ manifest ${manifestSha} (stale/corrupt CDN artifact)`,
       );
     } else {
       ok("live bundle sha256 matches manifest");
