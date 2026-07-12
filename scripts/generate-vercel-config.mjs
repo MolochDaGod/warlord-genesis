@@ -2,11 +2,17 @@
 /**
  * Generate vercel.json with Grudge fleet API rewrites + warlord-genesis API proxy.
  */
-import { writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const MANIFEST_PATH = join(ROOT, "deploy-manifest.json");
+const manifest = existsSync(MANIFEST_PATH)
+  ? JSON.parse(readFileSync(MANIFEST_PATH, "utf8"))
+  : {};
+const GW_CORE_FILE = (manifest.bundleFile ?? "assets/gw-core-20260713.js").replace(/^\//, "");
+const GW_CORE_PIN = `/${GW_CORE_FILE}?h=${manifest.bundleCacheHash ?? "b6"}`;
 const GAME_DATA =
   process.env.GRUDGE_API_URL?.replace(/\/$/, "") ||
   "https://grudge-api-production-0d46.up.railway.app";
@@ -185,17 +191,17 @@ const config = {
   redirects: [
     {
       source: "/assets/index-warlord-fix3.js",
-      destination: "/assets/gw-core-20260712.js?h=b5",
+      destination: GW_CORE_PIN,
       permanent: true,
     },
     {
       source: "/index-warlord-fix3.js",
-      destination: "/assets/gw-core-20260712.js?h=b5",
+      destination: GW_CORE_PIN,
       permanent: true,
     },
     {
       source: "/assets/index-warlord-fix95.js",
-      destination: "/assets/gw-core-20260712.js?h=b5",
+      destination: GW_CORE_PIN,
       permanent: true,
     },
   ],

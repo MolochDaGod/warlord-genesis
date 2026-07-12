@@ -6,17 +6,17 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260712.js?h=b5",
+      "destination": "/assets/gw-core-20260713.js?h=b8",
       "permanent": true
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260712.js?h=b5",
+      "destination": "/assets/gw-core-20260713.js?h=b8",
       "permanent": true
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/gw-core-20260712.js?h=b5",
+      "destination": "/assets/gw-core-20260713.js?h=b8",
       "permanent": true
     }
   ],
