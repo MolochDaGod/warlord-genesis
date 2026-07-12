@@ -45,6 +45,9 @@ patch-run-output.txt
 syntax-break-report.txt
 SYMBOL_MAP.json
 
+# Stale root-level bundle duplicate (canonical ship path is assets/gw-core-*.js)
+/gw-core-*.js
+
 # Bundle experiments (production is index-warlord-fix3.js; fix2 is patch source)
 assets/index-warlord-fix3-live.js
 assets/index-warlord-hybrid.js

@@ -185,17 +185,17 @@ const config = {
   redirects: [
     {
       source: "/assets/index-warlord-fix3.js",
-      destination: "/assets/gw-core-20260712.js?h=a1",
+      destination: "/assets/gw-core-20260712.js?h=b5",
       permanent: true,
     },
     {
       source: "/index-warlord-fix3.js",
-      destination: "/assets/gw-core-20260712.js?h=a1",
+      destination: "/assets/gw-core-20260712.js?h=b5",
       permanent: true,
     },
     {
       source: "/assets/index-warlord-fix95.js",
-      destination: "/assets/gw-core-20260712.js?h=a1",
+      destination: "/assets/gw-core-20260712.js?h=b5",
       permanent: true,
     },
   ],

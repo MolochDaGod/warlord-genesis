@@ -1,10 +1,22 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
+  "buildMode": "gw-core",
   "bundleVersion": 20260712,
+  "bundleCacheHash": "b5",
   "bundleFile": "assets/gw-core-20260712.js",
+  "bundleChecks": [
+    { "id": "lobby-route", "needle": "path:\"/lobby\"" },
+    { "id": "deploy-route", "needle": "\"/deploy\"" },
+    { "id": "play-route", "needle": "path:\"/play\"" },
+    { "id": "play-boot", "needle": "gw-play-gate" },
+    { "id": "baked-anims", "needle": "/anims/baked/" },
+    { "id": "grudge6", "needle": "western-kingdoms" },
+    { "id": "deploy-ui", "needle": "gk-deploy-v2" },
+    { "id": "warcamp-route", "needle": "path:\"/warcamp\"" }
+  ],
   "bundleSource": "assets/index-warlord-fix95.js",
-  "cssFile": "assets/index-BNWYZMT1.css",
+  "cssFile": "assets/index-DXiNT7LA.css",
   "routes": [
     {
       "path": "/",
@@ -677,9 +689,9 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-11T07:11:32.037Z",
-  "bundleBytes": 4145748,
-  "bundleSha256": "7f31b9158a6308aa772afd75d10c6a452e913b9f51a60b89a3f2a0e69a28074b",
+  "lastBuilt": "2026-07-11T12:00:00.000Z",
+  "bundleBytes": 4217871,
+  "bundleSha256": "204f6c6f214cdb5d33844e08c24f3341a5085a2cf3eb9651dbe507fe7ecac1e3",
   "sites": [
     "https://warlord-genesis.vercel.app",
     "https://warstrat.grudge-studio.com"

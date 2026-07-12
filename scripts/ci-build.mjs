@@ -5,12 +5,16 @@
  * texture generation and only verify the deploy inventory.
  */
 import { execSync } from "node:child_process";
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
-const BUNDLE = join(ROOT, "assets", "index-warlord-fix3.js");
+const MANIFEST = join(ROOT, "deploy-manifest.json");
+const manifest = existsSync(MANIFEST)
+  ? JSON.parse(readFileSync(MANIFEST, "utf8"))
+  : { bundleFile: "assets/index-warlord-fix3.js" };
+const BUNDLE = join(ROOT, manifest.bundleFile ?? "assets/index-warlord-fix3.js");
 
 function run(cmd, { optional = false } = {}) {
   try {
@@ -29,8 +33,7 @@ function run(cmd, { optional = false } = {}) {
 if (existsSync(BUNDLE)) {
   console.log("[ci-build] prebuilt bundle present — static ship mode");
   run("node scripts/generate-vercel-config.mjs", { optional: true });
-  // verify may fail on missing optional patch needles in clean vite builds
-  run("node scripts/verify-deploy.mjs", { optional: true });
+  run("node scripts/verify-deploy.mjs");
   console.log("[ci-build] done");
   process.exit(0);
 }

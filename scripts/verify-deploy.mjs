@@ -1,11 +1,13 @@
 #!/usr/bin/env node
 /**
- * Pre/post deploy gate — static files, bundle patches, routes, and optional live smoke.
+ * Pre/post deploy gate — static files, bundle checks, routes, and optional live smoke.
  * Usage: node scripts/verify-deploy.mjs [--live] [--url=https://...]
  */
 import { createHash } from "node:crypto";
-import { existsSync, readFileSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { existsSync, readFileSync, writeFileSync, unlinkSync } from "node:fs";
 import { dirname, join } from "node:path";
+import { tmpdir } from "node:os";
 import { fileURLToPath } from "node:url";
 
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
@@ -15,6 +17,9 @@ const urlArg = process.argv.find((a) => a.startsWith("--url="));
 const SITE = urlArg?.slice(6) || JSON.parse(readFileSync(MANIFEST_PATH, "utf8")).site;
 
 const manifest = JSON.parse(readFileSync(MANIFEST_PATH, "utf8"));
+const GW_CORE =
+  manifest.buildMode === "gw-core" || /gw-core-\d+\.js/.test(manifest.bundleFile ?? "");
+const VITE = manifest.buildMode === "vite";
 let failures = 0;
 let warnings = 0;
 
@@ -34,8 +39,80 @@ function sha256(path) {
   return createHash("sha256").update(readFileSync(path)).digest("hex").slice(0, 16);
 }
 
+function sha256Full(pathOrBuf) {
+  const buf = typeof pathOrBuf === "string" ? readFileSync(pathOrBuf) : pathOrBuf;
+  return createHash("sha256").update(buf).digest("hex");
+}
+
+/** Fail deploy if bundle is not valid JavaScript (catches corrupt minified output). */
+function assertBundleSyntax(relPath, label = relPath) {
+  const abs = join(ROOT, relPath);
+  if (!existsSync(abs)) {
+    fail(`${label} missing for syntax check`);
+    return;
+  }
+  try {
+    execSync(`node --check ${JSON.stringify(abs)}`, { stdio: "pipe" });
+    ok(`${label} parses (node --check)`);
+  } catch (err) {
+    const msg = String(err.stderr ?? err.stdout ?? err.message).split("\n")[0];
+    fail(`${label} syntax invalid: ${msg}`);
+  }
+}
+
+function assertJsSyntaxFromText(js, label) {
+  const tmp = join(tmpdir(), `wg-bundle-syntax-${Date.now()}.js`);
+  try {
+    writeFileSync(tmp, js);
+    execSync(`node --check ${JSON.stringify(tmp)}`, { stdio: "pipe" });
+    ok(`${label} parses (node --check)`);
+  } catch (err) {
+    const msg = String(err.stderr ?? err.stdout ?? err.message).split("\n")[0];
+    fail(`${label} syntax invalid: ${msg}`);
+  } finally {
+    try {
+      unlinkSync(tmp);
+    } catch {
+      /* ignore */
+    }
+  }
+}
+
 function isStandardGlb(buf) {
   return buf.length >= 20 && buf.toString("utf8", 0, 4) === "glTF" && buf.slice(16, 20).toString("utf8") === "JSON";
+}
+
+/** Parse production bundle pin from index.html (gw-core | vite | legacy fix3). */
+function parseBundlePin(html) {
+  const gw = html.match(/gw-core-(\d+)\.js\?h=([a-z0-9]+)/i);
+  if (gw) {
+    return {
+      mode: "gw-core",
+      version: Number(gw[1]),
+      hash: gw[2],
+      file: `assets/gw-core-${gw[1]}.js`,
+      query: `h=${gw[2]}`,
+    };
+  }
+  const vite = html.match(/\/assets\/(index-[^"?]+\.js)\?v=(\d+)/);
+  if (vite) {
+    return {
+      mode: "vite",
+      version: Number(vite[2]),
+      file: `assets/${vite[1]}`,
+      query: `v=${vite[2]}`,
+    };
+  }
+  const legacy = html.match(/index-warlord-fix3\.js\?v=(\d+)/);
+  if (legacy) {
+    return {
+      mode: "legacy",
+      version: Number(legacy[1]),
+      file: "assets/index-warlord-fix3.js",
+      query: `v=${legacy[1]}`,
+    };
+  }
+  return null;
 }
 
 // ── Static files on disk ───────────────────────────────────────────────────
@@ -56,46 +133,95 @@ for (const rel of manifest.requiredStatic) {
 
 // ── index.html bundle pin ────────────────────────────────────────────────────
 const html = readFileSync(join(ROOT, "index.html"), "utf8");
-const vMatch = html.match(/index-warlord-fix3\.js\?v=(\d+)/);
-const htmlVersion = vMatch ? Number(vMatch[1]) : null;
-if (htmlVersion !== manifest.bundleVersion) {
-  fail(`index.html bundle v=${htmlVersion} ≠ manifest v=${manifest.bundleVersion}`);
+const pin = parseBundlePin(html);
+if (!pin) {
+  fail("index.html missing recognized bundle pin (gw-core, vite, or fix3)");
+} else if (pin.version !== manifest.bundleVersion) {
+  fail(`index.html bundle ${pin.query} ≠ manifest v=${manifest.bundleVersion}`);
+} else if (GW_CORE && manifest.bundleCacheHash && pin.hash !== manifest.bundleCacheHash) {
+  fail(`index.html ?h=${pin.hash} ≠ manifest h=${manifest.bundleCacheHash}`);
 } else {
-  ok(`index.html pins bundle v${manifest.bundleVersion}`);
+  ok(`index.html pins ${pin.file} ?${pin.query}`);
 }
 
-// ── Bundle patches ───────────────────────────────────────────────────────────
+if (!html.includes("Warlord Genesis")) {
+  fail("index.html missing Warlord Genesis title");
+} else {
+  ok("index.html is Warlord Genesis shell");
+}
+
+if (GW_CORE) {
+  if (!html.includes("grudge-game-bootstrap")) {
+    fail("index.html missing grudge-game-bootstrap.js");
+  } else {
+    ok("index.html loads fleet bootstrap");
+  }
+  if (!html.includes("#root")) {
+    fail("index.html missing #root before gw-core script");
+  } else {
+    ok("index.html #root before bundle (classic script order)");
+  }
+}
+
+// ── Bundle checks ───────────────────────────────────────────────────────────
 const bundlePath = join(ROOT, manifest.bundleFile);
 if (!existsSync(bundlePath)) {
   fail(`bundle missing: ${manifest.bundleFile}`);
 } else {
   const bundle = readFileSync(bundlePath, "utf8");
   ok(`${manifest.bundleFile} (${bundle.length} bytes, sha ${sha256(bundlePath)})`);
+  assertBundleSyntax(manifest.bundleFile);
 
-  for (const patch of manifest.bundlePatches) {
-    if (!bundle.includes(patch.needle)) {
-      fail(`bundle patch missing [${patch.id}]: ${patch.needle.slice(0, 60)}`);
+  if (manifest.bundleSha256) {
+    const full = sha256Full(bundlePath);
+    if (full !== manifest.bundleSha256) {
+      fail(
+        `bundle sha256 ${full.slice(0, 16)} ≠ manifest ${manifest.bundleSha256.slice(0, 16)} (${bundle.length} vs ${manifest.bundleBytes ?? "?"} bytes)`,
+      );
     } else {
-      ok(`patch [${patch.id}]`);
+      ok(`bundle sha256 matches manifest`);
     }
   }
 
-  for (const route of manifest.routes) {
-    if (route.redirect) continue;
-    const pathNeedle = `path:"${route.path}"`;
-    if (!bundle.includes(pathNeedle) && route.path !== "*") {
-      fail(`route not in bundle: ${route.path} (${route.screen})`);
-    } else if (route.path !== "*") {
-      ok(`route ${route.path} → ${route.component}`);
+  const checks = GW_CORE || VITE
+    ? (manifest.bundleChecks ?? [])
+    : (manifest.bundlePatches ?? []);
+
+  for (const check of checks) {
+    if (!bundle.includes(check.needle)) {
+      fail(`bundle check missing [${check.id}]: ${check.needle.slice(0, 60)}`);
+    } else {
+      ok(`check [${check.id}]`);
     }
   }
 
-  for (const route of manifest.routes.filter((r) => r.redirect)) {
-    const from = route.path === "*" ? 'path:"*"' : `path:"${route.path}"`;
-    if (!bundle.includes(from)) {
-      fail(`redirect route missing: ${route.path} → ${route.redirect}`);
-    } else {
-      ok(`redirect ${route.path} → ${route.redirect}`);
+  if (GW_CORE || VITE) {
+    for (const route of ["/lobby", "/deploy", "/play", "/warcamp", "/battle", "/mp"]) {
+      const pathNeedle = `path:"${route}"`;
+      if (!bundle.includes(pathNeedle) && !bundle.includes(route)) {
+        fail(`bundle missing route: ${route}`);
+      } else {
+        ok(`route ${route}`);
+      }
+    }
+  } else {
+    for (const route of manifest.routes) {
+      if (route.redirect) continue;
+      const pathNeedle = `path:"${route.path}"`;
+      if (!bundle.includes(pathNeedle) && route.path !== "*") {
+        fail(`route not in bundle: ${route.path} (${route.screen})`);
+      } else if (route.path !== "*") {
+        ok(`route ${route.path} → ${route.component}`);
+      }
+    }
+
+    for (const route of manifest.routes.filter((r) => r.redirect)) {
+      const from = route.path === "*" ? 'path:"*"' : `path:"${route.path}"`;
+      if (!bundle.includes(from)) {
+        fail(`redirect route missing: ${route.path} → ${route.redirect}`);
+      } else {
+        ok(`redirect ${route.path} → ${route.redirect}`);
+      }
     }
   }
 }
@@ -144,9 +270,9 @@ if (!gamesRewrite?.destination?.includes("warlord-genesis-api")) {
 } else {
   ok("/api/games → warlord-genesis-api");
 }
-const bundleAuthPath = join(ROOT, manifest.bundleFile);
-if (existsSync(bundleAuthPath)) {
-  const bundleAuth = readFileSync(bundleAuthPath, "utf8");
+
+if (!GW_CORE && !VITE && existsSync(bundlePath)) {
+  const bundleAuth = readFileSync(bundlePath, "utf8");
   if (!bundleAuth.includes("login?redirect_uri")) {
     fail("bundle must use canonical Grudge ID login (/login?redirect_uri=)");
   } else if (bundleAuth.includes("/auth/sso-check")) {
@@ -160,6 +286,7 @@ if (existsSync(bundleAuthPath)) {
     ok("deploy session boot [WgEnsureSession]");
   }
 }
+
 const CI_BUILD = "node scripts/ci-build.mjs";
 if (vercel.buildCommand !== CI_BUILD) {
   fail(`Vercel buildCommand must be exactly "${CI_BUILD}" (got: ${vercel.buildCommand})`);
@@ -172,50 +299,84 @@ if (vercel.buildCommand !== CI_BUILD) {
 // ── Live smoke (optional) ────────────────────────────────────────────────────
 if (LIVE) {
   console.log(`\n── Live smoke: ${SITE} ──`);
-  const home = await fetch(SITE, { redirect: "follow" });
+  const home = await fetch(SITE, { redirect: "follow", cache: "no-store" });
   const homeHtml = await home.text();
-  const liveV = homeHtml.match(/index-warlord-fix3\.js\?v=(\d+)/)?.[1];
-  if (Number(liveV) !== manifest.bundleVersion) {
-    fail(`live bundle v=${liveV} ≠ manifest v=${manifest.bundleVersion}`);
+  const livePin = parseBundlePin(homeHtml);
+
+  if (!livePin) {
+    fail("live HTML missing recognized bundle pin");
+  } else if (livePin.version !== manifest.bundleVersion) {
+    fail(`live bundle ${livePin.query} ≠ manifest v=${manifest.bundleVersion}`);
+  } else if (GW_CORE && manifest.bundleCacheHash && livePin.hash !== manifest.bundleCacheHash) {
+    warn(`live ?h=${livePin.hash} ≠ manifest h=${manifest.bundleCacheHash} (CDN may lag index.html)`);
+    ok(`live serves gw-core v${livePin.version} (hash drift tolerated)`);
   } else {
-    ok(`live serves bundle v${liveV}`);
+    ok(`live serves bundle ${livePin.file} ?${livePin.query}`);
   }
 
-  const bundleUrl = `${SITE}/${manifest.bundleFile}?v=${manifest.bundleVersion}`;
-  const liveBundle = await fetch(bundleUrl).then((r) => r.text());
-  const liveCritical = [
-    "cdn-proxy",
-    "lobby-onboarding-hook",
-    "lobby-deploy-gate",
-    "lobby-ensure-ready",
-    "ensure-ready",
-    "deploy-route",
-    "local-palette",
-  ];
-  for (const id of liveCritical) {
-    const patch = manifest.bundlePatches.find((p) => p.id === id);
-    if (!patch) {
-      fail(`manifest missing critical patch id: ${id}`);
-      continue;
-    }
-    if (!liveBundle.includes(patch.needle)) {
-      fail(`live bundle missing patch [${id}]`);
+  const liveBundleFile = livePin?.file ?? manifest.bundleFile;
+  const liveQuery = livePin?.query ?? (GW_CORE ? `h=${manifest.bundleCacheHash}` : `v=${manifest.bundleVersion}`);
+  const bundleUrl = `${SITE}/${liveBundleFile}?${liveQuery}`;
+  const liveBundle = await fetch(bundleUrl, { cache: "no-store" }).then((r) => r.text());
+  ok(`live bundle ${liveBundle.length} bytes from ${bundleUrl}`);
+  assertJsSyntaxFromText(liveBundle, "live bundle");
+
+  if (manifest.bundleSha256) {
+    const liveSha = sha256Full(Buffer.from(liveBundle, "utf8"));
+    if (liveSha !== manifest.bundleSha256) {
+      fail(
+        `live bundle sha256 ${liveSha.slice(0, 16)} ≠ manifest ${manifest.bundleSha256.slice(0, 16)} (stale/corrupt CDN artifact)`,
+      );
     } else {
-      ok(`live patch [${id}]`);
+      ok("live bundle sha256 matches manifest");
+    }
+  } else if (existsSync(bundlePath)) {
+    const localLen = readFileSync(bundlePath).length;
+    const drift = Math.abs(liveBundle.length - localLen);
+    if (drift > 512) {
+      fail(`live bundle size ${liveBundle.length} ≠ local ${localLen} (>${drift} byte drift)`);
+    } else {
+      ok(`live bundle size within ${drift}b of local`);
     }
   }
 
-  if (homeHtml.includes("Warlord Genesis") && homeHtml.includes("index-warlord-fix3.js")) {
-    ok("live HTML is Warlord Genesis (not wrong app)");
-  } else if (homeHtml.includes("index-iNz-kS32") || homeHtml.includes("Grudge Warlords")) {
+  const liveChecks = GW_CORE || VITE
+    ? (manifest.bundleChecks ?? [])
+    : [
+        "cdn-proxy",
+        "lobby-onboarding-hook",
+        "lobby-deploy-gate",
+        "lobby-ensure-ready",
+        "ensure-ready",
+        "deploy-route",
+        "local-palette",
+      ]
+        .map((id) => manifest.bundlePatches?.find((p) => p.id === id))
+        .filter(Boolean);
+
+  for (const check of liveChecks) {
+    if (!check) continue;
+    if (!liveBundle.includes(check.needle)) {
+      fail(`live bundle missing check [${check.id}]`);
+    } else {
+      ok(`live check [${check.id}]`);
+    }
+  }
+
+  const bundleMarker = livePin?.file?.replace(/^assets\//, "") ?? "";
+  if (homeHtml.includes("Warlord Genesis") && homeHtml.includes(bundleMarker)) {
+    ok(`live HTML is Warlord Genesis (${livePin?.mode ?? "unknown"} shell)`);
+  } else if (homeHtml.includes("index-warlord-fix3.js")) {
+    fail("live HTML still serves legacy fix3 bundle");
+  } else if (homeHtml.includes("Grudge Warlords") && !homeHtml.includes("Warlord Genesis")) {
     fail("live HTML is wrong app (Grudge Warlords / old bundle)");
   } else {
     fail("live HTML missing Warlord Genesis shell");
   }
 
-  if (liveBundle.includes("shardProgress(")) {
+  if (!GW_CORE && !VITE && liveBundle.includes("shardProgress(")) {
     fail("live bundle still has shardProgress() — React #185 risk");
-  } else {
+  } else if (!GW_CORE && !VITE) {
     ok("live bundle has no shardProgress()");
   }
 
@@ -275,7 +436,7 @@ if (LIVE) {
   }
 
   for (const route of ["/", "/lobby", "/deploy", "/warcamp", "/play", "/battle", "/mp"]) {
-    const res = await fetch(`${SITE}${route}`, { redirect: "manual" });
+    const res = await fetch(`${SITE}${route}`, { redirect: "manual", cache: "no-store" });
     const ct = res.headers.get("content-type") || "";
     if (!ct.includes("text/html")) {
       fail(`${route} did not return HTML shell (${res.status} ${ct})`);
