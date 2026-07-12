@@ -7,7 +7,7 @@ import {
   meleeDisplayName,
   rangedDisplayName,
 } from "../../game/canonicalLoadout";
-import { useMeta } from "../../game/metaProgression";
+import { SHARDS_PER_LEVEL, SHARDS_TO_UNLOCK, useMeta } from "../../game/metaProgression";
 import { viewerUrl } from "../../lib/grudgeViewer";
 import { HeroShowcase } from "./HeroShowcase";
 import { HeroAIPanel } from "./HeroAIPanel";
@@ -25,7 +25,14 @@ export function HeroDetailModal({ prefab, onClose, onSelect }: HeroDetailModalPr
   const codex = codexEntryForPrefab(prefab.id);
   const cls = CLASS_BY_ID[prefab.classId];
   const kit = canonicalWeaponsForPrefab(prefab.id);
-  const { shards, need, level } = useMeta((s) => s.shardProgress("character", prefab.id));
+  // Primitive selectors — avoid shardProgress() object identity (React #185).
+  const level = useMeta(
+    (s) => s.cards.find((c) => c.kind === "character" && c.id === prefab.id)?.level ?? 0,
+  );
+  const shards = useMeta(
+    (s) => s.cards.find((c) => c.kind === "character" && c.id === prefab.id)?.shards ?? 0,
+  );
+  const need = level === 0 ? SHARDS_TO_UNLOCK : SHARDS_PER_LEVEL;
   const classSkills = prefabClassSkills(prefab);
   const weaponSkills = prefabWeaponSkills(prefab);
 

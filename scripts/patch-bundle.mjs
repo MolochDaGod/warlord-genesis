@@ -518,23 +518,36 @@ js = js.replace(
 );
 
 // React #185 — shardProgress() returns a new object every snapshot; use primitive selectors.
-const SHARD_FIXES = [
-  [
-    "const{shards:t,need:Q,level:o}=zC(F=>F.shardProgress(\"character\",C.id)),",
-    'const o=zC(F=>(F.cards.find(e=>e.kind==="character"&&e.id===C.id)?.level??0)),t=zC(F=>(F.cards.find(e=>e.kind==="character"&&e.id===C.id)?.shards??0)),Q=o===0?JS:BS,',
-  ],
-  [
-    "const{shards:e,need:t,level:Q}=zC(l=>l.shardProgress(\"lane_guard\",C)),",
-    'const Q=zC(l=>(l.cards.find(h=>h.kind==="lane_guard"&&h.id===C)?.level??0)),e=zC(l=>(l.cards.find(h=>h.kind==="lane_guard"&&h.id===C)?.shards??0)),t=Q===0?JS:BS,',
-  ],
-  [
-    "{shards:o,need:s,level:l}=zC(w=>w.shardProgress(\"character\",C.id)),",
-    "l=zC(w=>(w.cards.find(u=>u.kind===\"character\"&&u.id===C.id)?.level??0)),o=zC(w=>(w.cards.find(u=>u.kind===\"character\"&&u.id===C.id)?.shards??0)),s=l===0?JS:BS,",
-  ],
-];
-for (const [from, to] of SHARD_FIXES) {
-  if (!js.includes(from)) console.warn("[patch] shard selector missing:", from.slice(0, 60));
-  else js = js.replace(from, to);
+// Regex-based so minified store symbols (zC, Cg, …) do not break the patch.
+{
+  let shardFixes = 0;
+  const NEED = "10"; // SHARDS_TO_UNLOCK === SHARDS_PER_LEVEL === 10
+  js = js.replace(
+    /const\{shards:([A-Za-z_$][\w$]*),need:([A-Za-z_$][\w$]*),level:([A-Za-z_$][\w$]*)\}=([A-Za-z_$][\w$]*)\(([A-Za-z_$][\w$]*)=>\5\.shardProgress\("character",C\.id\)\)/g,
+    (_m, shards, need, level, store) => {
+      shardFixes += 1;
+      return `const ${level}=${store}(s=>(s.cards.find(e=>e.kind==="character"&&e.id===C.id)?.level??0)),${shards}=${store}(s=>(s.cards.find(e=>e.kind==="character"&&e.id===C.id)?.shards??0)),${need}=${NEED}`;
+    },
+  );
+  js = js.replace(
+    /const\{shards:([A-Za-z_$][\w$]*),need:([A-Za-z_$][\w$]*),level:([A-Za-z_$][\w$]*)\}=([A-Za-z_$][\w$]*)\(([A-Za-z_$][\w$]*)=>\5\.shardProgress\("lane_guard",C\)\)/g,
+    (_m, shards, need, level, store) => {
+      shardFixes += 1;
+      return `const ${level}=${store}(s=>(s.cards.find(h=>h.kind==="lane_guard"&&h.id===C)?.level??0)),${shards}=${store}(s=>(s.cards.find(h=>h.kind==="lane_guard"&&h.id===C)?.shards??0)),${need}=${NEED}`;
+    },
+  );
+  js = js.replace(
+    /\{shards:([A-Za-z_$][\w$]*),need:([A-Za-z_$][\w$]*),level:([A-Za-z_$][\w$]*)\}=([A-Za-z_$][\w$]*)\(([A-Za-z_$][\w$]*)=>\5\.shardProgress\("character",C\.id\)\)/g,
+    (_m, shards, need, level, store) => {
+      shardFixes += 1;
+      return `${level}=${store}(s=>(s.cards.find(u=>u.kind==="character"&&u.id===C.id)?.level??0)),${shards}=${store}(s=>(s.cards.find(u=>u.kind==="character"&&u.id===C.id)?.shards??0)),${need}=${NEED}`;
+    },
+  );
+  if (shardFixes === 0 && js.includes(".shardProgress(")) {
+    console.warn("[patch] React #185 shard selectors still present — check minified shape");
+  } else {
+    console.log("[patch] React #185 shard selector fixes:", shardFixes);
+  }
 }
 
 // GRUDGE6 hero meshes — fleet CDN (/api/assets proxy returns SPA HTML).

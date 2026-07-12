@@ -44,7 +44,7 @@
   "rewrites": [
     {
       "source": "/api/grudge/:path*",
-      "destination": "https://warlord-genesis-api-production.up.railway.app/api/grudge/:path*"
+      "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/grudge/:path*"
     },
     {
       "source": "/api/assets/models/maps/:theme/:file",
@@ -384,11 +384,11 @@
     },
     {
       "source": "/api/games",
-      "destination": "https://warlord-genesis-api-production.up.railway.app/api/games"
+      "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/games"
     },
     {
       "source": "/api/games/:path*",
-      "destination": "https://warlord-genesis-api-production.up.railway.app/api/games/:path*"
+      "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/games/:path*"
     },
     {
       "source": "/api/:path*",

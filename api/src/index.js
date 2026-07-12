@@ -279,29 +279,172 @@ app.get("/api/games", (_req, res) => {
   ]);
 });
 
+function emptyMeta() {
+  return {
+    onboardingDone: false,
+    starterPrefabId: null,
+    cards: [],
+    lastDailyClaim: null,
+    lastMatchReward: null,
+  };
+}
+
+function profileDto(gameId, me, save) {
+  const meta = save?.save_json ?? emptyMeta();
+  // Prefer fleet GBUX when present; fall back to meta.gbux saved locally.
+  const currency = Number(
+    me?.gbuxBalance ?? me?.gbux ?? meta?.gbux ?? 0,
+  );
+  return {
+    gameId,
+    currency,
+    meta: typeof meta === "object" && meta ? meta : emptyMeta(),
+    updatedAt: save?.updated_at ?? new Date().toISOString(),
+  };
+}
+
+/** Guest-friendly profile read — no auth → empty local-shaped profile (not 500). */
 app.get("/api/games/:gameId/profile", async (req, res) => {
   try {
-    const token = readToken(req);
-    if (!token) return res.status(401).json({ error: "Authentication required" });
     if (req.params.gameId !== "grudge-warlords") {
       return res.status(404).json({ error: "Unknown game" });
+    }
+    const token = readToken(req);
+    if (!token) {
+      return res.json({
+        gameId: "grudge-warlords",
+        currency: 0,
+        meta: emptyMeta(),
+        updatedAt: new Date().toISOString(),
+        anonymous: true,
+      });
     }
     const me = await canonicalMe(req, token);
     const grudgeId = me?.grudgeId || me?.grudge_id || null;
     const save = grudgeId ? await getPlayerSave(grudgeId) : null;
+    res.json(profileDto("grudge-warlords", me, save));
+  } catch (err) {
+    console.error("[profile GET]", err);
+    // Soft-fail so lobby still boots offline
     res.json({
       gameId: "grudge-warlords",
-      currency: Number(me?.gbuxBalance ?? me?.gbux ?? 0),
-      meta: save?.save_json ?? {
-        onboardingDone: false,
-        starterPrefabId: null,
-        cards: [],
-        lastDailyClaim: null,
-      },
-      updatedAt: save?.updated_at ?? new Date().toISOString(),
+      currency: 0,
+      meta: emptyMeta(),
+      updatedAt: new Date().toISOString(),
+      error: err.message || "Profile load failed",
+    });
+  }
+});
+
+/**
+ * PATCH /api/games/:gameId/profile
+ * Body: { currency?, meta? } — merges meta into warlord_genesis_players.save_json.
+ * Auth optional: without token we no-op success so unauthenticated lobby seed
+ * does not spam 500s (localStorage remains SSOT until login).
+ */
+app.patch("/api/games/:gameId/profile", async (req, res) => {
+  try {
+    if (req.params.gameId !== "grudge-warlords") {
+      return res.status(404).json({ error: "Unknown game" });
+    }
+    const token = readToken(req);
+    const body = req.body || {};
+    const metaPatch =
+      body.meta && typeof body.meta === "object" ? body.meta : {};
+    const currency =
+      typeof body.currency === "number" && Number.isFinite(body.currency)
+        ? body.currency
+        : undefined;
+
+    if (!token) {
+      return res.json({
+        gameId: "grudge-warlords",
+        currency: currency ?? 0,
+        meta: { ...emptyMeta(), ...metaPatch },
+        updatedAt: new Date().toISOString(),
+        anonymous: true,
+        persisted: false,
+      });
+    }
+
+    const me = await canonicalMe(req, token);
+    const grudgeId = me?.grudgeId || me?.grudge_id;
+    if (!grudgeId) {
+      return res.status(401).json({ error: "No grudgeId on session" });
+    }
+
+    const existing = (await getPlayerSave(grudgeId))?.save_json ?? emptyMeta();
+    const merged = {
+      ...(typeof existing === "object" && existing ? existing : emptyMeta()),
+      ...metaPatch,
+    };
+    if (currency !== undefined) merged.gbux = currency;
+
+    const role =
+      me?.username?.toLowerCase?.() === "guest" || me?.role === "guest"
+        ? "guest"
+        : "player";
+    const row = await upsertPlayerSave({
+      grudgeId,
+      userId: me?.userId || me?.id || me?.user?.id,
+      role,
+      save: merged,
+    });
+
+    res.json(
+      profileDto(
+        "grudge-warlords",
+        { ...me, gbuxBalance: currency ?? me?.gbuxBalance },
+        row ? { save_json: merged, updated_at: row.updated_at } : null,
+      ),
+    );
+  } catch (err) {
+    console.error("[profile PATCH]", err);
+    res.status(500).json({ error: err.message || "Profile save failed" });
+  }
+});
+
+/** Match result — apply reward GBUX into save meta when authenticated. */
+app.post("/api/games/:gameId/matches", async (req, res) => {
+  try {
+    if (req.params.gameId !== "grudge-warlords") {
+      return res.status(404).json({ error: "Unknown game" });
+    }
+    const token = readToken(req);
+    const body = req.body || {};
+    if (!token) {
+      return res.json({ ok: true, persisted: false, profile: null });
+    }
+    const me = await canonicalMe(req, token);
+    const grudgeId = me?.grudgeId || me?.grudge_id;
+    if (!grudgeId) {
+      return res.json({ ok: true, persisted: false, profile: null });
+    }
+    const existing = (await getPlayerSave(grudgeId))?.save_json ?? emptyMeta();
+    const meta = {
+      ...(typeof existing === "object" && existing ? existing : emptyMeta()),
+      ...(body.meta && typeof body.meta === "object" ? body.meta : {}),
+    };
+    if (typeof body.rewardGbux === "number") {
+      meta.gbux = Number(meta.gbux || 0) + body.rewardGbux;
+    }
+    const row = await upsertPlayerSave({
+      grudgeId,
+      userId: me?.userId || me?.id,
+      role: me?.role === "guest" ? "guest" : "player",
+      save: meta,
+    });
+    res.json({
+      ok: true,
+      persisted: true,
+      profile: profileDto("grudge-warlords", me, {
+        save_json: meta,
+        updated_at: row?.updated_at,
+      }),
     });
   } catch (err) {
-    res.status(500).json({ error: err.message || "Profile load failed" });
+    console.error("[matches POST]", err);
+    res.status(500).json({ error: err.message || "Match record failed" });
   }
 });
 

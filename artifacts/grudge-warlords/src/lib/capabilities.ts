@@ -121,7 +121,7 @@ export function runCapabilityPreflight(): CapabilityReport {
       severity: "required",
       ok: wasm,
       detail: wasm ? "WASM validated" : "WebAssembly missing",
-      requiresFor: "@react-three/rapier physics (required for hero collision)",
+      requiresFor: "@react-three/rapier heightfield terrain + hero CCD capsule",
     },
     {
       id: "es-modules",

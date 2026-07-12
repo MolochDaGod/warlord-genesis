@@ -147,8 +147,15 @@ export function Trees() {
               type="fixed"
               colliders={false}
               position={[t.pos.x, gy, t.pos.z]}
+              friction={0.9}
+              restitution={0}
             >
-              <CylinderCollider args={[half, t.radius]} position={[0, half, 0]} />
+              <CylinderCollider
+                args={[half, t.radius]}
+                position={[0, half, 0]}
+                friction={0.95}
+                restitution={0}
+              />
             </RigidBody>
           );
         })}

@@ -987,8 +987,9 @@
 .gw-warlord-preview {
   position: relative;
   width: 100%;
-  height: clamp(300px, 42vh, 420px);
-  min-height: 300px;
+  /* Tall enough to frame a 2 m orc head-to-toe without clipping */
+  height: clamp(340px, 48vh, 480px);
+  min-height: 340px;
   border-radius: 14px;
   overflow: hidden;
   border: 1px solid rgba(224, 178, 82, 0.28);

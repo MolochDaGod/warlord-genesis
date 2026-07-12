@@ -332,14 +332,19 @@ export const useMeta = create<MetaState>((set, get) => ({
   seedDefaultLaneGuards: (factionId) => {
     const cards = [...get().cards];
     const defaults = defaultLaneHeroPicks(factionId);
+    let changed = false;
     for (const id of [defaults.meleeGuard, defaults.rangedGuard]) {
+      const existing = cards.find((c) => c.kind === "lane_guard" && c.id === id);
+      if (existing && existing.level >= 1) continue;
       const c = ensureCard(cards, "lane_guard", id);
       if (c.level < 1) {
         c.level = 1;
         c.shards = 0;
+        changed = true;
       }
     }
-    set({ cards });
+    // Skip setState when nothing changed — avoids thrashing card-list subscribers.
+    if (changed) set({ cards });
   },
 
   ensureStarterUnlocked: () => {

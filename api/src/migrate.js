@@ -29,8 +29,8 @@ CREATE INDEX IF NOT EXISTS warlord_genesis_players_user_idx
 
 async function main() {
   if (!process.env.DATABASE_URL) {
-    console.error("[migrate] DATABASE_URL is required");
-    process.exit(1);
+    console.warn("[migrate] DATABASE_URL missing — skip");
+    process.exit(0);
   }
   await pool.query(SQL);
   console.log("[migrate] warlord_genesis_players ready");
@@ -38,6 +38,6 @@ async function main() {
 }
 
 main().catch((err) => {
-  console.error(err);
-  process.exit(1);
+  console.error("[migrate] non-fatal:", err?.message || err);
+  process.exit(0);
 });

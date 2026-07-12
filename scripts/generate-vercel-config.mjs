@@ -12,7 +12,7 @@ const GAME_DATA =
   "https://grudge-api-production-0d46.up.railway.app";
 const WARLORD_API =
   process.env.WARLORD_GENESIS_API_URL?.replace(/\/$/, "") ||
-  "https://warlord-genesis-api-production.up.railway.app";
+  "https://warlord-genesis-api-production-3b5a.up.railway.app";
 
 const PREFIXES = [
   "health",

@@ -31,7 +31,15 @@ interface CharacterCardProps {
 }
 
 export function CharacterCard({ prefab, active, locked, onSelect, onInspect, compact }: CharacterCardProps) {
-  const { shards, need, level } = useMeta((s) => s.shardProgress("character", prefab.id));
+  // Primitive selectors only — shardProgress() returns a new object every call and
+  // triggers React #185 (maximum update depth) under Zustand's Object.is equality.
+  const level = useMeta(
+    (s) => s.cards.find((c) => c.kind === "character" && c.id === prefab.id)?.level ?? 0,
+  );
+  const shards = useMeta(
+    (s) => s.cards.find((c) => c.kind === "character" && c.id === prefab.id)?.shards ?? 0,
+  );
+  const need = level === 0 ? SHARDS_TO_UNLOCK : SHARDS_PER_LEVEL;
   const gear = gearPresetFor(prefab.raceId, prefab.classId);
   const cls = CLASS_BY_ID[prefab.classId];
   const kit = canonicalWeaponsForPrefab(prefab.id);
@@ -124,9 +132,15 @@ export function LaneGuardCard({
   locked?: boolean;
   onSelect?: () => void;
 }) {
-  const { shards, need, level } = useMeta((s) => s.shardProgress("lane_guard", unitId));
+  const level = useMeta(
+    (s) => s.cards.find((c) => c.kind === "lane_guard" && c.id === unitId)?.level ?? 0,
+  );
+  const shards = useMeta(
+    (s) => s.cards.find((c) => c.kind === "lane_guard" && c.id === unitId)?.shards ?? 0,
+  );
   const unlocked = level > 0;
-  const threshold = unlocked ? SHARDS_PER_LEVEL : SHARDS_TO_UNLOCK;
+  const need = unlocked ? SHARDS_PER_LEVEL : SHARDS_TO_UNLOCK;
+  const threshold = need;
 
   return (
     <button

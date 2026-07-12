@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { useTexture } from "@react-three/drei";
-import { RigidBody } from "@react-three/rapier";
+import { HeightfieldCollider, RigidBody } from "@react-three/rapier";
 import * as THREE from "three";
 import { EM } from "../../game/entities";
 import { useGame } from "../../game/store";
@@ -11,11 +11,9 @@ const LOW = new THREE.Color("#c9a875");
 const HIGH = new THREE.Color("#5d6b3c");
 
 /**
- * Renders the procedurally generated battlefield: a heightmap terrain mesh
- * (with a matching trimesh physics collider for the hero), faction base tints,
- * and perimeter walls. Everything is rebuilt whenever the store's `mapVersion`
- * changes (a new match generates a new layout); the `key` on the terrain
- * RigidBody forces the collider to remount onto the new geometry.
+ * Battlefield visual mesh + Rapier heightfield collider (same height samples).
+ * Heightfield is the correct Rapier primitive for terrain — thick contact surface,
+ * no thin-trimesh tunneling. Walls stay fixed cuboids. Rebuilds on `mapVersion`.
  */
 export function Arena() {
   const mapVersion = useGame((s) => s.mapVersion);
@@ -25,8 +23,8 @@ export function Arena() {
     "/textures/ground_nor.jpg",
   ]);
 
-  // Build the terrain geometry from the active map's heightmap.
-  const geom = useMemo(() => {
+  // Build the terrain geometry + Rapier heightfield args from the active map.
+  const { geom, heightfield } = useMemo(() => {
     const m = EM.map;
     const { hmCols: cols, hmRows: rows, heights, width, length } = m;
     const halfW = width / 2;
@@ -74,7 +72,27 @@ export function Arena() {
     g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     g.setIndex(indices);
     g.computeVertexNormals();
-    return g;
+
+    // Rapier heightfield: nrows/ncols = cell counts along local Z/X;
+    // heights must be column-major of size (nrows+1)*(ncols+1).
+    // Mapgen bakes row-major [r * cols + c] — transpose into column-major.
+    const nrows = Math.max(1, rows - 1);
+    const ncols = Math.max(1, cols - 1);
+    const hfHeights = new Array<number>(cols * rows);
+    for (let r = 0; r < rows; r++) {
+      for (let c = 0; c < cols; c++) {
+        hfHeights[c * rows + r] = heights[r * cols + c];
+      }
+    }
+    return {
+      geom: g,
+      heightfield: {
+        nrows,
+        ncols,
+        heights: hfHeights,
+        scale: { x: width, y: 1, z: length } as const,
+      },
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapVersion]);
 
@@ -92,18 +110,17 @@ export function Arena() {
   const halfW = m.width / 2;
   const halfL = m.length / 2;
   const wallH = m.wallHeight;
+  // Walls extend below y=0 so they still block on raised terrain ridges.
+  const wallDepth = Math.max(wallH + 6, 12);
+  const wallY = wallDepth / 2 - 2;
 
   const allyY = m.heightAt(m.allyCore.x, m.allyCore.z);
   const enemyY = m.heightAt(m.enemyCore.x, m.enemyCore.z);
 
   return (
     <group>
-      {/* Heightmap terrain (visual only). The hero is grounded deterministically by
-          a per-frame heightmap clamp in Player.tsx, NOT a physics collider: a thin
-          trimesh floor lets the dynamic capsule tunnel on fast moves/slopes and then
-          ejects it violently, which reads as the hero "flying" around. Perimeter
-          walls keep their cuboid colliders (below); units are non-physical. */}
-      <mesh key={mapVersion} geometry={geom} receiveShadow castShadow>
+      {/* Visual terrain mesh (no physics) */}
+      <mesh key={`vis-${mapVersion}`} geometry={geom} receiveShadow castShadow>
         <meshStandardMaterial
           map={groundDiff}
           normalMap={groundNor}
@@ -112,6 +129,28 @@ export function Arena() {
           metalness={0}
         />
       </mesh>
+
+      {/* Rapier heightfield — real ground contact for hero / tree / future bodies */}
+      <RigidBody
+        key={`hf-${mapVersion}`}
+        type="fixed"
+        colliders={false}
+        position={[0, 0, 0]}
+        friction={1}
+        restitution={0}
+      >
+        <HeightfieldCollider
+          args={[
+            heightfield.nrows,
+            heightfield.ncols,
+            heightfield.heights,
+            heightfield.scale,
+          ]}
+          friction={1.2}
+          restitution={0}
+          // High density fixed body — default friction combine with capsule
+        />
+      </RigidBody>
 
       {/* faction territory tint near each core */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[m.allyCore.x, allyY + 0.06, m.allyCore.z]}>
@@ -123,19 +162,26 @@ export function Arena() {
         <meshStandardMaterial color="#c0392b" roughness={1} transparent opacity={0.16} />
       </mesh>
 
-      {/* perimeter walls */}
+      {/* perimeter walls — tall cuboids so ridges don't leave gaps under the wall */}
       {[
-        { p: [0, wallH / 2, -halfL] as const, s: [m.width, wallH, 1] as const },
-        { p: [0, wallH / 2, halfL] as const, s: [m.width, wallH, 1] as const },
-        { p: [-halfW, wallH / 2, 0] as const, s: [1, wallH, m.length] as const },
-        { p: [halfW, wallH / 2, 0] as const, s: [1, wallH, m.length] as const },
+        { p: [0, wallY, -halfL] as const, s: [m.width, wallDepth, 1.2] as const },
+        { p: [0, wallY, halfL] as const, s: [m.width, wallDepth, 1.2] as const },
+        { p: [-halfW, wallY, 0] as const, s: [1.2, wallDepth, m.length] as const },
+        { p: [halfW, wallY, 0] as const, s: [1.2, wallDepth, m.length] as const },
       ].map((w, i) => (
-        <RigidBody key={`${mapVersion}-${i}`} type="fixed" colliders="cuboid" position={w.p as unknown as [number, number, number]}>
+        <RigidBody
+          key={`${mapVersion}-wall-${i}`}
+          type="fixed"
+          colliders="cuboid"
+          position={w.p as unknown as [number, number, number]}
+          friction={0.8}
+          restitution={0}
+        >
           <mesh castShadow receiveShadow>
             <boxGeometry args={w.s as unknown as [number, number, number]} />
             <meshStandardMaterial color="#3a2a22" roughness={0.85} metalness={0.2} />
           </mesh>
-          <mesh position={[0, wallH / 2 - 0.1, 0]}>
+          <mesh position={[0, wallDepth / 2 - 0.15, 0]}>
             <boxGeometry args={[w.s[0], 0.12, w.s[2]]} />
             <meshStandardMaterial color="#c0392b" emissive="#c0392b" emissiveIntensity={1.2} />
           </mesh>

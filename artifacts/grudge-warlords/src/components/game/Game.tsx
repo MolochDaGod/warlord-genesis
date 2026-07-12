@@ -49,7 +49,9 @@ function SceneContent() {
       />
       <ambientLight intensity={0.4} />
 
-      <Physics gravity={[0, -20, 0]}>
+      {/* Rapier world: fixed timestep + interpolation. Heightfield terrain lives
+          in Arena; hero CCD capsule in Player; tree trunks in Trees. */}
+      <Physics gravity={[0, -22, 0]} timeStep={1 / 60} interpolate>
         <Arena />
         <Player />
         <Trees />

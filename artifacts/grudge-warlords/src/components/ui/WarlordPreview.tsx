@@ -15,6 +15,36 @@ import { unitTypeId } from "../../engine/grudge6";
 import type { ClassId, PrefabRaceId } from "@workspace/game-content";
 import { detectWebGL } from "../../lib/webgl";
 
+/**
+ * Canonical warcamp heights (meters). Orc = 2.0 m is the tallest frame reference;
+ * other races scale relative so roster previews stay proportional.
+ */
+export const LOBBY_RACE_HEIGHT_M: Record<PrefabRaceId, number> = {
+  orc: 2.0,
+  barbarian: 1.92,
+  human: 1.8,
+  elf: 1.85,
+  undead: 1.88,
+  dwarf: 1.32,
+};
+
+export function lobbyHeroHeightM(raceId: PrefabRaceId): number {
+  return LOBBY_RACE_HEIGHT_M[raceId] ?? 1.8;
+}
+
+/** Camera + orbit framing so a standing figure of height H fills the viewport. */
+export function lobbyPreviewFrame(heightM: number) {
+  const H = Math.max(1.1, heightM);
+  return {
+    fitHeight: H,
+    cameraPosition: [0, H * 0.62, H * 1.95] as [number, number, number],
+    target: [0, H * 0.52, 0] as [number, number, number],
+    minDistance: H * 1.15,
+    maxDistance: H * 2.85,
+    fov: 34,
+  };
+}
+
 function configurePreviewRenderer(state: RootState): void {
   attachWebGLContextGuard(state.gl.domElement, "warlord-preview");
   state.gl.outputColorSpace = THREE.SRGBColorSpace;
@@ -55,11 +85,13 @@ function WarlordModel({
   raceId,
   classId,
   tint,
+  fitHeight,
   onStatus,
 }: {
   raceId: PrefabRaceId;
   classId: ClassId;
   tint?: string;
+  fitHeight: number;
   onStatus: (status: "loading" | "ready" | "error", detail?: string) => void;
 }) {
   const groupRef = useRef<THREE.Group>(null);
@@ -74,7 +106,7 @@ function WarlordModel({
     onStatus("loading");
 
     let cancelled = false;
-    loadGrudge6CharacterInstance(typeId, { fitHeight: 2.2, tint })
+    loadGrudge6CharacterInstance(typeId, { fitHeight, tint })
       .then((prepared) => {
         if (cancelled || gen !== loadGenRef.current) {
           prepared.dispose();
@@ -104,7 +136,7 @@ function WarlordModel({
       preparedRef.current = null;
       groupRef.current?.clear();
     };
-  }, [typeId, tint, onStatus]);
+  }, [typeId, tint, fitHeight, onStatus]);
 
   useFrame((_, dt) => {
     const p = preparedRef.current;
@@ -130,6 +162,8 @@ function PreviewScene({
   tint?: string;
   onStatus: (status: "loading" | "ready" | "error", detail?: string) => void;
 }) {
+  const frame = useMemo(() => lobbyPreviewFrame(lobbyHeroHeightM(raceId)), [raceId]);
+
   return (
     <>
       <ResizeSync />
@@ -159,16 +193,22 @@ function PreviewScene({
         far={3}
       />
       <Suspense fallback={null}>
-        <WarlordModel raceId={raceId} classId={classId} tint={tint} onStatus={onStatus} />
+        <WarlordModel
+          raceId={raceId}
+          classId={classId}
+          tint={tint}
+          fitHeight={frame.fitHeight}
+          onStatus={onStatus}
+        />
         <Environment preset="warehouse" environmentIntensity={0.35} />
       </Suspense>
       <OrbitControls
         enablePan={false}
-        minDistance={2.2}
-        maxDistance={5.2}
-        minPolarAngle={Math.PI * 0.3}
-        maxPolarAngle={Math.PI * 0.5}
-        target={[0, 1.05, 0]}
+        minDistance={frame.minDistance}
+        maxDistance={frame.maxDistance}
+        minPolarAngle={Math.PI * 0.32}
+        maxPolarAngle={Math.PI * 0.48}
+        target={frame.target}
         autoRotate={false}
       />
     </>
@@ -229,19 +269,27 @@ export function WarlordPreview({
     [],
   );
 
+  const frame = useMemo(() => lobbyPreviewFrame(lobbyHeroHeightM(raceId)), [raceId]);
+
   if (!support.ok) {
     return <PreviewFallback reason={support.reason} />;
   }
 
   return (
-    <div className="gw-warlord-preview" data-status={status}>
+    <div className="gw-warlord-preview" data-status={status} data-race={raceId}>
       <PreviewErrorBoundary onError={(msg) => onStatus("error", msg)}>
         <Canvas
+          key={`preview-${raceId}-${classId}`}
           className="gw-warlord-preview-canvas"
           style={{ width: "100%", height: "100%", display: "block" }}
           {...withFleetCanvasProps(fleetPreviewCanvasProps, {
             shadows: true,
-            camera: { fov: 36, near: 0.08, far: 40, position: [0, 1.45, 3.75] },
+            camera: {
+              fov: frame.fov,
+              near: 0.08,
+              far: 50,
+              position: frame.cameraPosition,
+            },
             onCreated: configurePreviewRenderer,
             gl: { alpha: false, antialias: true, powerPreference: "high-performance" },
           })}
