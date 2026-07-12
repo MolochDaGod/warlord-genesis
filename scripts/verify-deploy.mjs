@@ -136,10 +136,11 @@ const html = readFileSync(join(ROOT, "index.html"), "utf8");
 const pin = parseBundlePin(html);
 if (!pin) {
   fail("index.html missing recognized bundle pin (gw-core, vite, or fix3)");
-} else if (pin.version !== manifest.bundleVersion) {
-  fail(`index.html bundle ${pin.query} ≠ manifest v=${manifest.bundleVersion}`);
 } else if (GW_CORE && manifest.bundleCacheHash && pin.hash !== manifest.bundleCacheHash) {
+  // gw-core filename date (20260713) is not the same as manifest.bundleVersion (ship counter)
   fail(`index.html ?h=${pin.hash} ≠ manifest h=${manifest.bundleCacheHash}`);
+} else if (!GW_CORE && pin.version !== manifest.bundleVersion) {
+  fail(`index.html bundle ${pin.query} ≠ manifest v=${manifest.bundleVersion}`);
 } else {
   ok(`index.html pins ${pin.file} ?${pin.query}`);
 }
