@@ -49,8 +49,15 @@ function SceneContent() {
       />
       <ambientLight intensity={0.4} />
 
-      {/* Rapier world: fixed timestep + interpolation. Heightfield terrain lives
-          in Arena; hero CCD capsule in Player; tree trunks in Trees. */}
+      {/*
+        Rapier best practices (warcamp /play):
+        - Single <Physics> world per scene; fixed 1/60 step + interpolate for smooth R3F
+        - Terrain = HeightfieldCollider (Arena) — never a thin Box for ground
+        - Hero = kinematic/dynamic CapsuleCollider + CCD (Player) sized to ~1.2m height
+        - Visual mesh (grudge6) is a child of the rigid body — fit to ~1.85m in grudge6Character
+        - Trees = static colliders; units/creeps stay kinematic unless they need contacts
+        - Do not put Physics inside Suspense that remounts every load (despawn chaos)
+      */}
       <Physics gravity={[0, -22, 0]} timeStep={1 / 60} interpolate>
         <Arena />
         <Player />

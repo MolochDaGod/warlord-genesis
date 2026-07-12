@@ -2,12 +2,39 @@
 
 URL: https://warlord-genesis.vercel.app/play
 
+## grudge6 hero scale + animation (ONE TRUTH)
+
+| Concern | Pattern | Code |
+|---------|---------|------|
+| **Height** | Fit to **~1.85 m** world units | `normalizeCharacterGroup` in `engine/grudge6Character.ts` |
+| **100× bug** | Never `scale.setScalar(target / worldSize)` when root already has non-unit scale — **reset → measure → multiply** | same |
+| **cm FBX** | If height &gt; 20 at scale 1, apply `0.01` then fit | same |
+| **Skeleton** | Unify Bip001 bones; bind all SkinnedMesh to one skeleton | `unifySkeletons` |
+| **Equip** | Child-mesh visibility from gear preset **before** fit | `applyGearPreset` then normalize |
+| **Anims** | Same-origin `/anims/baked/{pack}/…json` (CDN often 404) + `AnimationDirector` | `loadPackBundle` |
+| **Staged GLB** | `/models/heroes/grudge6/{race}_{class}.glb` then still load **baked packs** (GLBs usually have no clips) | `prepareFromGltfRoot` |
+| **Race FBX SSOT** | `assets…/models/grudge6/races/*_Characters.fbx` | `raceModelUrls` |
+
+### Rapier + R3F (`/play`)
+
+| Rule | Why |
+|------|-----|
+| One `<Physics timeStep={1/60} interpolate>` | Stable sim + smooth mesh follow |
+| Terrain = heightfield (`Arena`) | Correct ground contacts |
+| Hero = capsule collider ≈ `PLAYER.height` 1.2 + radius 0.4 | Matches fit mesh ~1.85 |
+| Visual mesh child of rigid body | Scale/anim never fight physics transform |
+| No Physics remount on Suspense thrash | Avoids collider storm |
+
+Stack: **React + R3F + drei + @react-three/rapier + three + Node 20 / Vite / pnpm**.
+
 ## Why default starts felt weak
 
 1. **Empty equipment bag** — roster booted with `equipment: {}`, so gear HP/defense/damage never applied (base ~240 HP only).
 2. **Damage mult bug** — weapon `damageBase / 50` could drop damage *below* 1.0×.
 3. **Silent `startGame()`** — unlock/loadout gates returned without starting; UI still thought battle began.
 4. **Starter card level 1** — gear tier floor stayed at 1.
+5. **Hero 100× scale** — normalize used world bbox as local scale (fixed 2026-07).
+6. **T-pose staged heroes** — GLBs had no clips and skipped baked packs (fixed).
 
 ## Campaign-ready default (current)
 

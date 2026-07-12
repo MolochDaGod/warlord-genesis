@@ -36,52 +36,111 @@ const ATTACK_BY_PACK: Record<AnimPack, string> = {
   pistol: "pistol/gunplay",
 };
 
+/**
+ * Race kit SSOT — prefer canonical grudge6 race FBX on CDN, then legacy
+ * ToonRTS customizable paths. Textures: same-origin stage first, then CDN.
+ */
 const RACE_CDN: Record<
   string,
-  { modelFile: string; textureFile: string; folder: string }
+  {
+    folder: string;
+    /** Canonical Bip001 kit under models/grudge6/races/ */
+    canonFbx: string;
+    legacyFbx: string;
+    textureFile: string;
+    /** Local staged webp under public/textures/grudge6/ */
+    localTex: string;
+  }
 > = {
   barbarians: {
     folder: "barbarians",
-    modelFile: "BRB_Characters_customizable.FBX",
+    canonFbx: "BRB_Characters.fbx",
+    legacyFbx: "BRB_Characters_customizable.FBX",
     textureFile: "BRB_StandardUnits_texture.webp",
+    localTex: "/textures/grudge6/barbarians/BRB_StandardUnits_texture.webp",
   },
   dwarves: {
     folder: "dwarves",
-    modelFile: "DWF_Characters_customizable.FBX",
+    canonFbx: "DWF_Characters.fbx",
+    legacyFbx: "DWF_Characters_customizable.FBX",
     textureFile: "DWF_Standard_Units.webp",
+    localTex: "/textures/grudge6/dwarves/DWF_Standard_Units.webp",
   },
   "high-elves": {
     folder: "elves",
-    modelFile: "ELF_Characters_customizable.FBX",
+    canonFbx: "ELF_Characters.fbx",
+    legacyFbx: "ELF_Characters_customizable.FBX",
     textureFile: "ELF_HighElves_Texture.webp",
+    localTex: "/textures/grudge6/elves/ELF_HighElves_Texture.webp",
   },
   orcs: {
     folder: "orcs",
-    modelFile: "ORC_Characters_Customizable.FBX",
+    canonFbx: "ORC_Characters.fbx",
+    legacyFbx: "ORC_Characters_Customizable.FBX",
     textureFile: "ORC_StandardUnits.webp",
+    localTex: "/textures/grudge6/orcs/ORC_StandardUnits.webp",
   },
   undead: {
     folder: "undead",
-    modelFile: "UD_Characters_customizable.FBX",
+    canonFbx: "UD_Characters.fbx",
+    legacyFbx: "UD_Characters_customizable.FBX",
     textureFile: "UD_Standard_Units.webp",
+    localTex: "/textures/grudge6/undead/UD_Standard_Units.webp",
   },
   "western-kingdoms": {
     folder: "western-kingdoms",
-    modelFile: "WK_Characters_customizable.FBX",
+    canonFbx: "WK_Characters.fbx",
+    legacyFbx: "WK_Characters_customizable.FBX",
     textureFile: "WK_Standard_Units.webp",
+    localTex: "/textures/grudge6/western-kingdoms/WK_Standard_Units.webp",
   },
 };
 
-function raceModelUrl(repoRaceId: string): string {
+/** Ordered FBX URLs for a race kit (canonical first). */
+function raceModelUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
-  return `${ASSET_CDN}/assets/${race.folder}/models/characters/${race.modelFile}`;
+  return [
+    `${ASSET_CDN}/models/grudge6/races/${race.canonFbx}`,
+    `${ASSET_CDN}/assets/${race.folder}/models/characters/${race.legacyFbx}`,
+  ];
 }
 
-function raceTextureUrl(repoRaceId: string): string {
+/** Ordered texture URLs — local stage first (real webp on deploy). */
+function raceTextureUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
-  return `${ASSET_CDN}/assets/${race.folder}/textures/${race.textureFile}`;
+  return [
+    race.localTex,
+    `${ASSET_CDN}/assets/${race.folder}/textures/${race.textureFile}`,
+    `${ASSET_CDN}/textures/grudge6/${race.folder}/${race.textureFile}`,
+  ];
+}
+
+async function loadFirstFbx(urls: string[]): Promise<THREE.Group> {
+  let lastErr: unknown;
+  for (const url of urls) {
+    try {
+      return (await fbxLoader.loadAsync(url)) as THREE.Group;
+    } catch (e) {
+      lastErr = e;
+      console.warn(`[grudge6] FBX miss ${url}`, e);
+    }
+  }
+  throw lastErr ?? new Error("no race FBX");
+}
+
+async function loadFirstTexture(urls: string[]): Promise<THREE.Texture> {
+  const loader = new THREE.TextureLoader();
+  let lastErr: unknown;
+  for (const url of urls) {
+    try {
+      return await loader.loadAsync(url);
+    } catch (e) {
+      lastErr = e;
+    }
+  }
+  throw lastErr ?? new Error("no race texture");
 }
 
 function bakedClipUrl(rel: string): string {
@@ -93,9 +152,37 @@ function bakedClipUrl(rel: string): string {
   return `/anims/baked/${encoded}.json`;
 }
 
-function powerOfTenScale(reference: number, current: number): number {
-  if (!(reference > 0) || !(current > 0)) return 1;
-  return Math.pow(10, Math.round(Math.log10(reference / current)));
+/** Target hero height in world meters (matches PLAYER capsule ~1.2 + headroom). */
+export const GRUDGE6_TARGET_HEIGHT_M = 1.85;
+
+/**
+ * Body mesh heuristic — prefer torso/legs for height so spear/shield outliers
+ * do not inflate the bbox (which used to crush or explode scale).
+ */
+function isBodyMeshName(name: string): boolean {
+  const n = name.toLowerCase();
+  if (!n) return false;
+  if (/(weapon|sword|axe|hammer|mace|spear|bow|staff|shield|quiver|bag|wood|dagger|pick)/.test(n)) {
+    return false;
+  }
+  return /(body|torso|legs|leg|arms|arm|head|units_|pelvis)/.test(n) || n.includes("body");
+}
+
+function measureCharacterBox(root: THREE.Object3D): THREE.Box3 {
+  root.updateWorldMatrix(true, true);
+  const bodyBox = new THREE.Box3();
+  let nBody = 0;
+  root.traverse((node) => {
+    if (!(node instanceof THREE.SkinnedMesh || node instanceof THREE.Mesh)) return;
+    if (!node.visible) return;
+    if (node instanceof THREE.SkinnedMesh || isBodyMeshName(node.name)) {
+      bodyBox.expandByObject(node);
+      nBody++;
+    }
+  });
+  if (nBody > 0 && !bodyBox.isEmpty()) return bodyBox;
+  const all = new THREE.Box3().setFromObject(root);
+  return all;
 }
 
 function unifySkeletons(root: THREE.Object3D): THREE.Skeleton | null {
@@ -121,57 +208,86 @@ function unifySkeletons(root: THREE.Object3D): THREE.Skeleton | null {
   return widest;
 }
 
-function normalizeCharacterGroup(fbx: THREE.Object3D, targetHeight = 2.05): THREE.Skeleton | null {
-  const skeleton = unifySkeletons(fbx);
-  fbx.rotation.y = Math.PI / 2;
-  fbx.updateWorldMatrix(true, true);
+/**
+ * Fit a grudge6 kit (FBX or staged GLB) to ~targetHeight meters.
+ *
+ * CRITICAL: never do `scale.setScalar(target / worldSize)` when the object already
+ * has non-unit scale — that treats world meters as local units and blows characters
+ * up ~100× (classic FBX cm + partial scale bug). Always reset → measure → multiply.
+ */
+function normalizeCharacterGroup(
+  root: THREE.Object3D,
+  targetHeight = GRUDGE6_TARGET_HEIGHT_M,
+): THREE.Skeleton | null {
+  const skeleton = unifySkeletons(root);
 
+  // 1) Identity scale/pos for a clean local measure
+  root.scale.set(1, 1, 1);
+  root.position.set(0, 0, 0);
+  // Face -Z play space (kit exports face +X)
+  root.rotation.set(0, Math.PI / 2, 0);
+  root.updateWorldMatrix(true, true);
+
+  // 2) cm-scale kits: humanoid taller than ~20 units at scale 1 is almost always cm
+  let box = measureCharacterBox(root);
+  let size = box.getSize(new THREE.Vector3());
+  let height = Math.max(size.y, 1e-6);
+  if (height > 20) {
+    root.scale.setScalar(0.01);
+    root.updateWorldMatrix(true, true);
+    box = measureCharacterBox(root);
+    size = box.getSize(new THREE.Vector3());
+    height = Math.max(size.y, 1e-6);
+  }
+
+  // 3) Fit height with multiply (preserves any cm fix above)
+  const fit = targetHeight / height;
+  if (Number.isFinite(fit) && fit > 0) {
+    root.scale.multiplyScalar(fit);
+  }
+
+  // 4) Power-of-ten fix for rigid prop meshes that stayed in a different unit
+  root.updateWorldMatrix(true, true);
   const _p = new THREE.Vector3();
   const _q = new THREE.Quaternion();
   const _s = new THREE.Vector3();
-  const effScaleOf = (node: THREE.Object3D): number => {
-    node.matrixWorld.decompose(_p, _q, _s);
-    return Math.max(Math.abs(_s.x), Math.abs(_s.y), Math.abs(_s.z));
-  };
-  const skinnedEff: number[] = [];
-  fbx.traverse((node) => {
-    if (node instanceof THREE.SkinnedMesh) skinnedEff.push(effScaleOf(node));
+  const bodyHeights: number[] = [];
+  root.traverse((node) => {
+    if (node instanceof THREE.SkinnedMesh) {
+      node.matrixWorld.decompose(_p, _q, _s);
+      bodyHeights.push(Math.max(Math.abs(_s.x), Math.abs(_s.y), Math.abs(_s.z)));
+    }
   });
-  skinnedEff.sort((a, b) => a - b);
-  const refEff = skinnedEff.length > 0 ? skinnedEff[Math.floor(skinnedEff.length / 2)] : 1;
-  let normalizedAny = false;
-  fbx.traverse((node) => {
+  bodyHeights.sort((a, b) => a - b);
+  const refS = bodyHeights.length ? bodyHeights[Math.floor(bodyHeights.length / 2)]! : 1;
+  root.traverse((node) => {
     if (node instanceof THREE.Mesh && !(node instanceof THREE.SkinnedMesh)) {
-      const correction = powerOfTenScale(refEff, effScaleOf(node));
-      if (correction !== 1) {
-        node.scale.multiplyScalar(correction);
-        normalizedAny = true;
+      node.matrixWorld.decompose(_p, _q, _s);
+      const cur = Math.max(Math.abs(_s.x), Math.abs(_s.y), Math.abs(_s.z));
+      if (cur > 1e-8 && refS > 1e-8) {
+        const decade = Math.pow(10, Math.round(Math.log10(refS / cur)));
+        if (decade !== 1 && Number.isFinite(decade)) node.scale.multiplyScalar(decade);
       }
     }
   });
-  if (normalizedAny) fbx.updateWorldMatrix(true, true);
 
-  const bodyBox = new THREE.Box3();
-  let bodyMeshCount = 0;
-  fbx.traverse((node) => {
-    if (node instanceof THREE.SkinnedMesh) {
-      bodyBox.expandByObject(node);
-      bodyMeshCount++;
-    }
-  });
-  const box = bodyMeshCount > 0 ? bodyBox : new THREE.Box3().setFromObject(fbx);
+  // 5) Center XZ + plant feet on y=0
+  root.updateWorldMatrix(true, true);
+  box = measureCharacterBox(root);
   const center = box.getCenter(new THREE.Vector3());
-  const size = box.getSize(new THREE.Vector3());
-  const maxDim = Math.max(size.x, size.y, size.z);
-  if (maxDim > 0) fbx.scale.setScalar(targetHeight / maxDim);
+  root.position.x -= center.x;
+  root.position.z -= center.z;
+  root.position.y -= box.min.y;
+  root.updateWorldMatrix(true, true);
 
-  fbx.updateWorldMatrix(true, true);
-  const bodyBox2 = new THREE.Box3();
-  fbx.traverse((node) => {
-    if (node instanceof THREE.SkinnedMesh) bodyBox2.expandByObject(node);
-  });
-  const box2 = bodyMeshCount > 0 ? bodyBox2 : new THREE.Box3().setFromObject(fbx);
-  fbx.position.set(-center.x * fbx.scale.x, -box2.min.y, -center.z * fbx.scale.z);
+  if (typeof console !== "undefined") {
+    const finalH = measureCharacterBox(root).getSize(new THREE.Vector3()).y;
+    if (finalH > targetHeight * 3 || finalH < targetHeight * 0.25) {
+      console.warn(
+        `[grudge6] unexpected height after fit: ${finalH.toFixed(2)}m (target ${targetHeight}m)`,
+      );
+    }
+  }
 
   return skeleton;
 }
@@ -473,43 +589,72 @@ async function prepareFromGltfRoot(
   if (opts.tint && opts.tint !== "#ffffff") {
     root.traverse((node) => {
       if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-        const mat = node.material as THREE.MeshLambertMaterial;
+        const mat = node.material as THREE.MeshStandardMaterial | THREE.MeshLambertMaterial;
         if (mat?.color) mat.color.multiply(new THREE.Color(opts.tint));
       }
     });
   }
+
   const mixer = new THREE.AnimationMixer(root);
-  let idleClip: THREE.AnimationClip;
-  let walkClip: THREE.AnimationClip;
-  let runClip: THREE.AnimationClip;
-  let attackClip: THREE.AnimationClip;
-  if (animations.length > 0) {
-    idleClip = clipFromGltf(animations, "idle", root);
-    walkClip = clipFromGltf(animations, "walk", root);
-    runClip = clipFromGltf(animations, "run", root);
-    attackClip = clipFromGltf(animations, "attack", root);
-  } else {
-    // Static staged heroes (local Vercel GLBs) — idle-only mixer keeps lobby preview alive.
-    idleClip = new THREE.AnimationClip("idle", 1, []);
-    walkClip = idleClip;
-    runClip = idleClip;
-    attackClip = idleClip;
+
+  // Prefer same-origin baked Bip001 packs (staged GLBs often have zero clips).
+  // Fall back to embedded GLTF clips only if baked pack is unavailable.
+  let bundle: Awaited<ReturnType<typeof loadPackBundle>> | null = null;
+  try {
+    bundle = await loadPackBundle(root, mixer, opts.animPack);
+  } catch (err) {
+    console.warn(`[grudge6] baked pack ${opts.animPack} failed — trying embedded clips`, err);
   }
-  const sprintClip = runClip.clone();
-  const clips: LocoClips = { idle: idleClip, walk: walkClip, run: runClip, sprint: sprintClip };
-  const director = new AnimationDirector(mixer, clips);
+
+  if (!bundle && animations.length > 0) {
+    const idleClip = clipFromGltf(animations, "idle", root);
+    const walkClip = clipFromGltf(animations, "walk", root);
+    const runClip = clipFromGltf(animations, "run", root);
+    const attackClip = clipFromGltf(animations, "attack", root);
+    const clips: LocoClips = {
+      idle: idleClip,
+      walk: walkClip,
+      run: runClip,
+      sprint: runClip.clone(),
+    };
+    const director = new AnimationDirector(mixer, clips);
+    bundle = {
+      director,
+      attackClip,
+      actions: {
+        idle: mixer.clipAction(idleClip),
+        walk: mixer.clipAction(walkClip),
+        run: mixer.clipAction(runClip),
+        attack: mixer.clipAction(attackClip),
+      },
+    };
+  }
+
+  if (!bundle) {
+    // Last resort: empty idle so the mesh still mounts (T-pose) without crashing.
+    const idleClip = new THREE.AnimationClip("idle", 1, []);
+    const director = new AnimationDirector(mixer, {
+      idle: idleClip,
+      walk: idleClip,
+      run: idleClip,
+      sprint: idleClip,
+    });
+    bundle = {
+      director,
+      attackClip: idleClip,
+      actions: { idle: mixer.clipAction(idleClip) },
+    };
+    console.warn("[grudge6] no animations for staged hero — T-pose until baked pack deploys");
+  }
+
   const prepared: PreparedGrudge6Character = {
     root,
     mixer,
-    director,
-    attackClip,
-    actions: {
-      idle: mixer.clipAction(idleClip),
-      walk: mixer.clipAction(walkClip),
-      run: mixer.clipAction(runClip),
-      attack: mixer.clipAction(attackClip),
-    },
+    director: bundle.director,
+    attackClip: bundle.attackClip,
+    actions: bundle.actions,
     swapAnimPack: async (pack: AnimPack) => {
+      // Load first — never dispose working director on failed fetch
       const next = await loadPackBundle(root, mixer, pack);
       try {
         prepared.director.dispose();
@@ -593,8 +738,8 @@ async function buildCharacter(
   }
 
   const [fbx, texture] = await Promise.all([
-    fbxLoader.loadAsync(raceModelUrl(repoRaceId)),
-    new THREE.TextureLoader().loadAsync(raceTextureUrl(repoRaceId)),
+    loadFirstFbx(raceModelUrls(repoRaceId)),
+    loadFirstTexture(raceTextureUrls(repoRaceId)),
   ]);
 
   texture.colorSpace = THREE.SRGBColorSpace;
@@ -607,15 +752,16 @@ async function buildCharacter(
     }
   });
 
-  normalizeCharacterGroup(fbx, fitHeight);
+  // Equip visibility BEFORE fit so bbox uses body kit, not every weapon outlier
   if (preset?.visibleMeshes?.length) {
     applyGearPreset(fbx, preset.visibleMeshes);
   }
+  normalizeCharacterGroup(fbx, fitHeight);
   applyBodyTexture(fbx, texture);
   if (tint && tint !== "#ffffff") {
     fbx.traverse((node) => {
       if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-        const mat = node.material as THREE.MeshLambertMaterial;
+        const mat = node.material as THREE.MeshStandardMaterial | THREE.MeshLambertMaterial;
         if (mat?.color) mat.color.multiply(new THREE.Color(tint));
       }
     });
@@ -631,14 +777,26 @@ async function buildCharacter(
     attackClip: bundle.attackClip,
     actions: bundle.actions,
     swapAnimPack: async (pack: AnimPack) => {
-      prepared.director.dispose();
-      mixer.stopAllAction();
       const next = await loadPackBundle(fbx, mixer, pack);
+      try {
+        prepared.director.dispose();
+      } catch {
+        /* ignore */
+      }
+      mixer.stopAllAction();
       prepared.director = next.director;
       prepared.attackClip = next.attackClip;
       prepared.actions = next.actions;
+      prepared.director.setGaitTarget(false, false);
+      prepared.actions.idle?.reset().fadeIn(0.12).play();
     },
   };
+  try {
+    prepared.director.setGaitTarget(false, false);
+    prepared.actions.idle?.reset().setEffectiveWeight(1).fadeIn(0.12).play();
+  } catch {
+    /* ignore */
+  }
   return prepared;
 }
 

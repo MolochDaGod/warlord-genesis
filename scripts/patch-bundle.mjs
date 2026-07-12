@@ -2417,6 +2417,69 @@ js = js.replaceAll('children:"Sign in"})]})]})', 'children:"Sign in"})})]})');
   mustPatch("craftpix-minimap", js.includes("Minimap_Overlay") || js.includes("gk-minimap-chrome"));
 }
 
+// v73: grudge6 height fit (no 100×) + always load baked Bip001 packs on hero GLB path
+{
+  // Replace Y6 wherever it starts — reset/measure/multiply only (never setScalar(target/worldH) alone)
+  const yMark = "function Y6(C,A=";
+  let yStart = js.indexOf(yMark);
+  while (yStart >= 0) {
+    let braces = 0,
+      started = false,
+      yEnd = -1;
+    for (let i = yStart; i < js.length; i++) {
+      if (js[i] === "{") {
+        braces++;
+        started = true;
+      } else if (js[i] === "}") {
+        braces--;
+        if (started && braces === 0) {
+          yEnd = i + 1;
+          break;
+        }
+      }
+    }
+    if (yEnd <= yStart) break;
+    // Prefer body height; cm if hy>20; multiply fit; plant feet; rebind skeleton last
+    const Y6_V73 =
+      "function Y6(C,A=1.85){C.rotation.set(0,0,0);C.scale.set(1,1,1);C.position.set(0,0,0);C.updateWorldMatrix(!0,!0);const measure=()=>{const b=new YC;let n=0;C.traverse(o=>{if(!(o instanceof GB||o instanceof EC)||!o.visible)return;const nm=(o.name||\"\").toLowerCase();if(/(weapon|sword|axe|hammer|mace|spear|bow|staff|shield|quiver|bag)/.test(nm))return;if(o instanceof GB||/(body|torso|legs|units_|pelvis|head|arms)/.test(nm)){b.expandByObject(o);n++}});return n&&!b.isEmpty()?b:new YC().setFromObject(C)};let box=measure(),sz=box.getSize(new O),hy=Math.max(sz.y,.001);if(hy>20){C.scale.setScalar(.01),C.updateWorldMatrix(!0,!0),box=measure(),sz=box.getSize(new O),hy=Math.max(sz.y,.001)}const target=Math.min(Math.max(A||1.85,1.55),2.15),e=target/Math.max(hy,.05);C.scale.multiplyScalar(e),C.updateWorldMatrix(!0,!0);box=measure();const c=box.getCenter(new O);C.position.set(-c.x,-box.min.y,-c.z),C.updateWorldMatrix(!0,!0);const I=typeof J6==\"function\"?J6(C):null;C.updateWorldMatrix(!0,!0);return I}";
+    js = js.slice(0, yStart) + Y6_V73 + js.slice(yEnd);
+    console.log("[patch] Y6 v73 body-height fit (cm detect @20, multiply only)");
+    yStart = js.indexOf(yMark, yStart + Y6_V73.length);
+  }
+
+  // Hero GLB success path: after Y6, force baked pack via pY (staged GLBs often have 0 clips)
+  // Pattern: create mixer + director from embedded picks — replace with pY when available
+  const EMBED_DIR =
+    'l=new uK(o),director=new G6(l,clips),attackClip=sq(pick("attack")||fb),act=a=>a?l.clipAction(a):null,h={root:o,mixer:l,director,attackClip,actions:{idle:act(clips.idle),walk:act(clips.walk),run:act(clips.run),attack:act(attackClip)},swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};return h}';
+  const BAKED_DIR =
+    'l=new uK(o);let c;try{c=await pY(l,Q)}catch(e){console.warn("[grudge6] baked pack fail",Q,e);c=null}if(!c){const sq=a=>{if(!a)return null;try{const q=b6(a);return q.tracks?.length?q:a}catch{return a}},byName={};for(const a of gltf.animations||[])byName[a.name]=a;const pick=(...ns)=>{for(const n of ns)if(byName[n])return byName[n];return null},fb=gltf.animations?.[0]||null,clips={idle:sq(pick("idle")||fb),walk:sq(pick("walk")||fb),run:sq(pick("run")||fb),sprint:sq(pick("sprint","run")||fb)},director=new G6(l,clips),attackClip=sq(pick("attack")||fb),act=a=>a?l.clipAction(a):null;c={director,attackClip,actions:{idle:act(clips.idle),walk:act(clips.walk),run:act(clips.run),attack:act(attackClip)}}}const h={root:o,mixer:l,director:c.director,attackClip:c.attackClip,actions:c.actions,swapAnimPack:async w=>{const u=await pY(l,w);try{h.director.dispose()}catch{}l.stopAllAction();h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions;try{h.director.setGaitTarget(!1,!1);h.actions.idle?.reset().fadeIn(.12).play()}catch{}}};try{h.director.setGaitTarget(!1,!1);h.actions.idle?.reset().setEffectiveWeight?.(1).fadeIn(.12).play()}catch{}return h}';
+  if (js.includes(EMBED_DIR)) {
+    js = js.replace(EMBED_DIR, BAKED_DIR);
+    console.log("[patch] hero GLB → baked Bip001 pack (pY) with embed fallback");
+  } else if (
+    js.includes('l=new uK(o),director=new G6(l,clips),attackClip=pick("attack")||fb') &&
+    !js.includes('c=await pY(l,Q)')
+  ) {
+    js = js.replace(
+      'l=new uK(o),director=new G6(l,clips),attackClip=pick("attack")||fb,act=a=>a?l.clipAction(a):null,h={root:o,mixer:l,director,attackClip,actions:{idle:act(clips.idle),walk:act(clips.walk),run:act(clips.run),attack:act(attackClip)},swapAnimPack:async w=>{h.director.dispose(),l.stopAllAction();const u=await pY(l,w);h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};return h}',
+      'l=new uK(o);let c;try{c=await pY(l,Q)}catch(e){c=null}if(!c){const act=a=>a?l.clipAction(a):null;c={director:new G6(l,clips),attackClip:pick("attack")||fb,actions:{idle:act(clips.idle),walk:act(clips.walk),run:act(clips.run),attack:act(pick("attack")||fb)}}}const h={root:o,mixer:l,director:c.director,attackClip:c.attackClip,actions:c.actions,swapAnimPack:async w=>{const u=await pY(l,w);try{h.director.dispose()}catch{}l.stopAllAction();h.director=u.director,h.attackClip=u.attackClip,h.actions=u.actions}};try{h.director.setGaitTarget(!1,!1);h.actions.idle?.reset().fadeIn(.12).play()}catch{}return h}',
+    );
+    console.log("[patch] hero GLB baked pack (alt path)");
+  }
+
+  // Equip before fit when still using FBX path (visibleMeshes then Y6)
+  if (js.includes("Y6(o,A.fitHeight),t?.visibleMeshes?.length&&L6(o,t.visibleMeshes)")) {
+    js = js.replace(
+      "Y6(o,A.fitHeight),t?.visibleMeshes?.length&&L6(o,t.visibleMeshes)",
+      "t?.visibleMeshes?.length&&L6(o,t.visibleMeshes),Y6(o,A.fitHeight)",
+    );
+    console.log("[patch] gear visibility before Y6 fit");
+  }
+
+  mustPatch("y6-v73", js.includes("if(hy>20)") || js.includes("hy>20"));
+  mustPatch("baked-on-glb", js.includes("await pY(l,Q)") || js.includes("pY(l,Q)"));
+}
+
 writeFileSync(OUT, js);
 try {
   execSync(`node --check "${OUT}"`, { stdio: "pipe" });

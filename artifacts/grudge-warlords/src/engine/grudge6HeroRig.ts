@@ -92,6 +92,7 @@ export class Grudge6HeroRig {
     animPack?: AnimPackId;
   }): Promise<Grudge6HeroRig> {
     const prepared = await loadGrudge6Character(opts.typeId, {
+      // ~1.85 m humanoid — matches PLAYER capsule + grudge6 TARGET height
       fitHeight: opts.fitHeight ?? 1.85,
       tint: opts.tint,
       animPack: opts.animPack,
