@@ -56,7 +56,21 @@ export function loginGuest(): Promise<GrudgeUser> {
 }
 
 export async function getMe(): Promise<GrudgeUser | null> {
-  const res = await fetch(`${AUTH_BASE}/me`, { credentials: "same-origin" });
+  // Prefer Studio JWT when present so SSO restores without a guest cookie.
+  let token: string | null = null;
+  try {
+    token = localStorage.getItem("grudge_auth_token");
+  } catch {
+    /* ignore */
+  }
+  const headers: Record<string, string> = {};
+  if (token) headers.Authorization = `Bearer ${token}`;
+
+  const res = await fetch(`${AUTH_BASE}/me`, {
+    credentials: "same-origin",
+    headers,
+  });
+  // 401 = not signed in (expected for guests) — do not throw
   if (!res.ok) return null;
   return (await res.json()) as GrudgeUser;
 }

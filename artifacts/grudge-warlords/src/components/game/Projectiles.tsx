@@ -9,6 +9,15 @@ import { projectileArcPosition } from "../../engine/math/splines";
 const BASE = import.meta.env.BASE_URL;
 const POOL_PER_MODEL = 14;
 
+/**
+ * ObjectStore currently has no archer/ballista/cannon FBX shells (all 404).
+ * Default to procedural meshes so combat never floods the console with missing
+ * models. Set VITE_PROJECTILE_FBX=1 to try loading real FBX when they ship.
+ */
+const TRY_FBX =
+  typeof import.meta !== "undefined" &&
+  String((import.meta as ImportMeta & { env?: Record<string, string> }).env?.VITE_PROJECTILE_FBX ?? "") === "1";
+
 const _q = new THREE.Quaternion();
 const _rollQ = new THREE.Quaternion();
 
@@ -35,6 +44,52 @@ function loadShellTextures(): Record<"metal" | "concrete", TexSet> {
 }
 
 /**
+ * Procedural shell when FBX is missing from ObjectStore / public.
+ * Avoids 404 spam and keeps arrows / bolts / orbs visible in combat.
+ */
+function makeProceduralShell(def: ProjectileDef): THREE.Group {
+  const g = new THREE.Group();
+  const tint = def.tint ? new THREE.Color(def.tint) : null;
+  const baseColor = new THREE.Color(def.material?.color ?? "#c0a878");
+  const rough = def.material?.roughness ?? 0.55;
+  const metal = def.material?.metalness ?? 0.35;
+
+  const mat = new THREE.MeshStandardMaterial({
+    color: baseColor,
+    roughness: rough,
+    metalness: metal,
+    emissive: tint ?? new THREE.Color(0x000000),
+    emissiveIntensity: tint ? 0.85 : 0,
+  });
+
+  // Heavy splash shells → ball; arrows/ballista → shaft + tip along +X
+  if (def.splash) {
+    const ball = new THREE.Mesh(new THREE.SphereGeometry(0.45, 10, 8), mat);
+    g.add(ball);
+  } else {
+    const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.05, 0.9, 6), mat);
+    shaft.rotation.z = Math.PI / 2;
+    const tip = new THREE.Mesh(
+      new THREE.ConeGeometry(0.09, 0.28, 6),
+      mat.clone(),
+    );
+    tip.rotation.z = -Math.PI / 2;
+    tip.position.x = 0.55;
+    const fletch = new THREE.Mesh(
+      new THREE.BoxGeometry(0.08, 0.18, 0.02),
+      new THREE.MeshStandardMaterial({
+        color: tint ?? new THREE.Color("#8a6a3a"),
+        roughness: 0.85,
+        metalness: 0.05,
+      }),
+    );
+    fletch.position.x = -0.4;
+    g.add(shaft, tip, fletch);
+  }
+  return g;
+}
+
+/**
  * Normalise a freshly-loaded FBX shell: uniformly scale it to a target world
  * size (the source files come in arbitrary units), recenter it on its own
  * origin so it rotates about its middle, tint it if magical, and report its
@@ -43,7 +98,7 @@ function loadShellTextures(): Record<"metal" | "concrete", TexSet> {
 function prepareProto(
   raw: THREE.Group,
   def: ProjectileDef,
-  textures: Record<"metal" | "concrete", TexSet>,
+  textures: Record<"metal" | "concrete", TexSet> | null,
 ): Proto {
   const box0 = new THREE.Box3().setFromObject(raw);
   const size0 = box0.getSize(new THREE.Vector3());
@@ -63,49 +118,64 @@ function prepareProto(
         ? new THREE.Vector3(0, 0, 1)
         : new THREE.Vector3(0, 1, 0);
 
-  // Dress the shell with a real surface: swap in a PBR-textured standard
-  // material (so cannonballs read as solid iron, arrows as matte wood, etc.),
-  // then layer the emissive tint on top for fiery / magical shells.
-  const tintCol = def.tint ? new THREE.Color(def.tint) : null;
-  const texSet = def.material ? textures[def.material.texture] : null;
-  raw.traverse((o) => {
-    const mesh = o as THREE.Mesh;
-    if (!mesh.isMesh) return;
-    if (def.material) {
-      const sm = new THREE.MeshStandardMaterial({
-        map: texSet?.diff ?? null,
-        normalMap: texSet?.nor ?? null,
-        color: new THREE.Color(def.material.color ?? "#ffffff"),
-        roughness: def.material.roughness ?? 0.6,
-        metalness: def.material.metalness ?? 0.4,
-      });
-      if (tintCol) {
-        sm.emissive = tintCol;
-        sm.emissiveIntensity = 0.9;
-      }
-      mesh.material = sm;
-    } else if (tintCol) {
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      for (const m of mats) {
-        const sm = m as THREE.MeshStandardMaterial;
-        if (sm && "emissive" in sm) {
+  if (textures) {
+    const tintCol = def.tint ? new THREE.Color(def.tint) : null;
+    const texSet = def.material ? textures[def.material.texture] : null;
+    raw.traverse((o) => {
+      const mesh = o as THREE.Mesh;
+      if (!mesh.isMesh) return;
+      if (def.material) {
+        const sm = new THREE.MeshStandardMaterial({
+          map: texSet?.diff ?? null,
+          normalMap: texSet?.nor ?? null,
+          color: new THREE.Color(def.material.color ?? "#ffffff"),
+          roughness: def.material.roughness ?? 0.6,
+          metalness: def.material.metalness ?? 0.4,
+        });
+        if (tintCol) {
           sm.emissive = tintCol;
           sm.emissiveIntensity = 0.9;
         }
+        mesh.material = sm;
+      } else if (tintCol) {
+        const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
+        for (const m of mats) {
+          const sm = m as THREE.MeshStandardMaterial;
+          if (sm && "emissive" in sm) {
+            sm.emissive = tintCol;
+            sm.emissiveIntensity = 0.9;
+          }
+        }
       }
-    }
-  });
+    });
+  }
 
   const holder = new THREE.Group();
   holder.add(raw);
   return { holder, forward };
 }
 
+/** HEAD request — only fetch FBX when the asset exists (avoids console 404 spam). */
+async function assetExists(url: string): Promise<boolean> {
+  try {
+    const res = await fetch(url, { method: "HEAD" });
+    if (res.ok) return true;
+    // Some CDNs disallow HEAD — try a ranged GET only when HEAD is not 404
+    if (res.status === 405 || res.status === 501) {
+      const get = await fetch(url, { method: "GET", headers: { Range: "bytes=0-0" } });
+      return get.ok || get.status === 206;
+    }
+    return false;
+  } catch {
+    return false;
+  }
+}
+
 /**
  * Renders the flying shell meshes for every ranged shot. Travel and despawn are
  * driven imperatively here (mirroring the bolt pool in Effects); a per-model
  * pool of cloned FBX meshes is positioned each frame and aimed along the shot's
- * direction. Missing model files are skipped silently so the game still runs.
+ * direction. Missing model files fall back to procedural shells (no 404 spam).
  */
 export function Projectiles() {
   const groupRef = useRef<THREE.Group>(null);
@@ -118,16 +188,34 @@ export function Projectiles() {
     let disposed = false;
     const loader = new FBXLoader();
     const created: THREE.Object3D[] = [];
-    const textures = loadShellTextures();
+    let textures: Record<"metal" | "concrete", TexSet> | null = null;
+    try {
+      textures = loadShellTextures();
+    } catch {
+      textures = null;
+    }
+
     (async () => {
       for (const key of Object.keys(PROJECTILES) as ProjectileModel[]) {
+        if (disposed) return;
         const def = PROJECTILES[key];
         let proto: Proto;
-        try {
-          const raw = await loader.loadAsync(`${BASE}models/projectiles/${def.file}.fbx`);
-          proto = prepareProto(raw, def, textures);
-        } catch {
-          continue;
+        if (TRY_FBX) {
+          const fbxUrl = `${BASE}models/projectiles/${def.file}.fbx`;
+          try {
+            const exists = await assetExists(fbxUrl);
+            if (exists) {
+              const raw = await loader.loadAsync(fbxUrl);
+              proto = prepareProto(raw, def, textures);
+            } else {
+              proto = prepareProto(makeProceduralShell(def), def, null);
+            }
+          } catch {
+            proto = prepareProto(makeProceduralShell(def), def, null);
+          }
+        } else {
+          // Default path: zero network, zero 404s
+          proto = prepareProto(makeProceduralShell(def), def, null);
         }
         if (disposed) return;
         const clones: THREE.Object3D[] = [];
@@ -155,9 +243,11 @@ export function Projectiles() {
           for (const m of mats) m?.dispose();
         });
       }
-      for (const set of Object.values(textures)) {
-        set.diff.dispose();
-        set.nor?.dispose();
+      if (textures) {
+        for (const set of Object.values(textures)) {
+          set.diff.dispose();
+          set.nor?.dispose();
+        }
       }
       data.current = { pools: {}, forwards: {} };
     };
@@ -177,12 +267,9 @@ export function Projectiles() {
         EM.addImpact(p.to);
         if (p.splash && p.faction) {
           const tint = PROJECTILES[p.model].tint ?? "#ffd0a6";
-          // Bigger blast: extra embers/smoke scaled to the radius.
           EM.addFireBurst(p.to.clone(), tint, 6, 0.7);
           for (let k = 0; k < 6; k++) EM.addEmber(p.to.clone(), tint);
           EM.addSmoke(p.to.clone(), 0.7 + p.splash.radius * 0.12);
-          // AoE damage pass via the shared shockwave mechanism (each entity hit
-          // once); the expanding ring aligns the damage with the blast visual.
           EM.addShockwave({
             pos: new THREE.Vector3(p.to.x, 0.1, p.to.z),
             maxRadius: p.splash.radius,
@@ -197,7 +284,6 @@ export function Projectiles() {
         continue;
       }
       projectileArcPosition(p.from, p.dir, p.traveled, p.dist, p.arc, p.pos);
-      // Motion trail — heavier splash shells leave a denser ember wake.
       const def = PROJECTILES[p.model];
       const trailRate = def.splash ? 0.38 : 0.22;
       if (Math.random() < trailRate) {

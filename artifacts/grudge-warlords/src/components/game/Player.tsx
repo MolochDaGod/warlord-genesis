@@ -1,7 +1,12 @@
 import { useRef, useEffect, useState, useMemo } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import { useKeyboardControls } from "@react-three/drei";
-import { RigidBody, CapsuleCollider, type RapierRigidBody } from "@react-three/rapier";
+import {
+  RigidBody,
+  CapsuleCollider,
+  useRapier,
+  type RapierRigidBody,
+} from "@react-three/rapier";
 import * as THREE from "three";
 import {
   PLAYER,
@@ -135,6 +140,7 @@ function pickHitReaction(
 export function Player() {
   const body = useRef<RapierRigidBody>(null);
   const { camera, gl, scene } = useThree();
+  const { world, rapier } = useRapier();
   const [, getKeys] = useKeyboardControls<Controls>();
 
   const fireCooldown = useRef(0);
@@ -819,10 +825,27 @@ export function Player() {
     const dashing = dashTimer.current > 0 && canMove;
     const rolling = rollTimer.current > 0 && canMove;
 
-    // Grounded test up front so movement can choose ground vs. air accel; the
-    // floor clamp below re-affirms it (the trimesh floor is infinitely thin).
-    const floorY = EM.map.heightAt(t.x, t.z) + FEET_OFFSET;
-    const onGround = t.y <= floorY + 0.15;
+    // Rapier ground probe: cast down from capsule center onto heightfield / walls / trees.
+    const mapFloorY = EM.map.heightAt(t.x, t.z) + FEET_OFFSET;
+    let onGround = false;
+    {
+      const rayOriginY = t.y;
+      const rayLen = FEET_OFFSET + 0.6;
+      const ray = new rapier.Ray(
+        { x: t.x, y: rayOriginY, z: t.z },
+        { x: 0, y: -1, z: 0 },
+      );
+      const hit = world.castRay(ray, rayLen, true, undefined, undefined, undefined, rb);
+      if (hit) {
+        const hitY = rayOriginY - hit.timeOfImpact;
+        const feetY = t.y - FEET_OFFSET;
+        // Solid contact under the feet (not a ceiling hit)
+        onGround = hitY <= feetY + 0.28 && vel.y <= 2.0;
+      } else {
+        // Fallback only if heightfield not ready yet
+        onGround = t.y <= mapFloorY + 0.25 && vel.y <= 1.5;
+      }
+    }
 
     let hvx: number;
     let hvz: number;
@@ -833,10 +856,7 @@ export function Player() {
       hvx = dashDir.current.x * DASH.speed;
       hvz = dashDir.current.z * DASH.speed;
     } else {
-      // Momentum: ease the horizontal velocity toward the target rather than
-      // snapping, so the hero has weight but still reacts immediately. Ground uses
-      // a brisk accel (and a slightly stronger decel to a stop); air uses a soft
-      // accel so a jump keeps its momentum yet still allows slight mid-air steering.
+      // Momentum: ease horizontal velocity. Ground accel vs air steering.
       const tvx = _dir.x * speed;
       const tvz = _dir.z * speed;
       const accel = onGround ? (moving ? PLAYER.groundAccel : PLAYER.groundDecel) : PLAYER.airAccel;
@@ -853,22 +873,19 @@ export function Player() {
         hvz = vel.z + dvz * sc;
       }
     }
+    // Drive horizontal via Rapier velocity; leave Y to gravity + heightfield contact.
     rb.setLinvel({ x: hvx, y: vel.y, z: hvz }, true);
 
-    // Hard terrain clamp. The trimesh floor collider is infinitely thin, so fast
-    // moves (dash/roll), attack one-shots, or steep slopes can tunnel the capsule
-    // straight through it and the hero falls out of the world. Rather than trust
-    // the collider, pin the capsule to the heightmap every frame: if it has sunk
-    // below the terrain surface, lift it back and kill any downward velocity. This
-    // keeps the hero grounded deterministically while still allowing jumps/arcs
-    // (which raise t.y above the floor, so the clamp is a no-op on the way up).
-    if (t.y < floorY) {
-      rb.setTranslation({ x: t.x, y: floorY, z: t.z }, true);
-      if (vel.y < 0) rb.setLinvel({ x: hvx, y: 0, z: hvz }, true);
-      t.y = floorY;
+    // Emergency void rescue only — real contact is heightfield + CCD.
+    // If we somehow fell far below the map, snap back (should be rare now).
+    if (t.y < mapFloorY - 2.5) {
+      rb.setTranslation({ x: t.x, y: mapFloorY + 0.1, z: t.z }, true);
+      rb.setLinvel({ x: hvx, y: 0, z: hvz }, true);
+      t.y = mapFloorY + 0.1;
+      onGround = true;
     }
 
-    grounded.current = t.y <= floorY + 0.15;
+    grounded.current = onGround;
     if (canMove && keys.jump && grounded.current && !jumping.current) {
       rb.setLinvel({ x: hvx, y: PLAYER.jumpForce, z: hvz }, true);
       jumping.current = true;
@@ -1005,7 +1022,14 @@ export function Player() {
         .addScaledVector(_side, COMBAT_SHOULDER);
       // Pull the camera in when trees / walls / ridges block the pivot→camera ray
       // so the view and crosshair aim stay stable instead of clipping through geo.
-      const occluded = resolveCameraOcclusion(scene, _head, _camTarget, animatorRef.current?.root ?? null);
+      const occluded = resolveCameraOcclusion(
+        scene,
+        _head,
+        _camTarget,
+        animatorRef.current?.root ?? null,
+        0.32,
+        camera,
+      );
       const fullLen = _head.distanceTo(_camTarget);
       const safeLen = _head.distanceTo(occluded);
       const wantFrac = fullLen > 1e-4 ? THREE.MathUtils.clamp(safeLen / fullLen, 0.22, 1) : 1;
@@ -1082,9 +1106,19 @@ export function Player() {
         position={[spawn0.x, spawn0.y, spawn0.z]}
         enabledRotations={[false, false, false]}
         canSleep={false}
-        linearDamping={0.6}
+        // Rapier character feel: CCD stops dash/roll tunneling through heightfield;
+        // light linear damping (friction does most horizontal stop).
+        ccd
+        linearDamping={0.12}
+        angularDamping={1}
+        friction={0.9}
+        restitution={0}
       >
-        <CapsuleCollider args={[PLAYER.height / 2, PLAYER.radius]} />
+        <CapsuleCollider
+          args={[PLAYER.height / 2, PLAYER.radius]}
+          friction={1.15}
+          restitution={0}
+        />
       </RigidBody>
     </>
   );
