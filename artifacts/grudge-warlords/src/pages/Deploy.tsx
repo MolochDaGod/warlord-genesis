@@ -8,12 +8,14 @@ import { useGame } from "../game/store";
 import { useRoster } from "../game/roster";
 import { useMeta } from "../game/metaProgression";
 import { useSession } from "../game/session";
+import { useUI } from "../game/ui";
 import { ensureWarcampReady, prepareAndStartMatch } from "../lib/ensureWarcampReady";
 import { evaluateWarcampReady } from "../hooks/useWarcampReady";
 import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
 import { GRUDGE_FACTION_BY_ID } from "../engine/grudge6";
 import { meleeDisplayName, rangedDisplayName } from "../game/canonicalLoadout";
 import type { LaneId } from "../game/laneDeployment";
+import { ICONS } from "../components/ui/icons";
 
 const DEPLOY_DONE_KEY = "wg-deploy-done";
 const CHAMPION_LANE_KEY = "wg-champion-lane";
@@ -37,6 +39,7 @@ export function Deploy() {
   const meleeId = useRoster((s) => s.meleeId);
   const rangedId = useRoster((s) => s.rangedId);
   const user = useSession((s) => s.user);
+  const openHub = useUI((s) => s.openHub);
   const gbux = useMeta((s) => s.gbux);
   const [lane, setLane] = useState<LaneId>(readChampionLane);
   const [phase, setPhase] = useState<"load" | "deploy">("load");
@@ -113,12 +116,26 @@ export function Deploy() {
           ‹ WARCAMP
         </button>
         <div className="gk-deploy-head-copy">
-          <p className="gk-deploy-kicker">Fleet deploy</p>
+          <p className="gk-deploy-kicker">Fleet deploy · Railway account</p>
           <h1 className="gw-deploy-screen-title">Battle Deployment</h1>
           <p className="gw-hint">
             {user ? `${user.displayName ?? user.username} · ` : ""}
             {gbux} GBUX · {faction?.name ?? "Faction"}
           </p>
+        </div>
+        <div className="gw-menu-actions" style={{ marginLeft: "auto", flexWrap: "wrap", gap: 6 }}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
+            <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
+            {user ? user.displayName || user.username : "ACCOUNT"}
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
+            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
+            WALLET
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
+            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
+            TREATY
+          </button>
         </div>
       </header>
 

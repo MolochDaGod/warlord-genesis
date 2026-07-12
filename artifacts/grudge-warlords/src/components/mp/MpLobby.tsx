@@ -1,4 +1,6 @@
 import { useMp } from "../../net/mpStore";
+import { useUI } from "../../game/ui";
+import { useSession } from "../../game/session";
 import {
   mpCancelQuickplay,
   mpCreateRoom,
@@ -24,6 +26,8 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
   const queue = useMp((s) => s.queue);
   const me = useMp((s) => s.me);
   const error = useMp((s) => s.error);
+  const openHub = useUI((s) => s.openHub);
+  const user = useSession((s) => s.user);
 
   if (view === "queued" && queue) {
     return (
@@ -92,14 +96,24 @@ export function MpLobby({ onExit }: { onExit: () => void }) {
   return (
     <div className="mp-screen">
       <div className="mp-panel">
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 8 }}>
           <h2 className="mp-title">Online War</h2>
-          <StatusPill />
+          <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+            <StatusPill />
+            <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
+              {user ? user.displayName || user.username : "ACCOUNT"}
+            </button>
+            <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
+              WALLET
+            </button>
+            <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
+              TREATY
+            </button>
+          </div>
         </div>
         <p className="mp-sub">
-          Quick match into 1v1, 2v2, or 3v3 clashes, or open a private war room.
-          If the match server is offline, rooms run locally and bots fill empty seats — Start Match
-          launches a skirmish march.
+          Same Grudge ID across fleet · Railway account SSOT. Quick match into 1v1, 2v2, or 3v3, or open a
+          private war room. If the match server is offline, rooms run locally and bots fill empty seats.
         </p>
 
         <div className="mp-grid">

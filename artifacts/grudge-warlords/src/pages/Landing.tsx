@@ -69,8 +69,12 @@ export function Landing() {
             <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />
             CODEX
           </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("about")}>
+            <img className="gw-btn-icon" src={ICONS.hammer} alt="" draggable={false} />
+            FLEET
+          </button>
         </div>
-        <span className="gw-hint">Railway account SSOT · Grudge ID · Treaty · Wallet · 3D warcamp</span>
+        <span className="gw-hint">Grudge ID · Railway SSOT · Account · Wallet · Treaty · 3D warcamp</span>
       </div>
     </div>
   );

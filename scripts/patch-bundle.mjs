@@ -2507,6 +2507,73 @@ function WgFleetAboutHub(){return d.jsxs("div",{className:"gw-hub-body gw-about-
   mustPatch("hub-tabs-wallet", js.includes('key:"wallet"') && js.includes('key:"treaty"'));
 }
 
+// v75: Every page entry — Account / Wallet / Treaty tabs + strip false Puter-as-SSOT copy
+{
+  // Title footer: Account · Wallet · Treaty · Codex · Fleet
+  const FOOTER_OLD =
+    'onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"About"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>C("/admin"),children:"Admin"})';
+  const FOOTER_NEW =
+    'onClick:()=>A("account"),children:"Account"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("wallet"),children:"Wallet"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("treaty"),children:"Treaty"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("codex"),children:"Codex"}),d.jsx("button",{type:"button",className:"gw-footer-link",onClick:()=>A("about"),children:"Fleet"})';
+  if (js.includes(FOOTER_OLD)) {
+    js = js.replace(FOOTER_OLD, FOOTER_NEW);
+    console.log("[patch] title footer → Account Wallet Treaty Codex Fleet");
+  }
+
+  // Remove primary Puter sign-in from title (Grudge ID is canonical)
+  const PUTER_BTN =
+    'd.jsx("button",{type:"button",className:"gw-auth-btn gw-auth-btn-puter",onClick:n,disabled:g,children:"Sign in with Puter"})';
+  if (js.includes(PUTER_BTN)) {
+    js = js.replace(PUTER_BTN, "");
+    console.log("[patch] title: removed Sign in with Puter primary button");
+  }
+
+  // Title chip — no false Puter SSOT claim
+  if (js.includes('children:"Grudge ID · Puter · Railway saves"')) {
+    js = js.replace(
+      'children:"Grudge ID · Puter · Railway saves"',
+      'children:"Grudge ID · Railway SSOT · Wallet · Treaty"',
+    );
+    console.log("[patch] title chip → Railway SSOT");
+  }
+
+  // Lobby top actions: ACCOUNT · WALLET · TREATY · CODEX
+  const LOBBY_BTNS_OLD =
+    'onClick:()=>t("account"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.fist,alt:"",draggable:!1}),Q?Q.displayName||Q.username:"SIGN IN"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("about"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.cup,alt:"",draggable:!1}),"ABOUT"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("codex"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chest,alt:"",draggable:!1}),"CODEX"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("ai"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chat,alt:"",draggable:!1}),"COUNCIL"]})';
+  const LOBBY_BTNS_NEW =
+    'onClick:()=>t("account"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.fist,alt:"",draggable:!1}),Q?Q.displayName||Q.username:"ACCOUNT"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("wallet"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.cup,alt:"",draggable:!1}),"WALLET"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("treaty"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chat,alt:"",draggable:!1}),"TREATY"]}),d.jsxs("button",{type:"button",className:"gw-btn gw-btn-ghost gw-btn-mini",onClick:()=>t("codex"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chest,alt:"",draggable:!1}),"CODEX"]})';
+  if (js.includes(LOBBY_BTNS_OLD)) {
+    js = js.replace(LOBBY_BTNS_OLD, LOBBY_BTNS_NEW);
+    console.log("[patch] lobby top → ACCOUNT WALLET TREATY CODEX");
+  } else if (!js.includes('onClick:()=>t("wallet")') && js.includes('onClick:()=>t("about")')) {
+    js = js.replace(
+      'onClick:()=>t("about"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.cup,alt:"",draggable:!1}),"ABOUT"]}',
+      'onClick:()=>t("wallet"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.cup,alt:"",draggable:!1}),"WALLET"]}',
+    );
+    js = js.replace(
+      'onClick:()=>t("ai"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chat,alt:"",draggable:!1}),"COUNCIL"]}',
+      'onClick:()=>t("treaty"),children:[d.jsx("img",{className:"gw-btn-icon",src:Ji.chat,alt:"",draggable:!1}),"TREATY"]}',
+    );
+    js = js.replace(
+      'Q?Q.displayName||Q.username:"SIGN IN"',
+      'Q?Q.displayName||Q.username:"ACCOUNT"',
+    );
+    console.log("[patch] lobby top partial → WALLET/TREATY");
+  }
+
+  js = js.replaceAll(
+    "Sign in with Grudge ID to claim your account. Puter sign-in is also available for cloud saves.",
+    "Sign in with Grudge ID (id.grudge-studio.com). Wallet + Treaty use Railway account APIs — same SSOT as Warlords.",
+  );
+  js = js.replaceAll(
+    "Playing as guest. Sign in with Grudge ID to keep progress across devices.",
+    "Guest = local only. Grudge ID unlocks Railway characters, wallet, and Treaty across the fleet.",
+  );
+
+  mustPatch("title-wallet-footer", js.includes('children:"Wallet"') && js.includes('A("wallet")'));
+  mustPatch("lobby-wallet-btn", js.includes('onClick:()=>t("wallet")'));
+  mustPatch("no-puter-ssot-chip", !js.includes("Grudge ID · Puter · Railway saves"));
+}
+
 // v73: grudge6 height fit (no 100×) + always load baked Bip001 packs on hero GLB path
 {
   // Replace Y6 wherever it starts — reset/measure/multiply only (never setScalar(target/worldH) alone)
