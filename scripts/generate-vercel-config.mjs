@@ -42,6 +42,8 @@ const PREFIXES = [
   "races",
   "classes",
   "items",
+  /** Fleet Treaty — friends, DMs, groups, server chat (Railway SSOT) */
+  "treaty",
 ];
 
 const AUTH_GATEWAY = "https://id.grudge-studio.com";
