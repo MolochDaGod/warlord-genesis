@@ -1,15 +1,11 @@
 /**
- * Fleet origins catalog — discover edge + VPS servers autonomously.
- * Fetched from api.grudge-studio.com/origins (CF Worker → KV registry).
+ * Fleet origins — static canonical map + optional health probe.
+ * Player game data is NEVER api.grudge-studio.com (retired split-brain).
  */
 
-import { deployUrl } from "./deployRoutes";
 import { GRUDGE_FLEET_URLS } from "./fleetUrls";
 
-/** Live registry (may 404 if worker path missing — always fall back). */
-const ORIGINS_API = "https://api.grudge-studio.com/api/origins";
-const ORIGINS_API_LEGACY = "https://api.grudge-studio.com/origins";
-const CACHE_KEY = "grudge_origins_v1";
+const CACHE_KEY = "grudge_origins_v2";
 const CACHE_TTL_MS = 60_000;
 
 export type OriginKind = "http" | "ws" | "colyseus" | "tunnel";
@@ -36,38 +32,56 @@ export interface OriginsCatalog {
   origins: FleetOrigin[];
 }
 
-/** Static fleet map so lobby never hard-depends on the origins worker. */
+/** Canonical static fleet map (SSOT). */
 const FALLBACK_CATALOG: OriginsCatalog = {
   ok: true,
-  version: "fallback-static",
+  version: "canonical-2026",
   updatedAt: Date.now(),
   origins: [
     {
-      id: "api",
-      label: "Game API",
+      id: "game-data",
+      label: "Game API (Railway)",
       kind: "http",
-      url: "https://api.grudge-studio.com",
+      url: GRUDGE_FLEET_URLS.gameData,
       status: "live",
-      roles: ["api", "game-data"],
-      healthUrl: "https://api.grudge-studio.com/api/health",
+      roles: ["api", "game-data", "characters", "account", "wallet", "treaty"],
+      healthUrl: `${GRUDGE_FLEET_URLS.gameData}/api/health`,
       updatedAt: Date.now(),
     },
     {
       id: "identity",
       label: "Grudge ID",
       kind: "http",
-      url: "https://id.grudge-studio.com",
+      url: GRUDGE_FLEET_URLS.identity,
       status: "live",
       roles: ["auth", "identity"],
       updatedAt: Date.now(),
     },
     {
+      id: "hub",
+      label: "Studio Hub",
+      kind: "http",
+      url: GRUDGE_FLEET_URLS.hub,
+      status: "live",
+      roles: ["portal", "wallet", "treaty"],
+      updatedAt: Date.now(),
+    },
+    {
       id: "ws",
-      label: "WebSocket edge",
+      label: "Realtime (Railway)",
       kind: "ws",
       url: "wss://grudge-api-production-0d46.up.railway.app",
       status: "live",
-      roles: ["realtime"],
+      roles: ["realtime", "colyseus"],
+      updatedAt: Date.now(),
+    },
+    {
+      id: "cdn",
+      label: "Assets R2",
+      kind: "http",
+      url: GRUDGE_FLEET_URLS.assetsCdn,
+      status: "live",
+      roles: ["cdn", "models"],
       updatedAt: Date.now(),
     },
   ],
@@ -89,83 +103,44 @@ function writeCache(catalog: OriginsCatalog): void {
   try {
     sessionStorage.setItem(CACHE_KEY, JSON.stringify({ at: Date.now(), catalog }));
   } catch {
-    // ignore
+    /* ignore */
   }
 }
 
-/** Fetch the full fleet origins catalog (cached 60s). Never throws. */
-export async function fetchOrigins(force = false): Promise<OriginsCatalog> {
-  if (!force) {
-    const cached = readCache();
-    if (cached) return cached;
-  }
-  for (const url of [ORIGINS_API, ORIGINS_API_LEGACY]) {
-    try {
-      const res = await fetch(url, { credentials: "omit" });
-      if (!res.ok) continue;
-      const catalog = (await res.json()) as OriginsCatalog;
-      if (catalog?.origins?.length) {
-        writeCache(catalog);
-        return catalog;
-      }
-    } catch {
-      /* try next */
-    }
-  }
-  writeCache(FALLBACK_CATALOG);
-  return FALLBACK_CATALOG;
-}
-
-/** Pick the best live origin for a role (world, pvp, api, auth, …). */
-export async function resolveOrigin(
-  role: string,
-  opts?: { kind?: OriginKind; fallback?: string },
-): Promise<FleetOrigin | null> {
-  const catalog = await fetchOrigins();
-  const ranked = catalog.origins
-    .filter((o) => o.roles?.includes(role) || o.id === role)
-    .sort((a, b) => {
-      const score = (s: OriginStatus) =>
-        s === "live" ? 0 : s === "degraded" ? 1 : s === "planned" ? 2 : 3;
-      return score(a.status) - score(b.status) || b.updatedAt - a.updatedAt;
-    });
-  const hit = ranked.find((o) => !opts?.kind || o.kind === opts.kind) ?? ranked[0];
-  if (hit?.url) return hit;
-  if (opts?.fallback) {
-    return {
-      id: role,
-      label: role,
-      kind: opts.kind || "http",
-      url: opts.fallback,
-      status: "degraded",
-      updatedAt: Date.now(),
-    };
-  }
-  return null;
-}
-
-/** Convenience URLs for common app flows. */
+/** Probe Railway health and return endpoints for lobby display. */
 export async function getFleetEndpoints(): Promise<{
-  api: string;
-  identity: string;
-  ws: string;
   world: string | null;
   colyseus: { host: string; port: number } | null;
-  lobby: string;
+  gameData: string;
+  identity: string;
+  hub: string;
+  healthy: boolean;
 }> {
-  const catalog = await fetchOrigins();
-  const byId = new Map(catalog.origins.map((o) => [o.id, o]));
-  const api = byId.get("api")?.url || "https://api.grudge-studio.com";
-  const identity = byId.get("identity")?.url || "https://id.grudge-studio.com";
-  const ws = byId.get("ws")?.url || "wss://ws.grudge-studio.com";
-  const worldOrigin = byId.get("world");
-  const col = byId.get("colyseus");
+  const cached = readCache();
+  let healthy = false;
+  try {
+    const r = await fetch("/api/health", { cache: "no-store" });
+    const j = (await r.json().catch(() => ({}))) as { status?: string; database?: string };
+    healthy = r.ok && (j.status === "healthy" || j.database === "connected");
+  } catch {
+    healthy = false;
+  }
+  const catalog = cached ?? FALLBACK_CATALOG;
+  if (!cached) writeCache(FALLBACK_CATALOG);
+
   return {
-    api,
-    identity,
-    ws,
-    world: worldOrigin?.status === "live" || worldOrigin?.status === "degraded" ? worldOrigin.url : null,
-    colyseus: col?.host ? { host: col.host, port: col.port || 2567 } : null,
-    lobby: deployUrl(GRUDGE_FLEET_URLS.warlords),
+    world: GRUDGE_FLEET_URLS.water,
+    colyseus: { host: "grudge-api-production-0d46.up.railway.app", port: 443 },
+    gameData: GRUDGE_FLEET_URLS.gameData,
+    identity: GRUDGE_FLEET_URLS.identity,
+    hub: GRUDGE_FLEET_URLS.hub,
+    healthy,
   };
+}
+
+export async function getOriginsCatalog(): Promise<OriginsCatalog> {
+  const cached = readCache();
+  if (cached) return cached;
+  writeCache(FALLBACK_CATALOG);
+  return FALLBACK_CATALOG;
 }

@@ -1,23 +1,30 @@
 /**
- * Canonical Grudge Studio fleet URLs for cross-app handoffs.
- * Production defaults match water.grudge-studio.com ↔ grudgewarlords.com routing.
+ * Canonical Grudge Studio fleet URLs — ONE TRUTH for Warlord Genesis.
+ * Player SSOT = Railway Postgres (same-origin /api/* rewrites).
+ * Never use api.grudge-studio.com for characters/account/wallet/treaty.
  */
 
 export const GRUDGE_FLEET_URLS = {
+  /** Canonical studio hub (grudgeDot) — account / wallet / treaty entry */
+  hub: "https://grudge.studio",
   assetsCdn: "https://assets.grudge-studio.com",
   identity: "https://id.grudge-studio.com",
+  /** Railway game data (prefer same-origin /api/* in this app) */
+  gameData: "https://grudge-api-production-0d46.up.railway.app",
+  objectStore: "https://objectstore.grudge-studio.com/api/v1",
   viewer: "https://character.grudge-studio.com",
-  /** Tactical-Infinity open world (Aethermoor sailing). */
-  water: "https://water.grudge-studio.com",
+  forge: "https://forge.grudge-studio.com",
   warlords: "https://grudgewarlords.com",
-  /** Warlord Genesis — branded production host */
+  crafting: "https://grudge-crafting.puter.site",
+  /** Tactical-Infinity open world */
+  water: "https://water.grudge-studio.com",
+  /** Warlord Genesis production hosts */
   warstrat: "https://warstrat.grudge-studio.com",
-  /** Warlord Genesis — Vercel default alias */
   warlordGenesis: "https://warlord-genesis.vercel.app",
-  origins: "https://api.grudge-studio.com/origins",
+  fleetMap: "https://fleet.grudge-studio.com",
 } as const;
 
-/** Hostnames that serve this SPA (static — no native WS upgrade). */
+/** Hostnames that serve this SPA */
 export const WARLORD_GENESIS_HOSTS = [
   "warlord-genesis.vercel.app",
   "warstrat.grudge-studio.com",
@@ -39,11 +46,11 @@ export function waterClientUrl(): string {
 }
 
 export function viewerUrl(race?: string, classId?: string): string {
-  const base = `${GRUDGE_FLEET_URLS.viewer}/viewer`;
+  const base = `${GRUDGE_FLEET_URLS.viewer}?era=warlords`;
   if (!race) return base;
-  const params = new URLSearchParams({ race });
+  const params = new URLSearchParams({ era: "warlords", race });
   if (classId) params.set("class", classId);
-  return `${base}?${params}`;
+  return `${GRUDGE_FLEET_URLS.viewer}?${params}`;
 }
 
 /** Append SSO token for cross-origin fleet handoff when signed in. */
@@ -67,4 +74,10 @@ export function sailAethermoorUrl(token?: string | null): string {
     path: "/world-map",
     token,
   });
+}
+
+/** Deep links into the grudge.studio hub panels */
+export function studioHubUrl(panel?: "account" | "wallet" | "treaty"): string {
+  if (!panel || panel === "account") return GRUDGE_FLEET_URLS.hub;
+  return `${GRUDGE_FLEET_URLS.hub}/?panel=${panel}`;
 }

@@ -53,20 +53,24 @@ export function Landing() {
           BARRACKS STUDIO
         </a>
         <div className="gw-menu-actions">
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
-            {user ? `BANNER: ${user.displayName || user.username}` : "SIGN IN / GUEST"}
+            {user ? `ACCOUNT: ${user.displayName || user.username}` : "ACCOUNT"}
           </button>
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
+            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
+            WALLET
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
+            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
+            TREATY
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
             <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />
             CODEX
           </button>
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("ai")}>
-            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
-            WAR COUNCIL
-          </button>
         </div>
-        <span className="gw-hint">Single-player · 3D MOBA / RTS</span>
+        <span className="gw-hint">Railway account SSOT · Grudge ID · Treaty · Wallet · 3D warcamp</span>
       </div>
     </div>
   );

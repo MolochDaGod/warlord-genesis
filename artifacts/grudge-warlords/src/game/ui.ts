@@ -1,6 +1,7 @@
 import { create } from "zustand";
 
-export type HubTab = "account" | "codex" | "ai";
+/** Hub tabs — account identity + fleet wallet + Treaty + codex + AI */
+export type HubTab = "account" | "wallet" | "treaty" | "codex" | "ai" | "about";
 
 interface UIState {
   hubOpen: boolean;

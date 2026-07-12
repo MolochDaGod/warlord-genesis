@@ -8,9 +8,9 @@ import { WARLORD_MANIFEST } from "../engine/warlordManifest";
 import { DEPLOY_PATH } from "../lib/deployRoutes";
 
 const PIPELINE_BADGES = [
-  { id: "r2", label: "Cloudflare R2", detail: "Units · textures · baked anims" },
-  { id: "d1", label: "D1 Heroes", detail: "Canonical warlord roster" },
-  { id: "eng", label: "Grudge Engine", detail: "Manifest-driven stats & mounts" },
+  { id: "id", label: "Grudge ID", detail: "id.grudge-studio.com — fleet auth" },
+  { id: "pg", label: "Railway Postgres", detail: "Characters · account · wallet · Treaty" },
+  { id: "r2", label: "R2 CDN", detail: "GRUDGE6 meshes · baked anims" },
 ] as const;
 
 export function Intro() {
@@ -76,6 +76,9 @@ export function Intro() {
               {booting ? "Booting…" : eng.ready ? `v${WARLORD_MANIFEST.version}` : "Fallback"}
             </span>
             <span className="gw-intro-stat-row">{cdnOk ? "R2 CDN online" : "Local assets"}</span>
+            <span className="gw-intro-stat-row">
+              {user ? `Signed in · ${user.displayName || user.username}` : "Guest / sign in via hub"}
+            </span>
           </div>
         </div>
 
@@ -104,20 +107,30 @@ export function Intro() {
         </button>
 
         <div className="gw-menu-actions">
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
-            {user ? `BANNER: ${user.displayName || user.username}` : "SIGN IN / GUEST"}
+            {user ? `ACCOUNT: ${user.displayName || user.username}` : "ACCOUNT / SIGN IN"}
           </button>
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
+            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
+            WALLET
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
+            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
+            TREATY
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
             <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />
             CODEX
           </button>
-          <button className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("ai")}>
-            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
-            WAR COUNCIL
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("about")}>
+            <img className="gw-btn-icon" src={ICONS.hammer} alt="" draggable={false} />
+            FLEET
           </button>
         </div>
-        <span className="gw-hint">3D MOBA / RTS · Grudge Engine manifest v{WARLORD_MANIFEST.version}</span>
+        <span className="gw-hint">
+          3D warcamp · Railway account SSOT · Grudge ID · Treaty · Wallet · manifest v{WARLORD_MANIFEST.version}
+        </span>
       </div>
     </div>
   );

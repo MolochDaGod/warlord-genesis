@@ -2417,6 +2417,96 @@ js = js.replaceAll('children:"Sign in"})]})]})', 'children:"Sign in"})})]})');
   mustPatch("craftpix-minimap", js.includes("Minimap_Overlay") || js.includes("gk-minimap-chrome"));
 }
 
+// v74: Hub tabs Account · Wallet · Treaty · Fleet truth (canonical Railway APIs)
+{
+  const HUB_PANELS = `
+function WgFleetAuthHeaders(){const h={Accept:"application/json"};try{const t=localStorage.getItem("grudge_auth_token");if(t)h.Authorization="Bearer "+t}catch{}return h}
+async function WgFleetGet(path){try{const r=await fetch(path,{headers:WgFleetAuthHeaders(),credentials:"include"});const j=await r.json().catch(()=>null);return{ok:r.ok,status:r.status,data:j,error:!r.ok?(j&&j.error)||("HTTP "+r.status):null}}catch(e){return{ok:!1,status:0,data:null,error:e.message||"net"}}}
+async function WgFleetPost(path,body){try{const r=await fetch(path,{method:"POST",headers:Object.assign({"Content-Type":"application/json"},WgFleetAuthHeaders()),credentials:"include",body:body!=null?JSON.stringify(body):void 0});const j=await r.json().catch(()=>null);return{ok:r.ok,status:r.status,data:j,error:!r.ok?(j&&j.error)||("HTTP "+r.status):null}}catch(e){return{ok:!1,status:0,data:null,error:e.message||"net"}}}
+function WgWalletHub(){const user=Rh(e=>e.user),[st,setSt]=T.useState(null),[res,setRes]=T.useState(null),[err,setErr]=T.useState(null),[ld,setLd]=T.useState(!1);const load=T.useCallback(async()=>{if(!user||user.role==="guest"){setSt(null);setRes(null);return}setLd(!0);setErr(null);const[w,a]=await Promise.all([WgFleetGet("/api/wallet/status"),WgFleetGet("/api/account/resources")]);if(!w.ok&&w.status===401)setErr("Sign in with Grudge ID for Railway wallet");else if(!w.ok)setErr(w.error||"wallet failed");else setSt(w.data);if(a.ok)setRes(a.data);setLd(!1)},[user]);T.useEffect(()=>{load()},[load]);if(!user)return d.jsx("div",{className:"gw-hub-body",children:d.jsx("p",{className:"gw-auth-lead",children:"Sign in with Grudge ID to open account-scope wallet (GBUX · Solana). SSOT: Railway /api/wallet."})});if(user.role==="guest")return d.jsxs("div",{className:"gw-hub-body",children:[d.jsx("p",{className:"gw-account-hint",children:"Guests have no fleet wallet. Sign in for Railway /api/wallet."}),d.jsx("a",{className:"gw-btn gw-btn-ghost",href:"https://grudge.studio/?panel=wallet",target:"_blank",rel:"noreferrer",children:"Studio hub wallet"})]});const gbux=res&&(res.gbux??res.GBUX);const addr=st&&st.walletAddress;return d.jsx("div",{className:"gw-hub-body",children:d.jsxs("div",{className:"gw-account-card",children:[d.jsx("div",{className:"gw-account-name",children:"War Chest"}),d.jsx("p",{className:"gw-account-hint",children:"Account scope · Railway /api/wallet · not character bag"}),d.jsxs("div",{className:"gw-account-grid",children:[d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"GBUX"}),d.jsx("span",{className:"gw-account-v",children:gbux!=null?Number(gbux).toLocaleString():Number(user.gbuxBalance||0).toLocaleString()})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Type"}),d.jsx("span",{className:"gw-account-v",children:(st&&st.walletType)||(addr?"linked":"none")})]})]}),d.jsx("div",{className:"gw-account-id",style:{wordBreak:"break-all",marginTop:10},children:addr||"No Solana address"}),err&&d.jsx("div",{className:"gw-form-error",children:err}),d.jsxs("div",{style:{display:"flex",flexWrap:"wrap",gap:8,marginTop:12},children:[d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>load(),disabled:ld,children:ld?"…":"Refresh"}),d.jsx("a",{className:"gw-btn gw-btn-ghost",href:"https://grudge.studio/?panel=wallet",target:"_blank",rel:"noreferrer",children:"Full hub"})]})]})})}
+function WgTreatyHub(){const user=Rh(e=>e.user),[soc,setSoc]=T.useState(null),[chs,setChs]=T.useState([]),[slug,setSlug]=T.useState(""),[msgs,setMsgs]=T.useState([]),[text,setText]=T.useState(""),[err,setErr]=T.useState(null);const load=T.useCallback(async()=>{if(!user||user.role==="guest")return;setErr(null);const[s,c]=await Promise.all([WgFleetGet("/api/treaty/social"),WgFleetGet("/api/treaty/servers?game=warlords")]);if(!s.ok&&s.status===401){setErr("Sign in for Treaty");return}if(s.ok)setSoc(s.data);else setErr(s.error||"social failed");const list=(c.data&&(c.data.channels||c.data.servers))||[];setChs(list);if(!slug&&list[0])setSlug(list[0].slug||list[0].id||"")},[user,slug]);const loadMsg=T.useCallback(async()=>{if(!slug||!user||user.role==="guest")return;const r=await WgFleetGet("/api/treaty/servers/"+encodeURIComponent(slug)+"/messages?limit=40");if(r.ok)setMsgs((r.data&&r.data.messages)||[])},[slug,user]);T.useEffect(()=>{load()},[load]);T.useEffect(()=>{loadMsg();if(!slug)return;const t=setInterval(loadMsg,8e3);return()=>clearInterval(t)},[slug,loadMsg]);const send=async()=>{const content=text.trim();if(!content||!slug)return;setText("");const r=await WgFleetPost("/api/treaty/servers/"+encodeURIComponent(slug)+"/messages",{content});if(!r.ok)setErr(r.error||"send failed");loadMsg()};if(!user)return d.jsx("div",{className:"gw-hub-body",children:d.jsx("p",{className:"gw-auth-lead",children:"Treaty = account friends, DMs, fleet chat (Railway). Sign in with Grudge ID."})});if(user.role==="guest")return d.jsx("div",{className:"gw-hub-body",children:d.jsx("p",{className:"gw-account-hint",children:"Guests cannot use Treaty."})});const friends=((soc&&soc.friends)||[]).filter(f=>!f.status||f.status==="accepted");return d.jsxs("div",{className:"gw-hub-body",children:[d.jsxs("div",{className:"gw-account-card",style:{marginBottom:12},children:[d.jsx("div",{className:"gw-account-name",children:"Treaty · Fleet social"}),d.jsx("p",{className:"gw-account-hint",children:"Account-scoped · /api/treaty · not character UUID"}),err&&d.jsx("div",{className:"gw-form-error",children:err}),d.jsxs("div",{className:"gw-account-grid",children:[d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Friends"}),d.jsx("span",{className:"gw-account-v",children:friends.length})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Channels"}),d.jsx("span",{className:"gw-account-v",children:chs.length})]})]}),d.jsxs("div",{style:{display:"flex",gap:8,marginTop:10,flexWrap:"wrap"},children:[d.jsx("button",{type:"button",className:"gw-btn gw-btn-ghost",onClick:()=>load(),children:"Refresh"}),d.jsx("a",{className:"gw-btn gw-btn-ghost",href:"https://grudgewarlords.com/treaty",target:"_blank",rel:"noreferrer",children:"Full app"}),d.jsx("a",{className:"gw-btn gw-btn-ghost",href:"https://grudge.studio/?panel=treaty",target:"_blank",rel:"noreferrer",children:"Studio hub"})]})]}),d.jsx("div",{className:"gw-codex-tabs",style:{marginBottom:8},children:chs.length?chs.map(c=>{const id=c.slug||c.id||"";return d.jsx("button",{type:"button",className:id===slug?"active":"",onClick:()=>setSlug(id),children:c.name||id},id)}):d.jsx("span",{className:"gw-account-hint",children:"No channels"})}),d.jsx("div",{className:"gw-account-card",style:{maxHeight:180,overflowY:"auto",marginBottom:8,fontSize:13},children:msgs.length?msgs.map((m,i)=>d.jsxs("div",{style:{marginBottom:8},children:[d.jsx("strong",{children:m.senderDisplayName||m.senderGrudgeId||"Player"}),d.jsx("div",{children:m.content||m.body})]},i)):d.jsx("p",{className:"gw-account-hint",children:"No messages yet"})}),d.jsxs("div",{style:{display:"flex",gap:8},children:[d.jsx("input",{className:"gw-codex-search",style:{flex:1},value:text,maxLength:2e3,placeholder:slug?"Message…":"Select channel",disabled:!slug,onChange:e=>setText(e.target.value),onKeyDown:e=>{e.key==="Enter"&&send()}}),d.jsx("button",{type:"button",className:"gw-btn",disabled:!slug||!text.trim(),onClick:send,children:"Send"})]})]})}
+function WgFleetAboutHub(){return d.jsxs("div",{className:"gw-hub-body gw-about-hub",children:[d.jsx("h2",{className:"gw-about-title",children:"Fleet ONE TRUTH"}),d.jsx("p",{children:"Warlord Genesis uses the same Railway Postgres + Grudge ID as the fleet. Characters, wallet, and Treaty are account-scoped APIs — never api.grudge-studio.com player SSOT."}),d.jsxs("div",{className:"gw-account-grid",children:[d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Auth"}),d.jsx("span",{className:"gw-account-v",children:"id.grudge-studio.com"})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Game data"}),d.jsx("span",{className:"gw-account-v",children:"Railway /api/*"})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Wallet"}),d.jsx("span",{className:"gw-account-v",children:"/api/wallet"})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Treaty"}),d.jsx("span",{className:"gw-account-v",children:"/api/treaty"})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Meshes"}),d.jsx("span",{className:"gw-account-v",children:"assets R2 · GRUDGE6"})]}),d.jsxs("div",{children:[d.jsx("span",{className:"gw-account-k",children:"Hub"}),d.jsx("span",{className:"gw-account-v",children:"grudge.studio"})]})]}),d.jsxs("p",{className:"gw-about-muted",children:["Links: ",d.jsx("a",{href:"https://grudge.studio",target:"_blank",rel:"noreferrer",children:"grudge.studio"})," · ",d.jsx("a",{href:"https://grudgewarlords.com",target:"_blank",rel:"noreferrer",children:"Warlords"})," · ",d.jsx("a",{href:"https://forge.grudge-studio.com",target:"_blank",rel:"noreferrer",children:"Forge"})," · ",d.jsx("a",{href:"https://warlord-genesis.vercel.app",target:"_blank",rel:"noreferrer",children:"Play live"})]})]})}
+`.replace(/\n/g, "");
+
+  // Inject helpers before hub tabs if missing
+  if (!js.includes("function WgWalletHub(")) {
+    const jca = js.indexOf('const JCA=[{key:"account"');
+    if (jca > 0) {
+      js = js.slice(0, jca) + HUB_PANELS + js.slice(jca);
+      console.log("[patch] injected WgWalletHub + WgTreatyHub + WgFleetAboutHub");
+    }
+  }
+
+  // Replace tab list
+  const JCA_OLD =
+    'const JCA=[{key:"account",label:"ACCOUNT",icon:Ji.fist},{key:"about",label:"ABOUT",icon:Ji.cup},{key:"codex",label:"CODEX",icon:Ji.chest},{key:"ai",label:"AI WORKER",icon:Ji.chat}]';
+  const JCA_NEW =
+    'const JCA=[{key:"account",label:"ACCOUNT",icon:Ji.fist},{key:"wallet",label:"WALLET",icon:Ji.cup},{key:"treaty",label:"TREATY",icon:Ji.chat},{key:"codex",label:"CODEX",icon:Ji.chest},{key:"ai",label:"AI",icon:Ji.lab},{key:"about",label:"FLEET",icon:Ji.hammer}]';
+  if (js.includes(JCA_OLD)) {
+    js = js.replace(JCA_OLD, JCA_NEW);
+    console.log("[patch] hub tabs → ACCOUNT WALLET TREATY CODEX AI FLEET");
+  } else if (js.includes('const JCA=[{key:"account"') && !js.includes('key:"wallet"')) {
+    js = js.replace(
+      /const JCA=\[[^\]]+\]/,
+      JCA_NEW,
+    );
+    console.log("[patch] hub tabs regex replace");
+  }
+
+  // Wire YCA panel switches
+  if (js.includes('A==="account"&&d.jsx(KCA,{}),A==="about"&&d.jsx($CA,{}),A==="codex"&&d.jsx(FCA,{}),A==="ai"&&d.jsx(mCA,{})')) {
+    js = js.replace(
+      'A==="account"&&d.jsx(KCA,{}),A==="about"&&d.jsx($CA,{}),A==="codex"&&d.jsx(FCA,{}),A==="ai"&&d.jsx(mCA,{})',
+      'A==="account"&&d.jsx(KCA,{}),A==="wallet"&&d.jsx(WgWalletHub,{}),A==="treaty"&&d.jsx(WgTreatyHub,{}),A==="codex"&&d.jsx(FCA,{}),A==="ai"&&d.jsx(mCA,{}),A==="about"&&d.jsx(WgFleetAboutHub,{})',
+    );
+    console.log("[patch] hub body routes wallet/treaty/fleet");
+  }
+
+  // Canonical account auth copy
+  if (js.includes("Sign in with Grudge ID to claim your account. Puter sign-in is also available for cloud saves.")) {
+    js = js.replace(
+      "Sign in with Grudge ID to claim your account. Puter sign-in is also available for cloud saves.",
+      "Sign in with Grudge ID (id.grudge-studio.com). Wallet + Treaty use Railway account APIs — same SSOT as Warlords.",
+    );
+  }
+  if (js.includes("Playing as guest. Sign in with Grudge ID to keep progress across devices.")) {
+    js = js.replace(
+      "Playing as guest. Sign in with Grudge ID to keep progress across devices.",
+      "Guest = local only. Grudge ID unlocks Railway characters, wallet, and Treaty across the fleet.",
+    );
+  }
+
+  // Replace legacy about if still present
+  if (js.includes("function $CA(){return d.jsxs") && js.includes("About Me — Grudge Studio")) {
+    const a0 = js.indexOf("function $CA(){return d.jsxs");
+    if (a0 >= 0) {
+      let braces = 0,
+        started = false,
+        a1 = -1;
+      for (let i = a0; i < js.length; i++) {
+        if (js[i] === "{") {
+          braces++;
+          started = true;
+        } else if (js[i] === "}") {
+          braces--;
+          if (started && braces === 0) {
+            a1 = i + 1;
+            break;
+          }
+        }
+      }
+      if (a1 > a0) {
+        js = js.slice(0, a0) + "function $CA(){return d.jsx(WgFleetAboutHub,{})}" + js.slice(a1);
+        console.log("[patch] $CA about → FleetAboutHub");
+      }
+    }
+  }
+
+  mustPatch("hub-wallet", js.includes("function WgWalletHub") || js.includes("WgWalletHub"));
+  mustPatch("hub-treaty", js.includes("function WgTreatyHub") || js.includes("WgTreatyHub"));
+  mustPatch("hub-tabs-wallet", js.includes('key:"wallet"') && js.includes('key:"treaty"'));
+}
+
 // v73: grudge6 height fit (no 100×) + always load baked Bip001 packs on hero GLB path
 {
   // Replace Y6 wherever it starts — reset/measure/multiply only (never setScalar(target/worldH) alone)

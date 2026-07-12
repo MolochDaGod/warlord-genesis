@@ -2,8 +2,8 @@
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
   "buildMode": "gw-core",
-  "bundleVersion": 20260714,
-  "bundleCacheHash": "b10",
+  "bundleVersion": 20260715,
+  "bundleCacheHash": "b12",
   "bundleFile": "assets/gw-core-20260713.js",
   "bundleChecks": [
     {
@@ -713,9 +713,9 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-12T20:22:48.212Z",
-  "bundleBytes": 4140173,
-  "bundleSha256": "9c4260d697e751ae",
+  "lastBuilt": "2026-07-12T20:48:48.772Z",
+  "bundleBytes": 4148152,
+  "bundleSha256": "be4bd9750ae5ef5f",
   "sites": [
     "https://warlord-genesis.vercel.app",
     "https://warstrat.grudge-studio.com"

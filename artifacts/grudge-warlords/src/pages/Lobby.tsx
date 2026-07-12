@@ -48,7 +48,12 @@ export function Lobby() {
   const gbux = useMeta((s) => s.gbux);
   const syncGbuxFromAccount = useMeta((s) => s.syncGbuxFromAccount);
   const [tab, setTab] = useState<LobbyTab>("warcamp");
-  const [fleet, setFleet] = useState<{ world: string | null; colyseus: string | null } | null>(null);
+  const [fleet, setFleet] = useState<{
+    world: string | null;
+    colyseus: string | null;
+    healthy: boolean;
+    hub: string;
+  } | null>(null);
 
   useEffect(() => {
     ensureWarcampReady();
@@ -59,7 +64,9 @@ export function Lobby() {
       .then((e) =>
         setFleet({
           world: e.world,
-          colyseus: e.colyseus ? `${e.colyseus.host}:${e.colyseus.port}` : null,
+          colyseus: e.colyseus ? e.colyseus.host : null,
+          healthy: e.healthy,
+          hub: e.hub,
         }),
       )
       .catch(() => setFleet(null));
@@ -128,15 +135,19 @@ export function Lobby() {
           </span>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
-            {user ? user.displayName || user.username : "SIGN IN"}
+            {user ? user.displayName || user.username : "ACCOUNT"}
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
+            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
+            WALLET
+          </button>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
+            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
+            TREATY
           </button>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
             <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />
             CODEX
-          </button>
-          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("ai")}>
-            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
-            COUNCIL
           </button>
         </div>
       </div>
@@ -256,7 +267,10 @@ export function Lobby() {
             </div>
 
             <div className="gw-deploy-summary" style={{ marginTop: "0.75rem" }}>
-              <span className="gw-deploy-head">Open World</span>
+              <span className="gw-deploy-head">Fleet · Account</span>
+              <span className="gw-deploy-hint" style={{ display: "block" }}>
+                Railway: {fleet ? (fleet.healthy ? "API healthy" : "API check failed") : "probing…"}
+              </span>
               <a
                 className="gw-deploy-v"
                 href={sailAethermoorUrl(getStudioToken())}
@@ -265,25 +279,34 @@ export function Lobby() {
               >
                 Sail Aethermoor
               </a>
-              {fleet?.world && (
-                <a className="gw-deploy-hint" href={fleet.world} target="_blank" rel="noreferrer" style={{ display: "block", marginTop: 4 }}>
-                  Live fleet: {fleet.world}
+              {fleet?.hub && (
+                <a
+                  className="gw-deploy-hint"
+                  href={fleet.hub}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ display: "block", marginTop: 4 }}
+                >
+                  Studio hub: grudge.studio
                 </a>
-              )}
-              {fleet?.colyseus && (
-                <span className="gw-deploy-hint" title="Colyseus PvP host">
-                  PvP: {fleet.colyseus}
-                </span>
               )}
               <a
                 className="gw-deploy-hint"
-                href={`${GRUDGE_FLEET_URLS.water}/barracks`}
+                href={GRUDGE_FLEET_URLS.forge}
                 target="_blank"
                 rel="noreferrer"
                 style={{ display: "block", marginTop: 4 }}
               >
-                Barracks studio (water)
+                Forge editor
               </a>
+              <button
+                type="button"
+                className="gw-deploy-hint"
+                style={{ display: "block", marginTop: 6, background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left" }}
+                onClick={() => openHub("wallet")}
+              >
+                Wallet · Treaty (hub tabs)
+              </button>
             </div>
 
             <button
