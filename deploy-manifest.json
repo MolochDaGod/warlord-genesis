@@ -1,9 +1,9 @@
 {
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
-  "bundleVersion": 87,
-  "bundleFile": "assets/index-warlord-fix3.js",
-  "bundleSource": "assets/index-warlord-fix2.js",
+  "bundleVersion": 95,
+  "bundleFile": "assets/index-warlord-fix95.js",
+  "bundleSource": "assets/index-warlord-fix3.js",
   "cssFile": "assets/index-BNWYZMT1.css",
   "routes": [
     {
@@ -69,6 +69,7 @@
     "index.html",
     "favicon.svg",
     "vercel.json",
+    "assets/index-warlord-fix95.js",
     "assets/index-warlord-fix3.js",
     "assets/index-BNWYZMT1.css",
     "textures/ground_diff.jpg",
