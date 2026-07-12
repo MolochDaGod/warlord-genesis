@@ -222,12 +222,14 @@
    * Works for *.grudge-studio.com / grudgewarlords.com with credentials.
    */
   function silentClaim() {
-    // 401 is normal when the player is not signed in on id.grudge-studio.com.
-    // Swallow non-OK quietly so the console is not flooded for guests.
-    var urls = [
-      GATEWAY + '/api/auth/session/claim',
-      '/api/auth/session/claim',
-    ];
+    var host = '';
+    try { host = String(global.location.hostname || ''); } catch (_) {}
+    // Studio cookie domains can claim from id hub. *.vercel.app cannot read those
+    // cookies (cross-site) — skip hub call to avoid noisy 401s in the console.
+    var studioHost = /(^|\.)grudge-studio\.com$|(^|\.)grudgewarlords\.com$/i.test(host);
+    var urls = studioHost
+      ? [GATEWAY + '/api/auth/session/claim', '/api/auth/session/claim']
+      : ['/api/auth/session/claim'];
     var chain = Promise.resolve(false);
     urls.forEach(function (url) {
       chain = chain.then(function (done) {
@@ -239,9 +241,9 @@
           body: '{}',
         })
           .then(function (r) {
-            // Guest / no hub cookie → 401; treat as "not claimed", not an error.
-            if (!r.ok) return null;
-            return r.json();
+            // 401 = not signed in (expected guest) — not an application failure
+            if (r.status === 401) return null;
+            return r.ok ? r.json() : null;
           })
           .then(function (data) {
             if (!data) return false;
