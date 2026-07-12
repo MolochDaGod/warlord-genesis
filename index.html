@@ -7,6 +7,7 @@
     <title>Warlord Genesis — Grudge Studio</title>
     <meta name="description" content="Warlord Genesis — three-lane RTS warcamp by Grudge Studio." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="stylesheet" crossorigin href="/assets/index-DXiNT7LA.css?h=b4" />
     <style>
       html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #080c14; color: #e8eef8; }
     </style>
@@ -26,12 +27,12 @@
         } catch (e) {}
       })();
     </script>
-    <script src="https://js.puter.com/v2/"></script>
-    <script src="/assets/grudge-game-bootstrap.js?h=b3-204f"></script>
-    <script crossorigin src="/assets/gw-core-20260712.js?h=b3-204f"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-DXiNT7LA.css?h=b3-204f" />
   </head>
   <body>
+    <!-- #root MUST exist before gw-core createRoot (classic scripts are not deferred) -->
     <div id="root"></div>
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="/assets/grudge-game-bootstrap.js?h=b4"></script>
+    <script crossorigin src="/assets/gw-core-20260712.js?h=b4"></script>
   </body>
 </html>

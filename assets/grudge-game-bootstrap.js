@@ -225,11 +225,13 @@
     var host = '';
     try { host = String(global.location.hostname || ''); } catch (_) {}
     // Studio cookie domains can claim from id hub. *.vercel.app cannot read those
-    // cookies (cross-site) — skip hub call to avoid noisy 401s in the console.
+    // cookies (cross-site) and same-origin claim has no session either — skip entirely
+    // for guests on satellite hosts to avoid console 401 noise.
     var studioHost = /(^|\.)grudge-studio\.com$|(^|\.)grudgewarlords\.com$/i.test(host);
-    var urls = studioHost
-      ? [GATEWAY + '/api/auth/session/claim', '/api/auth/session/claim']
-      : ['/api/auth/session/claim'];
+    if (!studioHost) {
+      return Promise.resolve(false);
+    }
+    var urls = [GATEWAY + '/api/auth/session/claim', '/api/auth/session/claim'];
     var chain = Promise.resolve(false);
     urls.forEach(function (url) {
       chain = chain.then(function (done) {
