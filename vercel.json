@@ -3,6 +3,18 @@
   "installCommand": "",
   "outputDirectory": ".",
   "framework": null,
+  "redirects": [
+    {
+      "source": "/assets/index-warlord-fix3.js",
+      "destination": "/assets/index-warlord-fix95.js?v=96",
+      "permanent": false
+    },
+    {
+      "source": "/index-warlord-fix3.js",
+      "destination": "/assets/index-warlord-fix95.js?v=96",
+      "permanent": false
+    }
+  ],
   "headers": [
     {
       "source": "/index.html",
@@ -27,6 +39,15 @@
         {
           "key": "Pragma",
           "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/force-reload.html",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
         }
       ]
     },
@@ -440,18 +461,6 @@
     {
       "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
       "destination": "/index.html"
-    }
-  ],
-  "redirects": [
-    {
-      "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/index-warlord-fix95.js?v=96",
-      "permanent": false
-    },
-    {
-      "source": "/index-warlord-fix3.js",
-      "destination": "/assets/index-warlord-fix95.js?v=96",
-      "permanent": false
     }
   ]
 }

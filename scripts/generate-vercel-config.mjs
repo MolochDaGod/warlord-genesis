@@ -181,7 +181,48 @@ const config = {
   installCommand: "",
   outputDirectory: ".",
   framework: null,
+  // Old combat bundle path — force every request onto the Sprite-safe build.
+  redirects: [
+    {
+      source: "/assets/index-warlord-fix3.js",
+      destination: "/assets/index-warlord-fix95.js?v=96",
+      permanent: false,
+    },
+    {
+      source: "/index-warlord-fix3.js",
+      destination: "/assets/index-warlord-fix95.js?v=96",
+      permanent: false,
+    },
+  ],
   headers: [
+    {
+      source: "/index.html",
+      headers: [
+        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        { key: "Pragma", value: "no-cache" },
+      ],
+    },
+    {
+      source: "/",
+      headers: [
+        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        { key: "Pragma", value: "no-cache" },
+      ],
+    },
+    {
+      source: "/force-reload.html",
+      headers: [
+        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+      ],
+    },
+    {
+      source: "/assets/index-warlord-(.*).js",
+      headers: [
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+        { key: "Pragma", value: "no-cache" },
+        { key: "CDN-Cache-Control", value: "no-store" },
+      ],
+    },
     {
       source: "/assets/(.*)",
       headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
@@ -203,4 +244,10 @@ const config = {
 };
 
 writeFileSync(join(ROOT, "vercel.json"), JSON.stringify(config, null, 2) + "\n");
-console.log("[vercel] wrote vercel.json with", rewrites.length, "rewrites");
+console.log(
+  "[vercel] wrote vercel.json with",
+  rewrites.length,
+  "rewrites,",
+  config.redirects.length,
+  "redirects",
+);
