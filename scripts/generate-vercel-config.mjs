@@ -181,38 +181,51 @@ const config = {
   installCommand: "",
   outputDirectory: ".",
   framework: null,
-  // Old combat bundle path — force every request onto the Sprite-safe build.
+  // Dead bundle URLs → Sprite-safe core (filename browsers have never cached).
   redirects: [
     {
       source: "/assets/index-warlord-fix3.js",
-      destination: "/assets/index-warlord-fix95.js?v=96",
-      permanent: false,
+      destination: "/assets/gw-core-20260712.js?h=a1",
+      permanent: true,
     },
     {
       source: "/index-warlord-fix3.js",
-      destination: "/assets/index-warlord-fix95.js?v=96",
-      permanent: false,
+      destination: "/assets/gw-core-20260712.js?h=a1",
+      permanent: true,
+    },
+    {
+      source: "/assets/index-warlord-fix95.js",
+      destination: "/assets/gw-core-20260712.js?h=a1",
+      permanent: true,
     },
   ],
   headers: [
     {
       source: "/index.html",
       headers: [
-        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
         { key: "Pragma", value: "no-cache" },
       ],
     },
     {
       source: "/",
       headers: [
-        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
         { key: "Pragma", value: "no-cache" },
       ],
     },
     {
       source: "/force-reload.html",
       headers: [
-        { key: "Cache-Control", value: "no-cache, no-store, must-revalidate" },
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+      ],
+    },
+    {
+      source: "/assets/gw-core-(.*).js",
+      headers: [
+        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
+        { key: "Pragma", value: "no-cache" },
+        { key: "CDN-Cache-Control", value: "no-store" },
       ],
     },
     {

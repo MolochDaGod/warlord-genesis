@@ -2,44 +2,26 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
     <meta http-equiv="Pragma" content="no-cache" />
     <meta http-equiv="Expires" content="0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Warlord Genesis — Grudge Studio</title>
-    <meta name="description" content="Warlord Genesis — three-lane RTS warcamp by Grudge Studio. Puter login, Railway saves, Grudge Engine combat." />
-    <meta name="robots" content="index, follow" />
-    <meta property="og:title" content="Warlord Genesis — Grudge Studio" />
-    <meta property="og:description" content="Enter the warcamp. Pick your champion. Siege three lanes." />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://warlord-genesis.vercel.app" />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Warlord Genesis" />
-    <meta name="twitter:description" content="Three-lane RTS warcamp — Grudge Studio" />
+    <meta name="description" content="Warlord Genesis — three-lane RTS warcamp by Grudge Studio." />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <!-- Display: Cinzel Decorative (not Cinzel). Vite build bundles via src/lib/fonts.ts. -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:ital,wght@0,400;0,500;0,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-      html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; }
-      body { background: #080c14; color: #e8eef8; }
+      html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #080c14; color: #e8eef8; }
+      body { font-family: system-ui, sans-serif; }
     </style>
-    <script src="https://js.puter.com/v2/"></script>
-    <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js"></script>
+    <!--
+      CRITICAL: Do not reference any index-warlord-fix3.js asset.
+      Sticky browser caches of that URL throw THREE.Sprite raycast errors forever.
+      This document only loads the 20260712 core build.
+    -->
     <script>
+      // Kill service workers / Cache API before the game boots
       (function () {
-        // Auto-bail out of sticky HTTP cache of the dead fix3 bundle.
-        // If this page somehow still references the old script tag, leave.
         try {
-          var scripts = document.getElementsByTagName("script");
-          for (var i = 0; i < scripts.length; i++) {
-            var s = scripts[i].getAttribute("src") || "";
-            if (s.indexOf("index-warlord-fix3.js") !== -1) {
-              location.replace("/force-reload.html");
-              return;
-            }
-          }
           if (navigator.serviceWorker) {
             navigator.serviceWorker.getRegistrations().then(function (regs) {
               regs.forEach(function (r) { r.unregister(); });
@@ -50,11 +32,13 @@
               keys.forEach(function (k) { caches.delete(k); });
             });
           }
-        } catch (e) { /* ignore */ }
+        } catch (e) {}
       })();
     </script>
-    <script type="module" crossorigin src="/assets/index-warlord-fix95.js?v=96"></script>
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?v=96">
+    <script src="https://js.puter.com/v2/"></script>
+    <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js"></script>
+    <script type="module" crossorigin src="/assets/gw-core-20260712.js?h=a1"></script>
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=a1" />
   </head>
   <body>
     <div id="root"></div>

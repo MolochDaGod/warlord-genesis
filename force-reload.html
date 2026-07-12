@@ -2,63 +2,38 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Warlords — Force Update</title>
+    <meta http-equiv="Cache-Control" content="no-store" />
+    <title>Warlords force update</title>
     <style>
-      body {
-        margin: 0;
-        min-height: 100vh;
-        display: grid;
-        place-items: center;
-        background: #080c14;
-        color: #e8eef8;
-        font-family: Inter, system-ui, sans-serif;
-      }
-      .box {
-        max-width: 28rem;
-        padding: 1.5rem 1.75rem;
-        border: 1px solid #2a3548;
-        border-radius: 12px;
-        background: #0e1522;
-        line-height: 1.5;
-      }
-      code { color: #7ee37e; }
-      .ok { color: #7ee37e; }
+      body { margin:0; min-height:100vh; display:grid; place-items:center; background:#080c14; color:#e8eef8; font-family:system-ui,sans-serif; }
+      .box { max-width:28rem; padding:1.5rem; border:1px solid #2a3548; border-radius:12px; background:#0e1522; }
+      code { color:#7ee37e; }
     </style>
   </head>
   <body>
     <div class="box">
-      <h1 style="margin: 0 0 0.5rem; font-size: 1.15rem">Clearing old Warlords cache…</h1>
-      <p id="status">Unregistering service workers and wiping site caches.</p>
-      <p style="opacity: 0.7; font-size: 0.9rem">
-        You will be sent to the game on <code>index-warlord-fix95.js</code>.
-        If the console still says <code>fix3.js?v=91</code>, use a private/incognito window.
-      </p>
+      <h1 style="font-size:1.1rem;margin:0 0 .5rem">Updating Warlords…</h1>
+      <p id="s">Clearing caches and loading <code>gw-core-20260712.js</code>.</p>
     </div>
     <script>
       (async function () {
-        var status = document.getElementById("status");
+        var s = document.getElementById("s");
         try {
           if (navigator.serviceWorker) {
             var regs = await navigator.serviceWorker.getRegistrations();
             await Promise.all(regs.map(function (r) { return r.unregister(); }));
-            status.textContent = "Service workers cleared (" + regs.length + ").";
           }
           if (window.caches && caches.keys) {
             var keys = await caches.keys();
             await Promise.all(keys.map(function (k) { return caches.delete(k); }));
-            status.textContent = "Caches cleared (" + keys.length + "). Redirecting…";
-          } else {
-            status.textContent = "Redirecting…";
           }
+          // Try to evict the dead module from HTTP cache by fetching the new core.
+          await fetch("/assets/gw-core-20260712.js?h=a1", { cache: "reload" }).catch(function () {});
+          s.textContent = "Redirecting…";
         } catch (e) {
-          status.textContent = "Partial clear; redirecting anyway…";
+          s.textContent = "Redirecting…";
         }
-        // Hard navigation with unique query so HTML cannot be reused from bfcache.
-        setTimeout(function () {
-          location.replace("/?bust=" + Date.now() + "&bundle=fix95");
-        }, 400);
+        location.replace("/?fresh=" + Date.now());
       })();
     </script>
   </body>
