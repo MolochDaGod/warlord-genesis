@@ -7,23 +7,44 @@
     {
       "source": "/index.html",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/",
       "headers": [
-        { "key": "Cache-Control", "value": "no-cache, no-store, must-revalidate" },
-        { "key": "Pragma", "value": "no-cache" }
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/assets/index-warlord-(.*).js",
       "headers": [
-        { "key": "Cache-Control", "value": "no-store, no-cache, must-revalidate, max-age=0" },
-        { "key": "Pragma", "value": "no-cache" },
-        { "key": "CDN-Cache-Control", "value": "no-store" }
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
       ]
     },
     {
@@ -419,6 +440,18 @@
     {
       "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
       "destination": "/index.html"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/assets/index-warlord-fix3.js",
+      "destination": "/assets/index-warlord-fix95.js?v=96",
+      "permanent": false
+    },
+    {
+      "source": "/index-warlord-fix3.js",
+      "destination": "/assets/index-warlord-fix95.js?v=96",
+      "permanent": false
     }
   ]
 }
