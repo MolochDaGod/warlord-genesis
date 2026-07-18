@@ -1,38 +1,72 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>Warlord Genesis — Grudge Studio</title>
-    <meta name="description" content="Warlord Genesis — three-lane RTS warcamp by Grudge Studio." />
+    <title>Warlord Genesis - Grudge Studio</title>
+    <meta name="description" content="Warlord Genesis - three-lane RTS warcamp by Grudge Studio." />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Warlord Genesis - Grudge Studio" />
+    <meta property="og:description" content="Enter the warcamp. Pick your champion. Siege three lanes." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://warlord-genesis.vercel.app" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Warlord Genesis" />
+    <meta name="twitter:description" content="Three-lane RTS warcamp - Grudge Studio" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b13" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b17" />
     <style>
-      html, body, #root { height: 100%; margin: 0; padding: 0; overflow: hidden; background: #080c14; color: #e8eef8; }
+      html, body, #root { height: 100%; margin: 0; padding: 0; }
+      body { background: #080c14; color: #e8eef8; overflow: hidden; }
+      img.gk-res-brand-icon,
+      img.gw-auth-brand-icon,
+      img.wg-pregame-brand-icon,
+      img.gk-deploy-hero-icon,
+      .gk-res-brand img,
+      .gw-auth-brand img,
+      .wg-pregame-brand img,
+      img[src*="bosslogo"] {
+        box-sizing: border-box !important;
+        width: 28px !important;
+        height: 28px !important;
+        max-width: 28px !important;
+        max-height: 28px !important;
+        min-width: 28px !important;
+        min-height: 28px !important;
+        object-fit: contain !important;
+        object-position: center !important;
+        image-rendering: auto !important;
+        flex-shrink: 0 !important;
+        display: block !important;
+        margin: 0 !important;
+        border-radius: 6px !important;
+      }
+      .wg-pregame-brand img,
+      img.wg-pregame-brand-icon {
+        width: 40px !important;
+        height: 40px !important;
+        max-width: 40px !important;
+        max-height: 40px !important;
+        min-width: 40px !important;
+        min-height: 40px !important;
+      }
+      img.gk-deploy-hero-icon {
+        width: 44px !important;
+        height: 44px !important;
+        max-width: 44px !important;
+        max-height: 44px !important;
+        min-width: 44px !important;
+        min-height: 44px !important;
+      }
     </style>
-    <script>
-      (function () {
-        try {
-          if (navigator.serviceWorker) {
-            navigator.serviceWorker.getRegistrations().then(function (regs) {
-              regs.forEach(function (r) { r.unregister(); });
-            });
-          }
-          if (window.caches && caches.keys) {
-            caches.keys().then(function (keys) {
-              keys.forEach(function (k) { caches.delete(k); });
-            });
-          }
-        } catch (e) {}
-      })();
-    </script>
   </head>
   <body>
-    <!-- #root MUST exist before gw-core createRoot (classic scripts are not deferred) -->
     <div id="root"></div>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="/assets/grudge-game-bootstrap.js?h=b13"></script>
-    <script crossorigin src="/assets/gw-core-20260713.js?h=b13"></script>
+    <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js"></script>
+    <script type="module" crossorigin src="/assets/index-warlord-fix3.js?h=b17"></script>
   </body>
 </html>
