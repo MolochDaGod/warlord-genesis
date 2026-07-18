@@ -1,8 +1,14 @@
 /**
  * Lane creep spawning — mirrors bundle _IA() + deploy laneDeployment.
  * MOBA: waves use pre-match picks on all lanes (no building skip).
+ * Jungle: forest creeps between lanes for XP + buff camps (see JungleCamps.ts).
  */
 import type { LaneDeployment, LaneId } from "../types";
+import {
+  buildJungleSpawnList,
+  type JungleSpawnRequest,
+  DEFAULT_JUNGLE_CAMPS,
+} from "./JungleCamps";
 
 export type LaneDef = {
   id: LaneId;
@@ -10,11 +16,21 @@ export type LaneDef = {
 };
 
 export type SpawnUnitFn = (
-  faction: "ally" | "enemy",
+  faction: "ally" | "enemy" | "neutral",
   unitId: string,
   x: number,
   z: number,
-  opts: { commandable?: boolean; lane: LaneId; hpMult?: number; dmgMult?: number },
+  opts: {
+    commandable?: boolean;
+    lane?: LaneId;
+    hpMult?: number;
+    dmgMult?: number;
+    /** Jungle camp id when faction is neutral. */
+    jungleCamp?: string;
+    xp?: number;
+    meshKeys?: string[];
+    heightM?: number;
+  },
 ) => void;
 
 /** Bundle: _IA — spawn ally lane creeps from deployment picks */
@@ -50,3 +66,25 @@ function buildLaneRoster(pick: LaneDeployment["lanes"][LaneId], count: number): 
   }
   return out;
 }
+
+/**
+ * Spawn forest/jungle creeps into neutral camps between lanes.
+ * Call once at battle start (or on respawn timer). Gives buff/XP when cleared.
+ */
+export function spawnJungleCamps(spawnUnit: SpawnUnitFn): JungleSpawnRequest[] {
+  const list = buildJungleSpawnList(DEFAULT_JUNGLE_CAMPS);
+  for (const s of list) {
+    spawnUnit("neutral", s.unitId, s.x, s.z, {
+      commandable: false,
+      jungleCamp: s.campId,
+      xp: s.xp,
+      meshKeys: s.meshKeys,
+      heightM: s.heightM,
+      hpMult: 1,
+      dmgMult: 1,
+    });
+  }
+  return list;
+}
+
+export { buildJungleSpawnList, DEFAULT_JUNGLE_CAMPS, campClearReward, JUNGLE_BUFFS } from "./JungleCamps";

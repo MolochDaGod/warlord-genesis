@@ -24,11 +24,47 @@ function useUnitAssets() {
 const CREEP_FIT_HEIGHT = 1.7;
 /** Lane guard GRUDGE6 heroes — Bip001 viewer bodies. */
 const GUARD_FIT_HEIGHT = 2.05;
+/** Hard clamp so cm-exported / 100× assets never blow up the scene. */
+const FIT_SCALE_MIN = 0.002;
+const FIT_SCALE_MAX = 6;
 
 const FACTION_TINT: Record<string, string> = {
   ally: "#ffffff",
   enemy: "#d65a47",
 };
+
+/**
+ * Uniformly fit a unit root to `targetHeight` world units, feet on y=0, centered XZ.
+ * Parent groups apply `def.scale` — do NOT bake def.scale here (avoids double-scale).
+ * Pre-corrects meshes that arrive 10×/100× oversized (common FBX/cm exports).
+ */
+function fitUnitRoot(root: THREE.Object3D, targetHeight: number): void {
+  root.scale.set(1, 1, 1);
+  root.position.set(0, 0, 0);
+  root.updateWorldMatrix(true, true);
+  let box = new THREE.Box3().setFromObject(root);
+  const size = new THREE.Vector3();
+  box.getSize(size);
+  let hy = Math.max(size.y, 0.001);
+  // Power-of-ten pre-scale when height is wildly off human-scale
+  if (hy > 8) {
+    const decade = Math.pow(10, Math.round(Math.log10(hy / targetHeight)));
+    if (decade > 1) {
+      root.scale.setScalar(1 / decade);
+      root.updateWorldMatrix(true, true);
+      box = new THREE.Box3().setFromObject(root);
+      box.getSize(size);
+      hy = Math.max(size.y, 0.001);
+    }
+  }
+  const s = THREE.MathUtils.clamp(targetHeight / hy, FIT_SCALE_MIN, FIT_SCALE_MAX);
+  root.scale.setScalar(s);
+  root.updateWorldMatrix(true, true);
+  box = new THREE.Box3().setFromObject(root);
+  root.position.y = -box.min.y;
+  root.position.x = -((box.min.x + box.max.x) / 2);
+  root.position.z = -((box.min.z + box.max.z) / 2);
+}
 
 function pickClip(names: string[], prefer: string[]): string | undefined {
   for (const p of prefer) {
@@ -65,10 +101,14 @@ function GLBUnit({
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
       m.castShadow = true;
+      m.receiveShadow = false;
       const bind = (mat: THREE.Material): THREE.Material => {
         const sm = (mat as THREE.MeshStandardMaterial).clone();
         sm.map = palette;
         if (sm.color) sm.color.set(tint);
+        // Keep albedo readable under bright no-fog lighting
+        sm.roughness = Math.min(0.92, sm.roughness ?? 0.75);
+        sm.metalness = Math.min(0.25, sm.metalness ?? 0.05);
         sm.needsUpdate = true;
         cloned.push(sm);
         return sm;
@@ -76,14 +116,8 @@ function GLBUnit({
       if (Array.isArray(m.material)) m.material = m.material.map(bind);
       else if (m.material) m.material = bind(m.material);
     });
-    const box = new THREE.Box3().setFromObject(r);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const s = CREEP_FIT_HEIGHT / (size.y || 1);
-    r.scale.setScalar(s);
-    r.position.y = -box.min.y * s;
-    r.position.x = -((box.min.x + box.max.x) / 2) * s;
-    r.position.z = -((box.min.z + box.max.z) / 2) * s;
+    // def.scale is applied by Units parent group — fit height only here
+    fitUnitRoot(r, CREEP_FIT_HEIGHT);
     return { root: r, mats: cloned };
   }, [scene, palette, tint]);
   const { actions, names } = useAnimations(animations, root);
@@ -121,12 +155,10 @@ function GLBUnit({
 function KayKitCreepUnit({
   url,
   unitId,
-  scale = 1,
   tint = "#ffffff",
 }: {
   url: string;
   unitId?: number;
-  scale?: number;
   tint?: string;
 }) {
   const { scene, animations } = useGLTF(url);
@@ -137,6 +169,7 @@ function KayKitCreepUnit({
       const m = o as THREE.Mesh;
       if (!m.isMesh) return;
       m.castShadow = true;
+      m.receiveShadow = false;
       if (tint !== "#ffffff") {
         const mats = Array.isArray(m.material) ? m.material : [m.material];
         for (const mat of mats) {
@@ -145,16 +178,10 @@ function KayKitCreepUnit({
         }
       }
     });
-    const box = new THREE.Box3().setFromObject(r);
-    const size = new THREE.Vector3();
-    box.getSize(size);
-    const s = (CREEP_FIT_HEIGHT / (size.y || 1)) * scale;
-    r.scale.setScalar(s);
-    r.position.y = -box.min.y * s;
-    r.position.x = -((box.min.x + box.max.x) / 2) * s;
-    r.position.z = -((box.min.z + box.max.z) / 2) * s;
+    // Parent Units group applies def.scale — never multiply it here
+    fitUnitRoot(r, CREEP_FIT_HEIGHT);
     return r;
-  }, [scene, scale, tint]);
+  }, [scene, tint]);
   const { actions, names } = useAnimations(animations, root);
   const idleName = useMemo(() => pickClip(names, ["idle", "stand", "tpose"]), [names]);
   const runName = useMemo(() => pickClip(names, ["run", "walk", "jog", "move"]), [names]);
@@ -259,7 +286,6 @@ function CreepMesh({
         <KayKitCreepUnit
           url={kaykit.skeleton_warrior ?? kaykitEnemyUrlLocal("skeleton_warrior")}
           unitId={unitId}
-          scale={def.scale}
           tint={tint}
         />
       );
@@ -268,7 +294,6 @@ function CreepMesh({
         <KayKitCreepUnit
           url={kaykit.skeleton_mage ?? kaykitEnemyUrlLocal("skeleton_mage")}
           unitId={unitId}
-          scale={def.scale * 0.95}
           tint={tint}
         />
       );
@@ -280,7 +305,6 @@ function CreepMesh({
         <KayKitCreepUnit
           url={kaykit[def.mesh] ?? kaykitMobUrlLocal(def.mesh)}
           unitId={unitId}
-          scale={def.scale}
           tint={tint}
         />
       );

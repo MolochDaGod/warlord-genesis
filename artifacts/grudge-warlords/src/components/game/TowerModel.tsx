@@ -36,14 +36,30 @@ function TowerMesh({ modelUrl, atlasUrl }: { modelUrl: string; atlasUrl: string 
       m.material = mat;
     });
 
-    const box = new THREE.Box3().setFromObject(r);
+    r.scale.set(1, 1, 1);
+    r.position.set(0, 0, 0);
+    r.updateWorldMatrix(true, true);
+    let box = new THREE.Box3().setFromObject(r);
     const size = new THREE.Vector3();
     box.getSize(size);
-    const s = TOWER_FIT_HEIGHT / Math.max(size.y, 0.001);
+    let hy = Math.max(size.y, 0.001);
+    if (hy > 40) {
+      const decade = Math.pow(10, Math.round(Math.log10(hy / TOWER_FIT_HEIGHT)));
+      if (decade > 1) {
+        r.scale.setScalar(1 / decade);
+        r.updateWorldMatrix(true, true);
+        box = new THREE.Box3().setFromObject(r);
+        box.getSize(size);
+        hy = Math.max(size.y, 0.001);
+      }
+    }
+    const s = THREE.MathUtils.clamp(TOWER_FIT_HEIGHT / hy, 0.002, 8);
     r.scale.setScalar(s);
-    r.position.y = -box.min.y * s;
-    r.position.x = -((box.min.x + box.max.x) / 2) * s;
-    r.position.z = -((box.min.z + box.max.z) / 2) * s;
+    r.updateWorldMatrix(true, true);
+    box = new THREE.Box3().setFromObject(r);
+    r.position.y = -box.min.y;
+    r.position.x = -((box.min.x + box.max.x) / 2);
+    r.position.z = -((box.min.z + box.max.z) / 2);
     return r;
   }, [scene, atlas]);
 

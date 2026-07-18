@@ -6,9 +6,10 @@ import { EM } from "../../game/entities";
 // Capped blade count for the whole field. Blades far from the camera are shrunk
 // to nothing in the vertex shader (radius cull), so density only "costs" near
 // the hero while the instance count stays fixed.
-const COUNT = 21000;
-const CULL_NEAR = 42;
-const CULL_FAR = 58;
+// 7k instances + camera cull is plenty for lane combat and far cheaper than 21k
+const COUNT = 7000;
+const CULL_NEAR = 34;
+const CULL_FAR = 48;
 const RIDGE_SKIP = 1.2; // skip terrain above this height (ridges read as bare rock)
 const BASE_CLEAR = 36; // keep grass off the Citadel footprints
 const PATH_CLEAR = 4.2; // keep grass off the bare lane / cut-through corridors

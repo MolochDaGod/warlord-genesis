@@ -6,6 +6,8 @@ import { ICONS } from "../components/ui/icons";
 import { bootEngine, getEngine } from "../engine/boot";
 import { WARLORD_MANIFEST } from "../engine/warlordManifest";
 import { DEPLOY_PATH } from "../lib/deployRoutes";
+import { isOpenLaunch } from "../lib/openLaunch";
+import { hydrateOpenLaunchWarlord } from "../lib/fleetCharacterHydrate";
 
 const PIPELINE_BADGES = [
   { id: "id", label: "Grudge ID", detail: "id.grudge-studio.com — fleet auth" },
@@ -26,6 +28,19 @@ export function Intro() {
       setBooting(false);
     });
   }, []);
+
+  // Open / charactersgrudox → Warcamp with handoff warlord (never Ruins Brawler)
+  useEffect(() => {
+    if (!isOpenLaunch()) return;
+    let cancelled = false;
+    void (async () => {
+      await hydrateOpenLaunchWarlord();
+      if (!cancelled) navigate("/lobby", { replace: true });
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [navigate]);
 
   const eng = getEngine();
 

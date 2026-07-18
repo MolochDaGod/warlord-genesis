@@ -14,13 +14,15 @@ const _emberRed = new THREE.Color("#7a1500");
 
 /** Soft radial glow sprite texture, shared by all additive VFX. */
 function makeGlowTexture(): THREE.Texture {
-  const size = 64;
+  // 48px is sharp enough for billboards and half the fill cost of 64
+  const size = 48;
   const c = document.createElement("canvas");
   c.width = c.height = size;
   const ctx = c.getContext("2d")!;
   const grd = ctx.createRadialGradient(size / 2, size / 2, 0, size / 2, size / 2, size / 2);
   grd.addColorStop(0, "rgba(255,255,255,1)");
-  grd.addColorStop(0.35, "rgba(255,255,255,0.65)");
+  grd.addColorStop(0.22, "rgba(255,255,255,0.85)");
+  grd.addColorStop(0.55, "rgba(255,255,255,0.28)");
   grd.addColorStop(1, "rgba(255,255,255,0)");
   ctx.fillStyle = grd;
   ctx.fillRect(0, 0, size, size);
@@ -208,13 +210,14 @@ function HeroVfx() {
         return o;
       });
 
-    const flashes = make(10, () => new THREE.Sprite(flashMat.clone())) as THREE.Sprite[];
-    const embers = make(80, () => new THREE.Sprite(emberMat.clone())) as THREE.Sprite[];
-    const smoke = make(48, () => new THREE.Sprite(smokeMat.clone())) as THREE.Sprite[];
-    const fires = make(140, () => new THREE.Sprite(fireMat.clone())) as THREE.Sprite[];
-    const bolts = make(24, () => new THREE.Mesh(boltGeo, boltMat.clone())) as THREE.Mesh[];
-    const slashes = make(16, () => new THREE.Mesh(slashGeo, slashMat.clone())) as THREE.Mesh[];
-    const shocks = make(16, () => new THREE.Mesh(shockGeo, shockMat.clone())) as THREE.Mesh[];
+    // Leaner pools — combat still reads hot, GPU cost stays low on mid hardware
+    const flashes = make(8, () => new THREE.Sprite(flashMat.clone())) as THREE.Sprite[];
+    const embers = make(48, () => new THREE.Sprite(emberMat.clone())) as THREE.Sprite[];
+    const smoke = make(28, () => new THREE.Sprite(smokeMat.clone())) as THREE.Sprite[];
+    const fires = make(64, () => new THREE.Sprite(fireMat.clone())) as THREE.Sprite[];
+    const bolts = make(16, () => new THREE.Mesh(boltGeo, boltMat.clone())) as THREE.Mesh[];
+    const slashes = make(12, () => new THREE.Mesh(slashGeo, slashMat.clone())) as THREE.Mesh[];
+    const shocks = make(10, () => new THREE.Mesh(shockGeo, shockMat.clone())) as THREE.Mesh[];
 
     return {
       group,
@@ -331,7 +334,7 @@ function HeroVfx() {
     // crown. Emission is rate-limited via dt so it stays frame-independent.
     for (const s of EM.structures) {
       if (!s.alive || s.hp / s.maxHp >= 0.35) continue;
-      const rate = s.kind === "core" ? 26 : s.kind === "tower" ? 16 : 8;
+      const rate = s.kind === "core" ? 14 : s.kind === "tower" ? 9 : 5;
       if (Math.random() < dt * rate) {
         const crown = s.kind === "core" ? 3.6 : s.kind === "tower" ? 3.0 : 1.2;
         const spread = s.kind === "core" ? 2.0 : s.kind === "tower" ? 1.4 : 0.8;

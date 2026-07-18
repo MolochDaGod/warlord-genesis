@@ -144,6 +144,16 @@ export const ECONOMY = {
   maxSummonsPerPlayer: 14,
 };
 
+/** Clash Royale–style elixir economy (royale GameMode). */
+export const ROYALE_ECONOMY = {
+  maxElixir: 10,
+  startElixir: 5,
+  regenPerSec: 1 / 2.8,
+  doubleElixirAtSec: 120,
+  /** Card costs by unit key. */
+  cardCost: { footman: 3, archer: 3, knight: 5 } as Record<"footman" | "archer" | "knight", number>,
+};
+
 /** Fixed simulation timestep. Server ticks at this rate; clients predict at it. */
 export const TICK_HZ = 20;
 export const DT = 1 / TICK_HZ;

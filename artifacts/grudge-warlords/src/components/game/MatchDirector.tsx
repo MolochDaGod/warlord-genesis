@@ -76,6 +76,11 @@ export function MatchDirector() {
     const m = EM.match;
     m.clock += dt;
 
+    // Clash Royale–style elixir regen (royale map only).
+    if (g.mapSize === "royale") {
+      g.tickRoyale(dt);
+    }
+
     // Passive income (whole credits) — player economy, unaffected by difficulty.
     // Comeback scales the trailing player's income.
     incomeAcc.current += ECONOMY.incomePerSec * dt * m.comeback.ally;

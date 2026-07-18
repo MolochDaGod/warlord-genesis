@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
@@ -16,8 +16,12 @@
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b17" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=EB+Garamond:wght@400;500&display=swap"
+      rel="stylesheet"
+    />
+    <!-- h=b18: ObjectStore weapons/armor fetch base → /api/v1 -->
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b18" />
     <style>
       html, body, #root { height: 100%; margin: 0; padding: 0; }
       body { background: #080c14; color: #e8eef8; overflow: hidden; }
@@ -67,6 +71,7 @@
     <div id="root"></div>
     <script src="https://js.puter.com/v2/"></script>
     <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js"></script>
-    <script type="module" crossorigin src="/assets/index-warlord-fix3.js?h=b17"></script>
+    <!-- Production warcamp client — ObjectStore catalog base includes /api/v1 -->
+    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b18"></script>
   </body>
 </html>

@@ -40,6 +40,7 @@ export interface ProductionSpecs {
   ranger: RangerSpec;
 }
 
+/** Default production — free base lines; players specialize in lobby / match. */
 export const DEFAULT_PRODUCTION_SPECS: ProductionSpecs = {
   warrior: "base",
   worge: "base",

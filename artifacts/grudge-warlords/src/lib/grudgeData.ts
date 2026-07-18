@@ -1,7 +1,12 @@
-// Live game data from the Grudge Studio ObjectStore (public GitHub Pages, CORS *).
+// Live game data from the Grudge Studio ObjectStore catalog.
 // Cached in localStorage for 24h per the ObjectStore caching guidance.
+// SSOT path is /api/v1/*.json on the Worker (NOT root /weapons.json).
 
-const DATA_BASE = "https://molochdagod.github.io/ObjectStore/api/v1";
+const DATA_BASES = [
+  "https://objectstore.grudge-studio.com/api/v1",
+  "https://info.grudge-studio.com/api/v1",
+  "https://molochdagod.github.io/ObjectStore/api/v1",
+] as const;
 const CACHE_TTL_MS = 24 * 60 * 60 * 1000;
 const CACHE_PREFIX = "gw_codex_";
 
@@ -124,12 +129,23 @@ function normalize(key: DatasetKey, raw: Record<string, unknown>): GrudgeDataset
 export async function loadDataset(key: DatasetKey): Promise<GrudgeDataset> {
   const cached = readCache(key);
   if (cached) return cached;
-  const res = await fetch(`${DATA_BASE}/${key}.json`);
-  if (!res.ok) throw new Error(`Failed to load ${key} (${res.status})`);
-  const raw = (await res.json()) as Record<string, unknown>;
-  const data = normalize(key, raw);
-  writeCache(key, data);
-  return data;
+  let lastErr: Error | null = null;
+  for (const base of DATA_BASES) {
+    try {
+      const res = await fetch(`${base}/${key}.json`, { credentials: "omit" });
+      if (!res.ok) {
+        lastErr = new Error(`Failed to load ${key} from ${base} (${res.status})`);
+        continue;
+      }
+      const raw = (await res.json()) as Record<string, unknown>;
+      const data = normalize(key, raw);
+      writeCache(key, data);
+      return data;
+    } catch (e) {
+      lastErr = e instanceof Error ? e : new Error(String(e));
+    }
+  }
+  throw lastErr ?? new Error(`Failed to load ${key}`);
 }
 
 export function flattenItems(data: GrudgeDataset): GrudgeItem[] {

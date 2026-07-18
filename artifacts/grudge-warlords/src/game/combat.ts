@@ -32,10 +32,16 @@ export function isAttackable(s: StructureEntity): boolean {
   return true;
 }
 
-/** True once any of this faction's lanes has both its towers razed. */
+/**
+ * True once any of this faction's lanes has both its towers razed.
+ * Lanes with no towers at all (e.g. royale mid) are ignored so the king/core
+ * is not open at match start.
+ */
 export function laneBroken(faction: Faction): boolean {
   if (faction !== "ally" && faction !== "enemy") return false;
   for (const gate of EM.match.gate[faction]) {
+    // Royale / incomplete ladders: only count lanes that fielded at least one tower.
+    if (!gate.outer && !gate.inner) continue;
     const outerDead = !gate.outer || !gate.outer.alive;
     const innerDead = !gate.inner || !gate.inner.alive;
     if (outerDead && innerDead) return true;

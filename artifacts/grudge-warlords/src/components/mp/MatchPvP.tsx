@@ -71,9 +71,6 @@ export function MatchPvP({ match }: { match: MatchInfo }) {
   const map = useMemo(() => generateMap(match.seed, match.mode), [match.seed, match.mode]);
   // Fallback camera anchor: our own core, so the view is sensible before the hero spawns.
   const fallbackZ = map.cores[match.team].z;
-  const fogNear = Math.max(80, match.mapSize.l * 0.32);
-  const fogFar = Math.max(220, match.mapSize.l * 0.88);
-
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
@@ -99,9 +96,9 @@ export function MatchPvP({ match }: { match: MatchInfo }) {
     >
       <AdaptiveDpr pixelated />
       <color attach="background" args={["#10141c"]} />
-      <fog attach="fog" args={["#10141c", fogNear, fogFar]} />
-      <hemisphereLight args={["#ccd6ff", "#26301d", 0.8]} />
-      <directionalLight position={[40, 70, 20]} intensity={1.4} castShadow />
+      {/* No scene fog — full map visibility (no FOW wash) */}
+      <hemisphereLight args={["#ccd6ff", "#26301d", 0.85]} />
+      <directionalLight position={[40, 70, 20]} intensity={1.55} castShadow shadow-mapSize={[1024, 1024]} />
       <Terrain map={map} />
       <Entities map={map} />
       <GroundPicker size={match.mapSize} />

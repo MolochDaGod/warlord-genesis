@@ -27,14 +27,31 @@ function BuildingModel({ url }: { url: string }) {
         m.receiveShadow = true;
       }
     });
-    const box = new THREE.Box3().setFromObject(r);
+    r.scale.set(1, 1, 1);
+    r.position.set(0, 0, 0);
+    r.updateWorldMatrix(true, true);
+    let box = new THREE.Box3().setFromObject(r);
     const size = new THREE.Vector3();
     box.getSize(size);
-    const s = BUILDING_FIT / Math.max(size.x, size.y, size.z, 0.001);
+    let maxDim = Math.max(size.x, size.y, size.z, 0.001);
+    // Pre-correct 10×/100× oversized building GLBs (cm exports)
+    if (maxDim > 80) {
+      const decade = Math.pow(10, Math.round(Math.log10(maxDim / BUILDING_FIT)));
+      if (decade > 1) {
+        r.scale.setScalar(1 / decade);
+        r.updateWorldMatrix(true, true);
+        box = new THREE.Box3().setFromObject(r);
+        box.getSize(size);
+        maxDim = Math.max(size.x, size.y, size.z, 0.001);
+      }
+    }
+    const s = THREE.MathUtils.clamp(BUILDING_FIT / maxDim, 0.002, 8);
     r.scale.setScalar(s);
-    r.position.y = -box.min.y * s;
-    r.position.x = -((box.min.x + box.max.x) / 2) * s;
-    r.position.z = -((box.min.z + box.max.z) / 2) * s;
+    r.updateWorldMatrix(true, true);
+    box = new THREE.Box3().setFromObject(r);
+    r.position.y = -box.min.y;
+    r.position.x = -((box.min.x + box.max.x) / 2);
+    r.position.z = -((box.min.z + box.max.z) / 2);
     return r;
   }, [scene]);
   return <primitive object={obj} />;

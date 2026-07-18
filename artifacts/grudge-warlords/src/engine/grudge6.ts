@@ -114,30 +114,44 @@ export function unarmedPresetFor(raceId: PrefabRaceId): GearPreset | undefined {
   return presets.find((p) => p.id === "unarmed");
 }
 
+/** Class → production tier (barracks / archery ladder alignment). */
+function classTier(classId: ClassId): 1 | 2 | 3 {
+  if (classId === "warrior" || classId === "ranger") return 1;
+  if (classId === "worge") return 2;
+  return 3; // mage
+}
+
 function unitDefFromPrefab(p: PrefabCharacter, factionColor: string): UnitDef {
   const preset = gearPresetFor(p.raceId, p.classId);
   const ranged = p.classId === "mage" || p.classId === "ranger";
   const mesh = factionMobMesh(p.faction, ranged);
-  const hp = Math.round(p.stats.hp * 0.55);
-  const dmg = Math.round(p.stats.atk * (ranged ? 0.85 : 1));
-  const speed = 4.2 + p.stats.spd / 40;
+  // Tuned for Open + warcamp: prefab stats → lane-unit budget (readable HP/DPS)
+  const tier = classTier(p.classId);
+  const tierHp = 1 + (tier - 1) * 0.12;
+  const tierDmg = 1 + (tier - 1) * 0.1;
+  const hp = Math.round(p.stats.hp * 0.58 * tierHp);
+  const dmg = Math.round(p.stats.atk * (ranged ? 0.88 : 1.05) * tierDmg);
+  const speed = 4.4 + p.stats.spd / 38;
+  const raceName = p.raceId.charAt(0).toUpperCase() + p.raceId.slice(1);
+  const className = CLASS_BY_ID[p.classId]?.name ?? p.classId;
   return {
     id: unitTypeId(p.raceId, p.classId),
-    name: `${p.name.split(" ")[0]} ${CLASS_BY_ID[p.classId]?.name ?? p.classId}`,
+    name: `${raceName} ${className}`,
+    tier,
     line: ranged ? "ranged" : "melee",
     hp,
     speed,
     damage: dmg,
-    attackRange: ranged ? 14 + (p.classId === "mage" ? 2 : 0) : 2.2 + (p.classId === "worge" ? 0.4 : 0),
-    attackCooldown: ranged ? 1.1 : p.classId === "worge" ? 0.95 : 0.85,
-    aggroRange: ranged ? 16 : 9,
+    attackRange: ranged ? 14 + (p.classId === "mage" ? 2.5 : 0) : 2.25 + (p.classId === "worge" ? 0.45 : 0),
+    attackCooldown: ranged ? (p.classId === "mage" ? 1.15 : 1.05) : p.classId === "worge" ? 0.92 : 0.82,
+    aggroRange: ranged ? 17 : 9.5,
     ranged,
-    radius: p.classId === "worge" ? 0.58 : 0.52,
-    scale: p.classId === "worge" ? 1.05 : 0.95,
+    radius: p.classId === "worge" ? 0.6 : 0.52,
+    scale: p.classId === "worge" ? 1.08 : p.raceId === "dwarf" ? 0.88 : 0.96,
     color: preset?.color ?? factionColor,
     accent: factionColor,
     mesh,
-    reward: ranged ? 18 : 14,
+    reward: ranged ? 18 + tier * 2 : 14 + tier * 2,
     grudge: {
       raceId: p.raceId,
       classId: p.classId,

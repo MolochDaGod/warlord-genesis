@@ -24,6 +24,8 @@ export const MAP_SIZES: Record<GameMode, MapSize> = {
   "1v1": { w: 108, l: 168 },
   "2v2": { w: 144, l: 204 },
   "3v3": { w: 180, l: 252 },
+  /** Clash-style Arena 3 proportions (king + 2 princess). */
+  royale: { w: 96, l: 144 },
 };
 
 const CELL = 1.5;
@@ -116,12 +118,18 @@ export function generateMap(seed: number, mode: GameMode): SimMap {
     1: { x: 0, z: coreZ - 5 },
   };
 
-  // One tower per lane per team, set out toward the centre from the core.
+  // Towers: MOBA = one per lane; Royale = princess towers on left+right only.
   const towerZ = l / 2 - 30;
-  const towers: Record<Team, Placement[]> = {
-    0: laneX.map((x) => ({ x, z: -towerZ })),
-    1: laneX.map((x) => ({ x, z: towerZ })),
-  };
+  const towers: Record<Team, Placement[]> =
+    mode === "royale"
+      ? {
+          0: [laneX[0], laneX[2]].map((x) => ({ x: x!, z: -towerZ })),
+          1: [laneX[0], laneX[2]].map((x) => ({ x: x!, z: towerZ })),
+        }
+      : {
+          0: laneX.map((x) => ({ x, z: -towerZ })),
+          1: laneX.map((x) => ({ x, z: towerZ })),
+        };
 
   // Walk grid: whole field walkable except a border ring.
   const grid = new WalkGrid({ minX, minZ, width: w, length: l, cell: CELL });

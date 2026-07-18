@@ -3,6 +3,7 @@ import { PREFABS, FACTIONS } from "@workspace/game-content";
 import { applyCanonicalLoadoutToRoster, useMeta } from "../../game/metaProgression";
 import { useRoster } from "../../game/roster";
 import { CharacterCard } from "./CharacterCard";
+import { isOpenLaunch } from "../../lib/openLaunch";
 import "./collection.css";
 
 export function StarterPick() {
@@ -24,7 +25,8 @@ export function StarterPick() {
     [],
   );
 
-  if (onboardingDone) return null;
+  // Open / charactersgrudox already chose the hero — never block with starter overlay
+  if (onboardingDone || isOpenLaunch()) return null;
 
   const pick = (prefabId: string) => {
     const p = PREFABS.find((x) => x.id === prefabId);

@@ -108,6 +108,20 @@ export function CommandLayer() {
     };
 
     const onDown = (e: PointerEvent) => {
+      // Clash Royale: left-click deploys selected card on your half (any mode).
+      if (e.button === 0) {
+        const g = useGame.getState();
+        if (g.mapSize === "royale" && g.royaleSelected != null && g.phase === "battle") {
+          const gpt = groundAt(e);
+          if (gpt) {
+            g.deployRoyaleAt(gpt.x, gpt.z);
+            e.preventDefault();
+            e.stopPropagation();
+            return;
+          }
+        }
+      }
+
       if (useCommand.getState().mode !== "command") return;
       const cmd = useCommand.getState();
 

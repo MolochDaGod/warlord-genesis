@@ -24,7 +24,18 @@ import * as THREE from "three";
 import { NEUTRAL_CAMPS, TREE, type CampTier, type Faction } from "./config";
 import { WalkGrid, FlowField } from "./pathfind";
 
-export type MapSize = "standard" | "large";
+/**
+ * Battlefield size presets.
+ * - skirmish — Open.grudge-studio.com default: compact 3-lane end-to-end, fast load
+ * - standard — full mid-size parallel lanes
+ * - large — classic corner MOBA with jungle cut-throughs
+ */
+/**
+ * Battlefield size presets.
+ * - skirmish / standard / large — classic 3-lane MOBA
+ * - royale — Clash Royale–style Arena 3 (king + 2 princess towers, card deploy half)
+ */
+export type MapSize = "skirmish" | "standard" | "large" | "royale";
 
 /** A scattered destructible tree: world XZ plus per-instance scale + yaw. */
 export interface TreeSpot {
@@ -53,18 +64,30 @@ export interface MapSizeDef {
    * Top / diagonal-Mid / Bottom lanes).
    */
   corner: boolean;
+  /** Fewer jungle camps on compact maps (Open play). */
+  campScale?: number;
 }
 
 /** Linear scale vs the original 80×130 / 200×325 MOBA sizes (3× = Dota-scale jungle). */
 export const WORLD_SCALE = 3;
 
 export const MAP_SIZES: Record<MapSize, MapSizeDef> = {
+  /** Compact Open entry — three parallel lanes, quick to load on web. */
+  skirmish: {
+    label: "Skirmish",
+    width: 52 * WORLD_SCALE,
+    length: 88 * WORLD_SCALE,
+    cutthroughPairs: 0,
+    corner: false,
+    campScale: 0.55,
+  },
   standard: {
     label: "Standard",
     width: 80 * WORLD_SCALE,
     length: 130 * WORLD_SCALE,
     cutthroughPairs: 0,
     corner: false,
+    campScale: 1,
   },
   large: {
     label: "Large",
@@ -72,10 +95,29 @@ export const MAP_SIZES: Record<MapSize, MapSizeDef> = {
     length: 325 * WORLD_SCALE,
     cutthroughPairs: 5,
     corner: true,
+    campScale: 1.15,
+  },
+  /**
+   * Clash Royale arena proportions — shorter dual-push field.
+   * Visual: `models/maps/arena3.glb`. Towers: king (core) + 2 princess (outer L/R).
+   */
+  royale: {
+    label: "Royale Arena",
+    width: 40 * WORLD_SCALE,
+    length: 68 * WORLD_SCALE,
+    cutthroughPairs: 0,
+    corner: false,
+    campScale: 0,
   },
 };
 
-export const MAP_SIZE_ORDER: MapSize[] = ["standard", "large"];
+export const MAP_SIZE_ORDER: MapSize[] = ["royale", "skirmish", "standard", "large"];
+
+/** Arena 3 GLB (Clash-style level art). */
+export const ARENA3_MAP_PATHS = [
+  "models/maps/arena3.glb",
+  "/models/maps/arena3.glb",
+] as const;
 
 // Terrain shaping constants (world units). Spatial offsets scale with WORLD_SCALE;
 // lane corridor width stays readable at MOBA unit scale.
@@ -550,8 +592,20 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   // Two towers per lane per faction form the objective ladder: an OUTER tower
   // set forward toward mid and an INNER tower guarding the core. The inner tower
   // (and the core) only become attackable once the outer ahead of it falls.
+  //
+  // Royale (Clash-style): only princess towers (outer) on left + right lanes —
+  // king tower is the core. No mid-lane towers, no inner ladder.
   const towers: TowerPlacement[] = [];
-  if (corner) {
+  if (size === "royale") {
+    const outerZ = coreZ * 0.42;
+    for (const lane of laneDefs) {
+      if (lane.id === 1) continue; // mid has no princess tower
+      const ao = sampleAtZ(lane.pts2, outerZ);
+      const eo = sampleAtZ(lane.pts2, -outerZ);
+      towers.push({ faction: "ally", lane: lane.id, tier: "outer", x: ao[0], z: ao[1] });
+      towers.push({ faction: "enemy", lane: lane.id, tier: "outer", x: eo[0], z: eo[1] });
+    }
+  } else if (corner) {
     // Place by arc-length fraction so the ladder follows each lane's bends and
     // stays symmetric around mid (0.5) regardless of lane shape.
     for (const lane of laneDefs) {
@@ -703,12 +757,17 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   const camps: CampPlacement[] = [];
   {
     const crnd = mulberry32((seed ^ 0xc4a9e5) >>> 0);
-    const target = large ? NEUTRAL_CAMPS.countLarge : NEUTRAL_CAMPS.countStandard;
+    const campScale = def.campScale ?? (large ? 1.15 : 1);
+    const baseTarget = large ? NEUTRAL_CAMPS.countLarge : NEUTRAL_CAMPS.countStandard;
+    // skirmish / Open: fewer camps for faster matches
+    const target = Math.max(3, Math.round(baseTarget * campScale));
     const tierPlan: CampTier[] = large
       ? [1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3]
-      : [1, 1, 1, 1, 2, 2, 2, 3, 3];
-    const campMinCore = 26 * WORLD_SCALE;
-    const campMinGap = large ? 22 * WORLD_SCALE : 16 * WORLD_SCALE;
+      : size === "skirmish"
+        ? [1, 1, 2, 2, 3]
+        : [1, 1, 1, 1, 2, 2, 2, 3, 3];
+    const campMinCore = (size === "skirmish" ? 18 : 26) * WORLD_SCALE;
+    const campMinGap = large ? 22 * WORLD_SCALE : size === "skirmish" ? 12 * WORLD_SCALE : 16 * WORLD_SCALE;
 
     const tryPlaceCamp = (x: number, z: number, tier: CampTier): boolean => {
       if (camps.length >= target) return false;

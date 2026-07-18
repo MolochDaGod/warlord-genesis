@@ -211,14 +211,32 @@ export async function prepareKayKitGuard(
     }
   });
 
-  const box = new THREE.Box3().setFromObject(root);
+  root.scale.set(1, 1, 1);
+  root.position.set(0, 0, 0);
+  root.updateWorldMatrix(true, true);
+  let box = new THREE.Box3().setFromObject(root);
   const size = new THREE.Vector3();
   box.getSize(size);
-  const s = (opts.fitHeight / (size.y || 1)) * (opts.scale ?? 1);
+  let hy = Math.max(size.y, 0.001);
+  if (hy > 8) {
+    const decade = Math.pow(10, Math.round(Math.log10(hy / opts.fitHeight)));
+    if (decade > 1) {
+      root.scale.setScalar(1 / decade);
+      root.updateWorldMatrix(true, true);
+      box = new THREE.Box3().setFromObject(root);
+      box.getSize(size);
+      hy = Math.max(size.y, 0.001);
+    }
+  }
+  // Parent may apply def.scale — keep mesh fit independent of opts.scale when >1×
+  const extra = opts.scale && opts.scale !== 1 ? opts.scale : 1;
+  const s = Math.min(Math.max((opts.fitHeight / hy) * extra, 0.002), 6);
   root.scale.setScalar(s);
-  root.position.y = -box.min.y * s;
-  root.position.x = -((box.min.x + box.max.x) / 2) * s;
-  root.position.z = -((box.min.z + box.max.z) / 2) * s;
+  root.updateWorldMatrix(true, true);
+  box = new THREE.Box3().setFromObject(root);
+  root.position.y = -box.min.y;
+  root.position.x = -((box.min.x + box.max.x) / 2);
+  root.position.z = -((box.min.z + box.max.z) / 2);
 
   if (opts.weapon !== "none") {
     const handSide = opts.weapon === "bow" ? "left" : "right";

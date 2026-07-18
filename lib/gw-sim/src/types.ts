@@ -4,7 +4,7 @@
 import type { StructKey, UnitKey } from "./config";
 
 export type Team = 0 | 1;
-export type GameMode = "1v1" | "2v2" | "3v3";
+export type GameMode = "1v1" | "2v2" | "3v3" | "royale";
 
 export type MatchPhase = "playing" | "ended";
 

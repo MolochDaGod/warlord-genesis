@@ -611,6 +611,7 @@ export const NEUTRAL_CAMPS = {
   /** Seconds before a cleared camp repopulates. */
   respawnDelay: 120,
   /** Camps placed per map size (Dota-scale jungle density on 3× maps). */
+  /** Skirmish (Open default) uses countStandard × campScale ≈ 5. */
   countStandard: 9,
   countLarge: 15,
   tiers: {

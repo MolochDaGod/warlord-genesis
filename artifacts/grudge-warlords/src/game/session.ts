@@ -63,9 +63,19 @@ export const useSession = create<SessionState>((set) => ({
       if (user) {
         await hydrateMetaFromServer();
         await hydrateRosterFromFleet();
+      } else {
+        // Open / charactersgrudox handoff: still hydrate warlord from race/base
+        // even when the player has no account cookie on this origin.
+        await hydrateRosterFromFleet();
       }
       set({ user, loading: false });
     } catch {
+      // Last chance: Open handoff race/base still playable offline
+      try {
+        await hydrateRosterFromFleet();
+      } catch {
+        /* */
+      }
       set({ user: null, loading: false });
     }
   },
