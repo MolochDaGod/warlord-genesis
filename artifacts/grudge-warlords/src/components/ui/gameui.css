@@ -2917,3 +2917,112 @@ body{
 .gw-btn, .gw-back, .hud-action-btn, .studio-tab{
   touch-action: manipulation;
 }
+
+/* === WARCAMP PLAY POLISH (2026-07-18) — restore game appeal after CSS dump strip === */
+:root{
+  --gw-bg:#080c14;
+  --gw-panel:#101826e6;
+  --gw-panel-solid:#121a28;
+  --gw-gold:#d4a84b;
+  --gw-gold-dim:#a8843a;
+  --gw-text:#e8eef8;
+  --gw-muted:#8fa3c4;
+  --gw-line:rgba(120,150,200,.22);
+  --gw-ok:#9dffd8;
+  --gw-danger:#ff6b6b;
+  --background:#0a0e16;
+  --foreground:#e8eef8;
+  --card:#121a28;
+  --card-foreground:#e8eef8;
+  --primary:#d4a84b;
+  --primary-foreground:#120e08;
+  --muted:#1a2233;
+  --muted-foreground:#8fa3c4;
+  --accent:#284066;
+  --accent-foreground:#e8eef8;
+  --border:#2a3548;
+  --ring:#d4a84b;
+  --destructive:#c0392b;
+  --destructive-foreground:#fff;
+  --input:#1a2233;
+  --popover:#121a28;
+  --popover-foreground:#e8eef8;
+}
+html,body,#root{height:100%;margin:0;background:var(--gw-bg);color:var(--gw-text)}
+.gw-root{min-height:100dvh;background:radial-gradient(120% 80% at 50% 0%,#1a2438 0%,#080c14 55%,#05070c 100%);color:var(--gw-text);font-family:Inter,system-ui,sans-serif}
+/* Full-viewport canvas in battle */
+.gw-play, .gw-play canvas, .gw-screen.gw-play{position:relative;width:100%;height:100dvh;overflow:hidden}
+.gw-play canvas{display:block!important;width:100%!important;height:100%!important}
+/* Intro — cinematic, simple */
+.gw-intro{display:flex;align-items:center;justify-content:center;min-height:100dvh;padding:clamp(16px,4vw,48px);position:relative;overflow:auto}
+.gw-intro-bg{position:absolute;inset:0;background:
+  radial-gradient(80% 50% at 50% 20%,rgba(212,168,75,.14),transparent 60%),
+  radial-gradient(60% 40% at 80% 80%,rgba(90,160,255,.08),transparent 50%),
+  linear-gradient(180deg,#0e1420 0%,#080c14 100%);
+  pointer-events:none}
+.gw-intro-inner{position:relative;z-index:1;max-width:720px;width:100%;text-align:center;display:flex;flex-direction:column;align-items:center;gap:14px}
+.gw-brand-title{font-family:"Cinzel Decorative",Cinzel,serif;font-size:clamp(2rem,6vw,3.4rem);letter-spacing:.08em;margin:0;color:#f1e6cf;text-shadow:0 4px 28px rgba(0,0,0,.55)}
+.gw-brand-title span{color:var(--gw-gold)}
+.gw-intro-tagline{color:var(--gw-muted);max-width:36rem;line-height:1.55;margin:0 auto;font-size:clamp(.95rem,2vw,1.05rem)}
+.gw-intro-cta{min-width:min(320px,90vw);margin-top:8px;font-size:1rem;letter-spacing:.14em}
+.gw-intro-cta-secondary{min-width:min(280px,86vw);opacity:.9}
+.gw-intro-badges{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:4px}
+.gw-intro-badge{font-size:10px;letter-spacing:.12em;text-transform:uppercase;padding:5px 10px;border-radius:999px;border:1px solid var(--gw-line);background:rgba(12,18,28,.75);color:var(--gw-muted)}
+.gw-intro-stats{display:none} /* declutter title — details live in warcamp */
+/* Buttons */
+.gw-btn{appearance:none;border:1px solid rgba(212,168,75,.45);background:linear-gradient(180deg,#3a2e18,#241c10);color:#f3e6c4;padding:12px 20px;border-radius:10px;font-weight:700;letter-spacing:.12em;cursor:pointer;transition:transform .12s ease,border-color .12s ease,box-shadow .12s ease;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.gw-btn:hover{transform:translateY(-1px);border-color:var(--gw-gold);box-shadow:0 10px 28px rgba(212,168,75,.18)}
+.gw-btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.gw-btn-ghost{background:rgba(16,24,38,.75);border-color:var(--gw-line);color:var(--gw-text);box-shadow:none}
+.gw-btn-ghost:hover{border-color:rgba(120,150,200,.45);background:rgba(24,34,52,.9)}
+.gw-btn-mini{padding:7px 12px;font-size:11px;letter-spacing:.1em}
+.gw-btn-icon{width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain!important;image-rendering:auto!important;vertical-align:middle;margin-right:6px}
+/* Lobby — readable warcamp */
+.gw-lobby,.gw-lobby-v2{display:flex;flex-direction:column;min-height:100dvh;max-height:100dvh;overflow:hidden;background:linear-gradient(180deg,#0c121c 0%,#080c14 100%)}
+.gw-lobby-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px clamp(12px,3vw,24px);border-bottom:1px solid var(--gw-line);background:rgba(6,9,14,.92);position:sticky;top:0;z-index:8}
+.gw-lobby-title{font-family:Cinzel,serif;letter-spacing:.18em;text-transform:uppercase;color:#f0e6d0;font-size:15px}
+.gw-lobby-tagline{color:var(--gw-muted);font-size:12px}
+.gw-lobby-top-actions{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;align-items:center}
+.gw-lobby-tabs{display:flex;gap:6px;padding:10px clamp(12px,3vw,24px) 0}
+.gw-lobby-tab{flex:0 0 auto;padding:8px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;background:transparent;color:var(--gw-muted);cursor:pointer;font-weight:700;letter-spacing:.08em;font-size:12px}
+.gw-lobby-tab.is-active{color:#f0e6d0;border-color:var(--gw-line);border-bottom-color:transparent;background:var(--gw-panel-solid)}
+.gw-lobby-grid,.gw-lobby-grid-v2{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,360px);gap:14px;padding:12px clamp(12px,3vw,24px) 18px;overflow:hidden}
+.gw-lobby-main{min-width:0;overflow:auto;border:1px solid var(--gw-line);border-radius:14px;background:var(--gw-panel);padding:12px}
+.gw-lobby-deploy{min-width:0;overflow:auto}
+.gw-deploy-panel{border:1px solid rgba(212,168,75,.28);border-radius:14px;background:linear-gradient(180deg,#16120c,#10141c);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.gw-deploy-head{font-family:Cinzel,serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gw-gold);font-size:12px}
+.gw-deploy-summary{display:flex;flex-direction:column;gap:6px}
+.gw-deploy-row{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.gw-deploy-k{color:var(--gw-muted)}
+.gw-deploy-v{color:var(--gw-text);font-weight:600;text-align:right}
+.gw-lobby-march,.gw-deploy-panel .gw-btn:not(.gw-btn-ghost){width:100%;margin-top:4px}
+.gw-mapsize-toggle{display:flex;flex-wrap:wrap;gap:6px}
+.gw-back{background:transparent;border:0;color:var(--gw-muted);cursor:pointer;font-weight:700;letter-spacing:.1em}
+.gw-back:hover{color:var(--gw-gold)}
+/* Hide noisy fleet diagnostics by default on warcamp side */
+.gw-deploy-panel .gw-deploy-summary + .gw-mapsize + .gw-mapsize + .gw-prematch-lane + .gw-mapsize + .gw-deploy-summary{display:none}
+@media(max-width:960px){
+  .gw-lobby-grid,.gw-lobby-grid-v2{grid-template-columns:1fr;overflow:auto}
+  .gw-lobby-deploy{order: -1}
+}
+/* Character select stage */
+.gw-cs-stage-name,.gw-cs-hero-name{color:#f1e6cf!important}
+.gw-cs-preview,.gw-warlord-preview{border-color:rgba(212,168,75,.28)!important;background:radial-gradient(120% 80% at 50% 10%,rgba(80,50,30,.35),#120e0a 70%)!important}
+/* HUD / play chrome */
+.gw-hud{pointer-events:none}
+.gw-hud *{pointer-events:auto}
+/* Brand logos — never full-bleed */
+img[src*="bosslogo"],.gk-res-brand-icon,.gw-auth-brand-icon,.wg-pregame-brand-icon,.gk-deploy-hero-icon{
+  width:28px!important;height:28px!important;max-width:28px!important;max-height:28px!important;
+  object-fit:contain!important;image-rendering:auto!important;border-radius:6px;flex-shrink:0;display:block
+}
+.wg-pregame-brand img,.wg-pregame-brand-icon{width:40px!important;height:40px!important;max-width:40px!important;max-height:40px!important}
+.gk-deploy-hero-icon{width:44px!important;height:44px!important;max-width:44px!important;max-height:44px!important}
+/* Screens */
+.gw-screen{min-height:100dvh}
+.gw-screen-inner{max-width:640px;margin:0 auto;padding:24px;text-align:center}
+.gw-over-title{font-family:"Cinzel Decorative",Cinzel,serif;font-size:clamp(2.4rem,8vw,4rem);letter-spacing:.1em;margin:.2em 0}
+.gw-win{color:var(--gw-gold)}
+/* Capability gate / boot should not look broken */
+.gw-play-boot-spinner{display:inline-block;width:28px;height:28px;border:2px solid var(--gw-line);border-top-color:var(--gw-gold);border-radius:50%;animation:gwspin .7s linear infinite}
+@keyframes gwspin{to{transform:rotate(360deg)}}

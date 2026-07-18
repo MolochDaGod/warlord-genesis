@@ -5,7 +5,6 @@ import { KeyboardControls, Sky, AdaptiveDpr } from "@react-three/drei";
 import { Physics } from "@react-three/rapier";
 import { keyMap } from "./controls";
 import { Arena } from "./Arena";
-import { Arena3Map } from "./Arena3Map";
 import { Player } from "./Player";
 import { Trees } from "./Trees";
 import { Grass } from "./Grass";
@@ -32,27 +31,23 @@ import {
 function SceneContent() {
   return (
     <>
-      {/* Clear battlefield — no atmospheric fog / FOW wash */}
-      <Sky sunPosition={[-24, 28, -36]} turbidity={3.2} rayleigh={0.55} mieCoefficient={0.0025} distance={450000} />
+      <Sky sunPosition={[-30, 14, -40]} turbidity={8} rayleigh={0.8} mieCoefficient={0.004} distance={450000} />
+      <fog attach="fog" args={["#6e5240", 140, 420]} />
       <MapMoat />
-      <hemisphereLight args={["#e8d8c0", "#1c2430", 0.55]} />
+      <hemisphereLight args={["#ffd9a8", "#2a1c14", 0.6]} />
       <directionalLight
-        position={[-16, 44, -10]}
-        intensity={2.05}
-        color="#fff0d0"
+        position={[-20, 36, -10]}
+        intensity={1.7}
+        color="#ffd9a8"
         castShadow
-        // 1024 is enough for lane combat and ~4× cheaper than 2048
-        shadow-mapSize={[1024, 1024]}
-        shadow-camera-left={-55}
-        shadow-camera-right={55}
-        shadow-camera-top={60}
-        shadow-camera-bottom={-60}
-        shadow-camera-far={160}
-        shadow-bias={-0.00025}
+        shadow-mapSize={[2048, 2048]}
+        shadow-camera-left={-160}
+        shadow-camera-right={160}
+        shadow-camera-top={170}
+        shadow-camera-bottom={-170}
+        shadow-camera-far={420}
       />
-      <ambientLight intensity={0.38} />
-      {/* Soft fill so units read clean without fog */}
-      <directionalLight position={[28, 18, 22]} intensity={0.35} color="#9eb6ff" />
+      <ambientLight intensity={0.4} />
 
       {/*
         Rapier best practices (warcamp /play):
@@ -65,7 +60,6 @@ function SceneContent() {
       */}
       <Physics gravity={[0, -22, 0]} timeStep={1 / 60} interpolate>
         <Arena />
-        <Arena3Map />
         <Player />
         <Trees />
       </Physics>
@@ -106,8 +100,9 @@ export function Game() {
             onCreated: handleCreated,
           })}
         >
-          <color attach="background" args={["#1a2430"]} />
-          <AdaptiveDpr pixelated />
+          <color attach="background" args={["#5c4636"]} />
+          {/* Smooth DPR — avoid pixelated adaptive for cleaner third-person look */}
+          <AdaptiveDpr />
           <Suspense fallback={null}>
             <SceneContent />
           </Suspense>

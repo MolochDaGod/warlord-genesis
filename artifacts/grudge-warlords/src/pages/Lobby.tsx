@@ -122,32 +122,15 @@ export function Lobby() {
           <span className="gw-lobby-tagline">Choose your warlord · arm loadout · march three lanes</span>
         </div>
         <div className="gw-lobby-top-actions">
-          <a
-            className="gw-btn gw-btn-ghost gw-btn-mini"
-            href={viewerUrl(raceId, classId)}
-            target="_blank"
-            rel="noreferrer"
-          >
-            VIEWER
-          </a>
           <span className="gw-lobby-gbux" title="Grudge Bux">
             {gbux} GBUX
           </span>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
-            {user ? user.displayName || user.username : "ACCOUNT"}
+            {user ? user.displayName || user.username : "SIGN IN"}
           </button>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
-            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
             WALLET
-          </button>
-          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
-            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
-            TREATY
-          </button>
-          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
-            <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />
-            CODEX
           </button>
         </div>
       </div>
@@ -266,36 +249,23 @@ export function Lobby() {
               </div>
             </div>
 
-            <div className="gw-deploy-summary" style={{ marginTop: "0.75rem" }}>
-              <span className="gw-deploy-head">Fleet · Account</span>
-              <span className="gw-deploy-hint" style={{ display: "block" }}>
-                Railway: {fleet ? (fleet.healthy ? "API healthy" : "API check failed") : "probing…"}
-              </span>
+            {/* Fleet diagnostics intentionally collapsed — keep march path clear */}
+            <div className="gw-deploy-summary gw-deploy-fleet-links" style={{ marginTop: "0.5rem", opacity: 0.75 }}>
               <a
-                className="gw-deploy-v"
+                className="gw-deploy-hint"
                 href={sailAethermoorUrl(getStudioToken())}
                 target="_blank"
                 rel="noreferrer"
+                style={{ display: "block", fontSize: 11 }}
               >
-                Sail Aethermoor
+                Sail Aethermoor ↗
               </a>
-              {fleet?.hub && (
-                <a
-                  className="gw-deploy-hint"
-                  href={fleet.hub}
-                  target="_blank"
-                  rel="noreferrer"
-                  style={{ display: "block", marginTop: 4 }}
-                >
-                  Studio hub: grudge.studio
-                </a>
-              )}
               <a
                 className="gw-deploy-hint"
                 href={GRUDGE_FLEET_URLS.forge}
                 target="_blank"
                 rel="noreferrer"
-                style={{ display: "block", marginTop: 4 }}
+                style={{ display: "block", marginTop: 4, fontSize: 11 }}
               >
                 Forge editor
               </a>

@@ -5,10 +5,6 @@ import { useSession } from "../game/session";
 import { ICONS } from "../components/ui/icons";
 import { bootEngine, getEngine } from "../engine/boot";
 import { WARLORD_MANIFEST } from "../engine/warlordManifest";
-import { DEPLOY_PATH } from "../lib/deployRoutes";
-import { isOpenLaunch } from "../lib/openLaunch";
-import { hydrateOpenLaunchWarlord } from "../lib/fleetCharacterHydrate";
-
 const PIPELINE_BADGES = [
   { id: "id", label: "Grudge ID", detail: "id.grudge-studio.com — fleet auth" },
   { id: "pg", label: "Railway Postgres", detail: "Characters · account · wallet · Treaty" },
@@ -28,19 +24,6 @@ export function Intro() {
       setBooting(false);
     });
   }, []);
-
-  // Open / charactersgrudox → Warcamp with handoff warlord (never Ruins Brawler)
-  useEffect(() => {
-    if (!isOpenLaunch()) return;
-    let cancelled = false;
-    void (async () => {
-      await hydrateOpenLaunchWarlord();
-      if (!cancelled) navigate("/lobby", { replace: true });
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [navigate]);
 
   const eng = getEngine();
 
@@ -68,34 +51,14 @@ export function Intro() {
           </p>
         </div>
 
-        <div className="gw-intro-stats">
-          <div className="gw-intro-stat-col">
-            <span className="gw-intro-stat-label">Melee Tiers</span>
-            {WARLORD_MANIFEST.meleeTiers.map((t) => (
-              <span key={t.id} className="gw-intro-stat-row" style={{ color: t.tierColor }}>
-                T{t.tier} {t.name}
-              </span>
-            ))}
-          </div>
-          <div className="gw-intro-stat-col">
-            <span className="gw-intro-stat-label">Ranged Tiers</span>
-            {WARLORD_MANIFEST.rangedTiers.map((t) => (
-              <span key={t.id} className="gw-intro-stat-row" style={{ color: t.tierColor }}>
-                T{t.tier} {t.name}
-              </span>
-            ))}
-          </div>
-          <div className="gw-intro-stat-col">
-            <span className="gw-intro-stat-label">Engine</span>
-            <span className="gw-intro-stat-row">
-              {booting ? "Booting…" : eng.ready ? `v${WARLORD_MANIFEST.version}` : "Fallback"}
-            </span>
-            <span className="gw-intro-stat-row">{cdnOk ? "R2 CDN online" : "Local assets"}</span>
-            <span className="gw-intro-stat-row">
-              {user ? `Signed in · ${user.displayName || user.username}` : "Guest / sign in via hub"}
-            </span>
-          </div>
-        </div>
+        <p className="gw-intro-engine-line" style={{ color: "var(--gw-muted)", fontSize: 12, letterSpacing: "0.08em" }}>
+          {booting
+            ? "Booting engine…"
+            : eng.ready
+              ? `Engine v${WARLORD_MANIFEST.version} · ${cdnOk ? "R2 CDN ready" : "local assets"}`
+              : "Engine fallback"}
+          {user ? ` · ${user.displayName || user.username}` : " · Guest"}
+        </p>
 
         <button className="gw-btn gw-intro-cta" onClick={() => navigate("/lobby")}>
           ENTER THE WARCAMP
@@ -106,33 +69,13 @@ export function Intro() {
         >
           QUICK BATTLE
         </button>
-        <button
-          className="gw-btn gw-btn-ghost gw-intro-cta-secondary"
-          onClick={() => navigate("/mp")}
-        >
-          WAGE WAR ONLINE
-        </button>
-        <button
-          type="button"
-          className="gw-btn gw-btn-ghost gw-btn-mini"
-          style={{ marginTop: 8 }}
-          onClick={() => navigate(DEPLOY_PATH)}
-        >
-          MARCH ORDERS ONLY
-        </button>
-
-        <div className="gw-menu-actions">
+        <div className="gw-menu-actions" style={{ display: "flex", flexWrap: "wrap", gap: 8, justifyContent: "center", marginTop: 10 }}>
+          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => navigate("/mp")}>
+            ONLINE
+          </button>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />
-            {user ? `ACCOUNT: ${user.displayName || user.username}` : "ACCOUNT / SIGN IN"}
-          </button>
-          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("wallet")}>
-            <img className="gw-btn-icon" src={ICONS.cup} alt="" draggable={false} />
-            WALLET
-          </button>
-          <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("treaty")}>
-            <img className="gw-btn-icon" src={ICONS.chat} alt="" draggable={false} />
-            TREATY
+            {user ? user.displayName || user.username : "SIGN IN"}
           </button>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("codex")}>
             <img className="gw-btn-icon" src={ICONS.chest} alt="" draggable={false} />

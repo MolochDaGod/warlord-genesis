@@ -53,13 +53,13 @@ export const PLAYER = {
   /** Mouse-look sensitivity multiplier. */
   lookSensitivity: 1,
   /** Look smoothing time constant (seconds); ~0 is raw, higher is smoother. */
-  lookSmoothing: 0.06,
+  lookSmoothing: 0.045,
   /** Max look pitch up/down (radians) so aim never rolls past vertical. */
   lookPitchMax: 1.2,
   /** Third-person camera follow rate (higher = tighter, less lag). */
-  camFollow: 20,
+  camFollow: 28,
   /** Base field of view (matches the Canvas camera). */
-  fov: 72,
+  fov: 70,
   /** Field of view while sprinting (subtle speed kick). */
   sprintFov: 80,
   /** FOV ease rate toward its target. */
@@ -611,7 +611,6 @@ export const NEUTRAL_CAMPS = {
   /** Seconds before a cleared camp repopulates. */
   respawnDelay: 120,
   /** Camps placed per map size (Dota-scale jungle density on 3× maps). */
-  /** Skirmish (Open default) uses countStandard × campScale ≈ 5. */
   countStandard: 9,
   countLarge: 15,
   tiers: {

@@ -69,10 +69,11 @@ const _euler = new THREE.Euler(0, 0, 0, "YXZ");
 const FEET_OFFSET = PLAYER.height / 2 + PLAYER.radius;
 const CAM_HEIGHT = 1.55;
 
-const COMBAT_DIST = 3.6;
-const COMBAT_SHOULDER = 0.7;
-const COMMAND_DIST = 13;
-const COMMAND_LIFT = 13;
+/** Third-person combat framing — slightly further + lighter shoulder for readable hero. */
+const COMBAT_DIST = 4.35;
+const COMBAT_SHOULDER = 0.48;
+const COMMAND_DIST = 14;
+const COMMAND_LIFT = 12;
 
 /** Mouse-wheel camera zoom: a clamped multiplier on the third-person distance. */
 const ZOOM_MIN = 0.55;
