@@ -13,11 +13,17 @@ let lastPushed = "";
 function metaPayload(): WarlordsMetaPayload {
   const s = useMeta.getState();
   return {
+    seasonId: s.seasonId,
+    factionId: s.factionId,
+    factionChosen: s.factionChosen,
     onboardingDone: s.onboardingDone,
     starterPrefabId: s.starterPrefabId,
+    accountLevel: s.accountLevel,
+    accountXp: s.accountXp,
     cards: s.cards,
     lastDailyClaim: s.lastDailyClaim,
     lastMatchReward: s.lastMatchReward,
+    completedMissions: s.completedMissions,
   };
 }
 
@@ -48,18 +54,38 @@ export async function hydrateMetaFromServer(): Promise<boolean> {
   const meta = remote.meta as WarlordsMetaPayload;
   const local = useMeta.getState();
 
+  // Fresh production season — ignore stale / unversioned server profiles
+  if (!meta.seasonId || meta.seasonId !== local.seasonId) {
+    console.info(
+      "[profileSync] reset remote season",
+      meta.seasonId ?? "(none)",
+      "→",
+      local.seasonId,
+    );
+    await pushProfile();
+    return false;
+  }
+
   const mergedCards = mergeCards(
     local.cards,
     Array.isArray(meta.cards) ? (meta.cards as CardProgress[]) : [],
   );
 
   useMeta.setState({
+    factionId: (meta.factionId as typeof local.factionId) ?? local.factionId,
+    factionChosen: Boolean(meta.factionChosen) || local.factionChosen,
     onboardingDone: Boolean(meta.onboardingDone) || local.onboardingDone,
     starterPrefabId: meta.starterPrefabId ?? local.starterPrefabId,
     gbux: Math.max(local.gbux, remote.currency, meta.gbux ?? 0),
+    accountLevel: Math.max(local.accountLevel, meta.accountLevel ?? 1),
+    accountXp: Math.max(local.accountXp, meta.accountXp ?? 0),
     cards: mergedCards,
     lastDailyClaim: meta.lastDailyClaim ?? local.lastDailyClaim,
-    lastMatchReward: (meta.lastMatchReward as MatchRewardSnapshot | null) ?? local.lastMatchReward,
+    lastMatchReward:
+      (meta.lastMatchReward as MatchRewardSnapshot | null) ?? local.lastMatchReward,
+    completedMissions: Array.isArray(meta.completedMissions)
+      ? Array.from(new Set([...local.completedMissions, ...meta.completedMissions]))
+      : local.completedMissions,
   });
 
   useMeta.getState().ensureStarterUnlocked();

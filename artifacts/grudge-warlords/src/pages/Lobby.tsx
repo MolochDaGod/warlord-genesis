@@ -46,6 +46,8 @@ export function Lobby() {
   const lockLoadout = useRoster((s) => s.lockLoadout);
   const { ready: warlordReady, blockReason } = useWarcampReady();
   const gbux = useMeta((s) => s.gbux);
+  const accountLevel = useMeta((s) => s.accountLevel);
+  const accountXp = useMeta((s) => s.accountXp);
   const syncGbuxFromAccount = useMeta((s) => s.syncGbuxFromAccount);
   const [tab, setTab] = useState<LobbyTab>("warcamp");
   const [fleet, setFleet] = useState<{
@@ -122,8 +124,8 @@ export function Lobby() {
           <span className="gw-lobby-tagline">Choose your warlord · arm loadout · march three lanes</span>
         </div>
         <div className="gw-lobby-top-actions">
-          <span className="gw-lobby-gbux" title="Grudge Bux">
-            {gbux} GBUX
+          <span className="gw-lobby-gbux" title="Account level · GBUX">
+            Lv {accountLevel} · {accountXp} XP · {gbux} GBUX
           </span>
           <button type="button" className="gw-btn gw-btn-ghost gw-btn-mini" onClick={() => openHub("account")}>
             <img className="gw-btn-icon" src={ICONS.fist} alt="" draggable={false} />

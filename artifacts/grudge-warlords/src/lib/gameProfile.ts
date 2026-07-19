@@ -12,12 +12,18 @@ export const WARLORDS_GAME_ID = "grudge-warlords";
 export type GameProfileDto = GameProfile;
 
 export interface WarlordsMetaPayload {
+  seasonId?: string;
+  factionId?: string | null;
+  factionChosen?: boolean;
   onboardingDone?: boolean;
   starterPrefabId?: string | null;
   gbux?: number;
+  accountLevel?: number;
+  accountXp?: number;
   cards?: unknown[];
   lastDailyClaim?: string | null;
   lastMatchReward?: unknown | null;
+  completedMissions?: string[];
 }
 
 const MUTATE_HEADERS: RequestInit = {

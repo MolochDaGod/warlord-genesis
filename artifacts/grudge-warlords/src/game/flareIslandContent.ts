@@ -59,7 +59,9 @@ export {
 
 export type { IslandMission, DungeonDef, WhispInstance, PlayerMissionRun };
 
-const MISSION_STORAGE_KEY = "gw_island_missions_v1";
+import { MISSION_PERSIST_KEY } from "../lib/productionSeason";
+
+const MISSION_STORAGE_KEY = MISSION_PERSIST_KEY;
 
 export function loadMissionRuns(): Record<string, PlayerMissionRun> {
   try {

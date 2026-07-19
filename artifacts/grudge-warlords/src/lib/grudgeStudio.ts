@@ -6,21 +6,10 @@
 // `auth.getMe()`.
 
 import type { GrudgeUser } from "./grudgeAuth";
-import { captureOpenLaunchParams } from "./openLaunch";
 
 const AUTH_ORIGIN = "https://id.grudge-studio.com";
 const SDK_URL = "https://objectstore.grudge-studio.com/sdk/grudge-sdk.js";
-
-/** Canonical + dual-read fleet token keys (production wiring §2.1). */
-const TOKEN_KEYS = [
-  "grudge_auth_token",
-  "grudge_session_token",
-  "grudge.token",
-  "sso_token",
-  "grudge_token",
-] as const;
-const TOKEN_KEY = TOKEN_KEYS[0];
-
+const TOKEN_KEY = "grudge_auth_token";
 const POPUP_TIMEOUT_MS = 120_000;
 
 /** Shape of the Grudge Studio SDK we depend on (loaded from a remote URL). */
@@ -32,16 +21,7 @@ type GrudgeStudioSDKCtor = new (opts: { token: string }) => GrudgeStudioSDK;
 
 export function getStudioToken(): string | null {
   try {
-    for (const k of TOKEN_KEYS) {
-      const v = localStorage.getItem(k);
-      if (v) return v;
-    }
-    // sessionStorage fallback (some fleet apps prefer session for sso_token)
-    for (const k of ["sso_token", "grudge_auth_token"] as const) {
-      const v = sessionStorage.getItem(k);
-      if (v) return v;
-    }
-    return null;
+    return localStorage.getItem(TOKEN_KEY);
   } catch {
     return null;
   }
@@ -49,12 +29,7 @@ export function getStudioToken(): string | null {
 
 function setStudioToken(token: string): void {
   try {
-    // Dual-write all fleet keys so hydrate + other apps share the session
-    for (const k of TOKEN_KEYS) {
-      localStorage.setItem(k, token);
-    }
-    sessionStorage.setItem("sso_token", token);
-    sessionStorage.setItem("grudge_auth_token", token);
+    localStorage.setItem(TOKEN_KEY, token);
   } catch {
     // Storage unavailable — token lives only for this tab session.
   }
@@ -62,87 +37,61 @@ function setStudioToken(token: string): void {
 
 function clearStudioToken(): void {
   try {
-    for (const k of TOKEN_KEYS) {
-      localStorage.removeItem(k);
-    }
-    sessionStorage.removeItem("sso_token");
-    sessionStorage.removeItem("grudge_auth_token");
+    localStorage.removeItem(TOKEN_KEY);
   } catch {
     // ignore
   }
 }
 
 /**
- * Open + Grudge ID handoff: capture token AND characterId / open flags before
- * scrubbing sensitive query params. Safe to call repeatedly.
- *
- * Accepted token params: sso_token (preferred), grudge_token, token, launch_token
- * Character: characterId | character_id | charId
- * Open flags: open=1, from=open|gameopen
+ * Capture SSO handoff from query or hash (`sso_token` / `grudge_token` / `token`).
+ * Scrubs sensitive params from the URL. Safe to call repeatedly.
  */
 export function captureRedirectToken(): void {
   if (typeof window === "undefined") return;
   try {
-    const qs = new URLSearchParams(window.location.search);
-    // Also read hash fragment (industry preference for token handoff)
-    if (window.location.hash && window.location.hash.length > 1) {
-      const hp = new URLSearchParams(window.location.hash.replace(/^#/, ""));
-      for (const [k, v] of hp.entries()) {
-        if (!qs.has(k)) qs.set(k, v);
-      }
-    }
-
-    // Persist Open launch context before any scrub
-    captureOpenLaunchParams(qs);
-
+    const url = new URL(window.location.href);
+    const hash = new URLSearchParams(
+      url.hash.startsWith("#") ? url.hash.slice(1) : url.hash,
+    );
     const token =
-      qs.get("sso_token") ||
-      qs.get("token") ||
-      qs.get("grudge_token") ||
-      qs.get("launch_token") ||
-      qs.get("access_token");
-
+      url.searchParams.get("sso_token") ||
+      url.searchParams.get("grudge_token") ||
+      url.searchParams.get("token") ||
+      hash.get("sso_token") ||
+      hash.get("grudge_token") ||
+      hash.get("token");
     if (token) {
       setStudioToken(token);
-    }
-
-    // Scrub secrets + handoff identity (already captured to session/local)
-    const sensitive = new Set([
-      "sso_token",
-      "token",
-      "grudge_token",
-      "launch_token",
-      "access_token",
-      "characterId",
-      "character_id",
-      "charId",
-      "baseId",
-      "base_id",
-      "raceId",
-      "race_id",
-      "characterName",
-      "character_name",
-      "open",
-      "from",
-    ]);
-    let dirty = false;
-    for (const key of sensitive) {
-      if (qs.has(key)) {
-        qs.delete(key);
-        dirty = true;
+      // Also write fleet keys used across Grudge apps
+      try {
+        localStorage.setItem("grudge_session_token", token);
+        localStorage.setItem("sso_token", token);
+        localStorage.setItem("grudge.token", token);
+      } catch {
+        /* ignore */
       }
     }
-
-    if (dirty || token) {
-      const next = qs.toString();
-      const clean =
-        window.location.pathname + (next ? `?${next}` : "") + window.location.hash;
-      // Drop hash secrets if we copied them
-      const cleanNoHashSecrets = clean.replace(
-        /#.*(sso_token|grudge_token|token)=[^&]+/i,
-        "",
-      );
-      window.history.replaceState({}, "", cleanNoHashSecrets || window.location.pathname);
+    for (const p of [
+      "sso_token",
+      "grudge_token",
+      "token",
+      "grudge_id",
+      "grudgeId",
+      "grudge_username",
+      "username",
+      "provider",
+    ]) {
+      url.searchParams.delete(p);
+      hash.delete(p);
+    }
+    const nextHash = hash.toString();
+    const clean =
+      url.pathname +
+      (url.searchParams.toString() ? `?${url.searchParams}` : "") +
+      (nextHash ? `#${nextHash}` : "");
+    if (token || window.location.search.includes("sso_token")) {
+      window.history.replaceState({}, "", clean);
     }
   } catch {
     // ignore malformed URLs
@@ -184,10 +133,49 @@ function toGrudgeUser(me: Record<string, unknown>): GrudgeUser {
   };
 }
 
+/** Prefer same-origin / Railway auth me — SDK is optional. */
 async function fetchStudioUser(token: string): Promise<GrudgeUser> {
-  const sdk = await loadSdk(token);
-  const me = await sdk.auth.getMe();
-  return toGrudgeUser(me);
+  // 1) Same-origin adapter (warlord-genesis-api → grudge-api)
+  try {
+    const res = await fetch("/api/grudge/auth/me", {
+      headers: { Authorization: `Bearer ${token}` },
+      credentials: "same-origin",
+    });
+    if (res.ok) {
+      const me = (await res.json()) as Record<string, unknown>;
+      return toGrudgeUser(me);
+    }
+  } catch {
+    /* fall through */
+  }
+  // 2) Direct Grudge ID / Railway
+  for (const base of [
+    "https://id.grudge-studio.com",
+    "https://grudge-api-production-0d46.up.railway.app",
+  ]) {
+    try {
+      const res = await fetch(`${base}/api/auth/me`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      });
+      if (res.ok) {
+        const me = (await res.json()) as Record<string, unknown>;
+        return toGrudgeUser(me);
+      }
+    } catch {
+      /* try next */
+    }
+  }
+  // 3) Legacy remote SDK
+  try {
+    const sdk = await loadSdk(token);
+    const me = await sdk.auth.getMe();
+    return toGrudgeUser(me);
+  } catch {
+    throw new Error("Could not load your Grudge ID profile. Sign in again.");
+  }
 }
 
 /** Auth success message types used across fleet clients (modern + legacy). */
@@ -197,14 +185,34 @@ const AUTH_SUCCESS_TYPES = new Set([
   "GRUDGE_AUTH_SUCCESS",
 ]);
 
+/** Canonical login URL with dual return params (fleet contract). */
+export function buildStudioLoginUrl(
+  returnUrl: string = typeof window !== "undefined"
+    ? `${window.location.origin}/auth/callback`
+    : "https://warlord-genesis.vercel.app/auth/callback",
+): string {
+  const q = new URLSearchParams();
+  q.set("redirect_uri", returnUrl);
+  q.set("redirect", returnUrl);
+  q.set("return", returnUrl);
+  q.set("origin", typeof window !== "undefined" ? window.location.origin : returnUrl);
+  q.set("app", "genesis");
+  return `${AUTH_ORIGIN}/login?${q.toString()}`;
+}
+
+/** Full-page redirect SSO (most reliable on mobile / popup blockers). */
+export function loginWithRedirect(returnPath = "/auth/callback"): void {
+  if (typeof window === "undefined") return;
+  const returnUrl = new URL(returnPath, window.location.origin).href;
+  window.location.href = buildStudioLoginUrl(returnUrl);
+}
+
 /** Open the Grudge Studio popup and resolve with the returned session token. */
 function openAuthPopup(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     const origin = window.location.origin;
-    // Canonical login path — same page as full-page SSO /login?redirect_uri=
-    const authUrl =
-      `${AUTH_ORIGIN}/login?origin=${encodeURIComponent(origin)}` +
-      `&app=genesis`;
+    const returnUrl = `${origin}/auth/callback`;
+    const authUrl = buildStudioLoginUrl(returnUrl);
     const popup = window.open(
       authUrl,
       "grudge-auth",
@@ -284,19 +292,6 @@ export async function restoreGrudgeStudio(): Promise<GrudgeUser | null> {
   try {
     return await fetchStudioUser(token);
   } catch {
-    // Fallback: try Railway /api/auth/me with Bearer when SDK path fails
-    try {
-      const res = await fetch("/api/auth/me", {
-        headers: { Authorization: `Bearer ${token}` },
-        credentials: "include",
-      });
-      if (res.ok) {
-        const me = (await res.json()) as Record<string, unknown>;
-        return toGrudgeUser(me);
-      }
-    } catch {
-      /* ignore */
-    }
     clearStudioToken();
     return null;
   }
@@ -304,4 +299,16 @@ export async function restoreGrudgeStudio(): Promise<GrudgeUser | null> {
 
 export function logoutGrudgeStudio(): void {
   clearStudioToken();
+  try {
+    localStorage.removeItem("grudge_session_token");
+    localStorage.removeItem("sso_token");
+    localStorage.removeItem("grudge.token");
+    localStorage.removeItem("grudge_token");
+  } catch {
+    /* ignore */
+  }
+}
+
+export function isStudioAuthenticated(): boolean {
+  return Boolean(getStudioToken());
 }

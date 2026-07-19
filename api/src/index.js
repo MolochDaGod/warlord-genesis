@@ -8,7 +8,7 @@ import {
   mapActiveCharacter,
   mapBundleUser,
 } from "./canonical.js";
-import { getPlayerSave, upsertPlayerSave } from "./db.js";
+import { getPlayerSave, upsertPlayerSave, resetAllPlayerSaves } from "./db.js";
 
 const app = express();
 const PORT = Number(process.env.PORT) || 8787;
@@ -166,6 +166,33 @@ app.put("/api/grudge/player/save", async (req, res) => {
     res.json({ ok: true, updatedAt: row?.updated_at ?? new Date().toISOString() });
   } catch (err) {
     res.status(500).json({ error: err.message || "Save failed" });
+  }
+});
+
+/**
+ * Fresh production season — wipe all Warlord Genesis player save rows.
+ * Requires header X-Season-Reset: <SEASON_RESET_SECRET or PRODUCTION_SEASON>
+ */
+app.post("/api/admin/reset-season", async (req, res) => {
+  try {
+    const secret =
+      process.env.SEASON_RESET_SECRET ||
+      process.env.PRODUCTION_SEASON ||
+      "prod-2026-07-fresh-v1";
+    const provided =
+      req.get("X-Season-Reset") || req.body?.secret || req.query?.secret;
+    if (!provided || provided !== secret) {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const result = await resetAllPlayerSaves();
+    res.json({
+      ok: true,
+      season: process.env.PRODUCTION_SEASON || "prod-2026-07-fresh-v1",
+      ...result,
+      ts: Date.now(),
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message || "Reset failed" });
   }
 });
 

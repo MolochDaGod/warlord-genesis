@@ -51,3 +51,11 @@ export async function getPlayerSave(grudgeId) {
   );
   return rows[0] ?? null;
 }
+
+/** Wipe all Warlord Genesis player saves (fresh production season). */
+export async function resetAllPlayerSaves() {
+  const db = getPool();
+  if (!db) return { ok: false, error: "no database" };
+  const { rowCount } = await db.query(`TRUNCATE warlord_genesis_players`);
+  return { ok: true, truncated: rowCount ?? 0 };
+}

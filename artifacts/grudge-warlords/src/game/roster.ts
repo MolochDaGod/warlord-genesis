@@ -27,11 +27,12 @@ import {
 import { canonicalWeaponsForPrefab } from "./canonicalLoadout";
 import { useMeta } from "./metaProgression";
 import { consumeViewerLaunchBuild, GRUDGE_RACE_TO_KIT } from "@workspace/game-content";
+import { ROSTER_PERSIST_KEY, META_PERSIST_KEY } from "../lib/productionSeason";
 
 /** A partial override layered on top of the selected race's default look. */
 export type LookPatch = Partial<CharacterLook>;
 
-const PERSIST_KEY = "gw_roster_v2";
+const PERSIST_KEY = ROSTER_PERSIST_KEY;
 
 interface PersistShape {
   factionId: GrudgeFactionId;
@@ -54,7 +55,8 @@ interface PersistShape {
 
 function loadPersisted(): Partial<PersistShape> {
   try {
-    const raw = localStorage.getItem(PERSIST_KEY) ?? localStorage.getItem("gw_roster_v1");
+    // Season keys only — no legacy roster migration (fresh production).
+    const raw = localStorage.getItem(PERSIST_KEY);
     if (!raw) return {};
     return JSON.parse(raw) as Partial<PersistShape>;
   } catch {
@@ -74,19 +76,26 @@ const DEFAULT_FACTION: GrudgeFactionId = "crusade";
 const DEFAULT_RACE: PrefabRaceId = "human";
 const DEFAULT_CLASS: ClassId = "warrior";
 const DEFAULT_PREFAB = "sir-aldric-valorheart";
-const META_PERSIST_KEY = "gw_meta_v1";
-
-function readMetaBoot(): { onboardingDone: boolean; starterPrefabId: string | null } {
+function readMetaBoot(): {
+  onboardingDone: boolean;
+  starterPrefabId: string | null;
+  factionId: GrudgeFactionId | null;
+} {
   try {
     const raw = localStorage.getItem(META_PERSIST_KEY);
-    if (!raw) return { onboardingDone: false, starterPrefabId: null };
-    const m = JSON.parse(raw) as { onboardingDone?: boolean; starterPrefabId?: string | null };
+    if (!raw) return { onboardingDone: false, starterPrefabId: null, factionId: null };
+    const m = JSON.parse(raw) as {
+      onboardingDone?: boolean;
+      starterPrefabId?: string | null;
+      factionId?: GrudgeFactionId | null;
+    };
     return {
       onboardingDone: Boolean(m.onboardingDone),
       starterPrefabId: m.starterPrefabId ?? null,
+      factionId: m.factionId ?? null,
     };
   } catch {
-    return { onboardingDone: false, starterPrefabId: null };
+    return { onboardingDone: false, starterPrefabId: null, factionId: null };
   }
 }
 
@@ -214,6 +223,13 @@ export const useRoster = create<RosterState>((set, get) => ({
   loadoutLocked: persisted.loadoutLocked ?? false,
 
   setFaction: (factionId) => {
+    // Production: faction is locked after onboarding — only allow if not locked yet
+    // or switching within already-chosen faction (no-op).
+    const locked = useMeta.getState().factionId;
+    if (useMeta.getState().factionChosen && locked && locked !== factionId) {
+      console.warn("[roster] faction locked to", locked);
+      return;
+    }
     const classId = get().classId;
     const races = GRUDGE_FACTION_BY_ID[factionId].races;
     const current = prefabFor(get().raceId, classId);

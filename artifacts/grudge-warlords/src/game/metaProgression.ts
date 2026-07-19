@@ -3,12 +3,20 @@ import { PREFABS, PREFAB_BY_ID, prefabClassSkills, prefabWeaponSkills } from "@w
 import { defaultLaneHeroPicks } from "./laneDeployment";
 import type { GrudgeFactionId } from "../engine/grudge6";
 import { canonicalWeaponsForPrefab } from "./canonicalLoadout";
+import {
+  META_PERSIST_KEY,
+  PRODUCTION_SEASON,
+  STARTER_CARD_LEVEL,
+  STARTER_GBUX,
+} from "../lib/productionSeason";
 
-const PERSIST_KEY = "gw_meta_v1";
+const PERSIST_KEY = META_PERSIST_KEY;
 
 export const SHARDS_TO_UNLOCK = 10;
 export const SHARDS_PER_LEVEL = 10;
 export const MAX_CARD_LEVEL = 8;
+/** Account XP to level (simple curve). */
+export const XP_PER_LEVEL = 500;
 
 export const MATCH_REWARDS = {
   victory: { gbux: 85, shards: 2 },
@@ -30,12 +38,21 @@ export interface CardProgress {
 }
 
 interface PersistShape {
+  seasonId: string;
+  /** Locked after faction select — only this faction's units/prefabs unlock for play */
+  factionId: GrudgeFactionId | null;
+  factionChosen: boolean;
   onboardingDone: boolean;
   starterPrefabId: string | null;
   gbux: number;
+  /** Account combat level (missions + matches) */
+  accountLevel: number;
+  accountXp: number;
   cards: CardProgress[];
   lastDailyClaim: string | null;
   lastMatchReward: MatchRewardSnapshot | null;
+  /** Mission ids completed this season */
+  completedMissions: string[];
 }
 
 export interface MatchRewardSnapshot {
@@ -97,9 +114,13 @@ function allLaneGuardIds(factionId: GrudgeFactionId): string[] {
   return [...uniq];
 }
 
-function pickRandomShardTarget(cards: CardProgress[]): { kind: CardKind; id: string } {
+function pickRandomShardTarget(
+  cards: CardProgress[],
+  factionId: GrudgeFactionId | null,
+): { kind: CardKind; id: string } {
   const pool: Array<{ kind: CardKind; id: string }> = [];
   for (const p of PREFABS) {
+    if (factionId && p.faction !== factionId) continue;
     const c = cards.find((x) => x.kind === "character" && x.id === p.id);
     if (!c || c.level < MAX_CARD_LEVEL) pool.push({ kind: "character", id: p.id });
   }
@@ -109,7 +130,10 @@ function pickRandomShardTarget(cards: CardProgress[]): { kind: CardKind; id: str
     }
   }
   if (pool.length === 0) {
-    const p = PREFABS[Math.floor(Math.random() * PREFABS.length)]!;
+    const facPrefabs = factionId
+      ? PREFABS.filter((p) => p.faction === factionId)
+      : PREFABS;
+    const p = facPrefabs[Math.floor(Math.random() * facPrefabs.length)] ?? PREFABS[0]!;
     return { kind: "character", id: p.id };
   }
   return pool[Math.floor(Math.random() * pool.length)]!;
@@ -138,12 +162,18 @@ function cardLabel(kind: CardKind, id: string): string {
 }
 
 interface MetaState {
+  seasonId: string;
+  factionId: GrudgeFactionId | null;
+  factionChosen: boolean;
   onboardingDone: boolean;
   starterPrefabId: string | null;
   gbux: number;
+  accountLevel: number;
+  accountXp: number;
   cards: CardProgress[];
   lastDailyClaim: string | null;
   lastMatchReward: MatchRewardSnapshot | null;
+  completedMissions: string[];
 
   isCharacterUnlocked: (prefabId: string) => boolean;
   isLaneGuardUnlocked: (unitId: string, factionId: GrudgeFactionId) => boolean;
@@ -151,9 +181,12 @@ interface MetaState {
   laneGuardLevel: (unitId: string) => number;
   maxGearTierForPrefab: (prefabId: string) => number;
   shardProgress: (kind: CardKind, id: string) => { shards: number; need: number; level: number };
+  canPlayPrefab: (prefabId: string) => boolean;
 
+  chooseFaction: (factionId: GrudgeFactionId) => void;
   completeStarterPick: (prefabId: string) => void;
   grantMatchRewards: (won: boolean) => MatchRewardSnapshot;
+  grantMissionRewards: (missionId: string, xp: number, gold: number) => void;
   claimDailyPack: () => boolean;
   buyUpgradePack: () => boolean;
   addGbux: (amount: number) => void;
@@ -162,51 +195,44 @@ interface MetaState {
   seedDefaultLaneGuards: (factionId: GrudgeFactionId) => void;
   /** Repair server/local desync — starter marked done but card missing. */
   ensureStarterUnlocked: () => void;
+  hardResetLocal: () => void;
 }
 
-const persisted = loadPersisted();
+const rawPersisted = loadPersisted();
+/** Drop stale season data — fresh production game. */
+const persisted: Partial<PersistShape> =
+  rawPersisted.seasonId === PRODUCTION_SEASON ? rawPersisted : {};
 
-/** Existing warcamp players keep their roster without re-picking starter. */
-function migrateLegacyRoster(partial: Partial<PersistShape>): Partial<PersistShape> {
-  if (partial.onboardingDone) return partial;
-  try {
-    const rosterRaw = localStorage.getItem("gw_roster_v2") ?? localStorage.getItem("gw_roster_v1");
-    if (!rosterRaw) return partial;
-    const roster = JSON.parse(rosterRaw) as { prefabId?: string };
-    if (!roster.prefabId || !PREFAB_BY_ID[roster.prefabId]) return partial;
-    const cards = [...(partial.cards ?? [])];
-    const c = ensureCard(cards, "character", roster.prefabId);
-    if (c.level < 1) {
-      c.level = 1;
-      c.shards = 0;
-    }
-    return {
-      ...partial,
-      onboardingDone: true,
-      starterPrefabId: roster.prefabId,
-      cards,
-    };
-  } catch {
-    return partial;
-  }
-}
-
-const bootMeta = migrateLegacyRoster(persisted);
+const bootMeta = persisted;
 
 export const useMeta = create<MetaState>((set, get) => ({
+  seasonId: PRODUCTION_SEASON,
+  factionId: bootMeta.factionId ?? null,
+  factionChosen: bootMeta.factionChosen ?? false,
   onboardingDone: bootMeta.onboardingDone ?? false,
   starterPrefabId: bootMeta.starterPrefabId ?? null,
-  gbux: bootMeta.gbux ?? 500,
+  gbux: bootMeta.gbux ?? STARTER_GBUX,
+  accountLevel: bootMeta.accountLevel ?? 1,
+  accountXp: bootMeta.accountXp ?? 0,
   cards: bootMeta.cards ?? [],
   lastDailyClaim: bootMeta.lastDailyClaim ?? null,
   lastMatchReward: bootMeta.lastMatchReward ?? null,
+  completedMissions: bootMeta.completedMissions ?? [],
 
   isCharacterUnlocked: (prefabId) => {
+    const p = PREFAB_BY_ID[prefabId];
+    if (!p) return false;
+    const fac = get().factionId;
+    if (fac && p.faction !== fac) return false;
     const c = get().cards.find((x) => x.kind === "character" && x.id === prefabId);
     return (c?.level ?? 0) > 0;
   },
 
+  canPlayPrefab: (prefabId) => get().isCharacterUnlocked(prefabId),
+
   isLaneGuardUnlocked: (unitId, factionId) => {
+    const locked = get().factionId;
+    if (locked && locked !== factionId) return false;
     const defaults = defaultLaneHeroPicks(factionId);
     if (unitId === defaults.meleeGuard || unitId === defaults.rangedGuard) return true;
     const c = get().cards.find((x) => x.kind === "lane_guard" && x.id === unitId);
@@ -232,32 +258,56 @@ export const useMeta = create<MetaState>((set, get) => ({
     return { shards, need, level };
   },
 
+  chooseFaction: (factionId) => {
+    set({
+      factionId,
+      factionChosen: true,
+      // Selecting faction does not finish onboarding — still pick starter warlord
+      onboardingDone: false,
+      starterPrefabId: null,
+    });
+    get().seedDefaultLaneGuards(factionId);
+  },
+
   completeStarterPick: (prefabId) => {
-    if (!PREFAB_BY_ID[prefabId]) return;
+    const p = PREFAB_BY_ID[prefabId];
+    if (!p) return;
+    const fac = get().factionId;
+    if (fac && p.faction !== fac) return;
     const cards = [...get().cards];
     const c = ensureCard(cards, "character", prefabId);
-    // Level 3 → gear tier 3: strong enough for first /play without grinding shards.
-    c.level = Math.max(c.level, 3);
+    c.level = Math.max(c.level, STARTER_CARD_LEVEL);
     c.shards = 0;
     set({
       onboardingDone: true,
       starterPrefabId: prefabId,
+      factionId: (fac ?? p.faction) as GrudgeFactionId,
+      factionChosen: true,
       cards,
     });
+    get().seedDefaultLaneGuards((fac ?? p.faction) as GrudgeFactionId);
   },
 
   grantMatchRewards: (won) => {
     const pack = won ? MATCH_REWARDS.victory : MATCH_REWARDS.defeat;
     const cards = [...get().cards];
+    const fac = get().factionId;
     const shardGrants: MatchRewardSnapshot["shardGrants"] = [];
     for (let i = 0; i < pack.shards; i++) {
-      const target = pickRandomShardTarget(cards);
+      const target = pickRandomShardTarget(cards, fac);
       applyShards(cards, target.kind, target.id, 1);
       shardGrants.push({
         kind: target.kind,
         id: target.id,
         label: cardLabel(target.kind, target.id),
       });
+    }
+    const xpGain = won ? 120 : 40;
+    let accountXp = get().accountXp + xpGain;
+    let accountLevel = get().accountLevel;
+    while (accountXp >= XP_PER_LEVEL) {
+      accountXp -= XP_PER_LEVEL;
+      accountLevel += 1;
     }
     const snapshot: MatchRewardSnapshot = {
       won,
@@ -268,18 +318,37 @@ export const useMeta = create<MetaState>((set, get) => ({
     set({
       gbux: get().gbux + pack.gbux,
       cards,
+      accountXp,
+      accountLevel,
       lastMatchReward: snapshot,
     });
     return snapshot;
+  },
+
+  grantMissionRewards: (missionId, xp, gold) => {
+    if (get().completedMissions.includes(missionId)) return;
+    let accountXp = get().accountXp + xp;
+    let accountLevel = get().accountLevel;
+    while (accountXp >= XP_PER_LEVEL) {
+      accountXp -= XP_PER_LEVEL;
+      accountLevel += 1;
+    }
+    set({
+      gbux: get().gbux + gold,
+      accountXp,
+      accountLevel,
+      completedMissions: [...get().completedMissions, missionId],
+    });
   },
 
   claimDailyPack: () => {
     const today = todayKey();
     if (get().lastDailyClaim === today) return false;
     const cards = [...get().cards];
+    const fac = get().factionId;
     const grants: MatchRewardSnapshot["shardGrants"] = [];
     for (let i = 0; i < DAILY_PACK.shards; i++) {
-      const target = pickRandomShardTarget(cards);
+      const target = pickRandomShardTarget(cards, fac);
       applyShards(cards, target.kind, target.id, 1);
       grants.push({ kind: target.kind, id: target.id, label: cardLabel(target.kind, target.id) });
     }
@@ -300,9 +369,10 @@ export const useMeta = create<MetaState>((set, get) => ({
   buyUpgradePack: () => {
     if (get().gbux < UPGRADE_PACK_COST) return false;
     const cards = [...get().cards];
+    const fac = get().factionId;
     const grants: MatchRewardSnapshot["shardGrants"] = [];
     for (let i = 0; i < 3; i++) {
-      const target = pickRandomShardTarget(cards);
+      const target = pickRandomShardTarget(cards, fac);
       applyShards(cards, target.kind, target.id, 1);
       grants.push({ kind: target.kind, id: target.id, label: cardLabel(target.kind, target.id) });
     }
@@ -343,7 +413,6 @@ export const useMeta = create<MetaState>((set, get) => ({
         changed = true;
       }
     }
-    // Skip setState when nothing changed — avoids thrashing card-list subscribers.
     if (changed) set({ cards });
   },
 
@@ -354,24 +423,53 @@ export const useMeta = create<MetaState>((set, get) => ({
     if (!prefabId || !PREFAB_BY_ID[prefabId]) return;
     const cards = [...s.cards];
     const c = ensureCard(cards, "character", prefabId);
-    // Repair desync + lift under-leveled starters to campaign-ready tier.
-    if (c.level < 3) {
-      c.level = 3;
+    if (c.level < STARTER_CARD_LEVEL) {
+      c.level = STARTER_CARD_LEVEL;
       c.shards = 0;
-      set({ cards, onboardingDone: true, starterPrefabId: prefabId });
-      get().seedDefaultLaneGuards(PREFAB_BY_ID[prefabId]!.faction as GrudgeFactionId);
+      const fac = (s.factionId ?? PREFAB_BY_ID[prefabId]!.faction) as GrudgeFactionId;
+      set({
+        cards,
+        onboardingDone: true,
+        starterPrefabId: prefabId,
+        factionId: fac,
+        factionChosen: true,
+      });
+      get().seedDefaultLaneGuards(fac);
     }
+  },
+
+  hardResetLocal: () => {
+    set({
+      seasonId: PRODUCTION_SEASON,
+      factionId: null,
+      factionChosen: false,
+      onboardingDone: false,
+      starterPrefabId: null,
+      gbux: STARTER_GBUX,
+      accountLevel: 1,
+      accountXp: 0,
+      cards: [],
+      lastDailyClaim: null,
+      lastMatchReward: null,
+      completedMissions: [],
+    });
   },
 }));
 
 useMeta.subscribe((s) =>
   savePersisted({
+    seasonId: PRODUCTION_SEASON,
+    factionId: s.factionId,
+    factionChosen: s.factionChosen,
     onboardingDone: s.onboardingDone,
     starterPrefabId: s.starterPrefabId,
     gbux: s.gbux,
+    accountLevel: s.accountLevel,
+    accountXp: s.accountXp,
     cards: s.cards,
     lastDailyClaim: s.lastDailyClaim,
     lastMatchReward: s.lastMatchReward,
+    completedMissions: s.completedMissions,
   }),
 );
 
