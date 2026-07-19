@@ -3,7 +3,7 @@
   "site": "https://warlord-genesis.vercel.app",
   "buildMode": "gw-core",
   "bundleVersion": 20260718,
-  "bundleCacheHash": "b16",
+  "bundleCacheHash": "b19",
   "bundleFile": "assets/gw-core-20260713.js",
   "bundleChecks": [
     {
@@ -713,7 +713,7 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-19T07:27:20.236Z",
+  "lastBuilt": "2026-07-19T07:31:41.339Z",
   "bundleBytes": 4148392,
   "bundleSha256": "b667cc7ea0a89733",
   "sites": [

@@ -21,12 +21,14 @@
       rel="stylesheet"
     />
     <!-- h=b19: strip red CSS dump + warcamp polish + catalog /api/v1 -->
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b16" />
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b19" />
   </head>
   <body>
+    <!-- #root MUST exist before gw-core createRoot (classic scripts are not deferred) -->
     <div id="root"></div>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="https://id.grudge-studio.com/grudge-game-bootstrap.js?h=b16"></script>
-    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b16"></script>
+    <script src="/grudge-game-bootstrap.js?h=b19"></script>
+    <link rel="modulepreload" href="/sdk/grudge-sdk.js?h=b18" />
+    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b19"></script>
   </body>
 </html>
