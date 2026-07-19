@@ -6,17 +6,17 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b8",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b8",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/gw-core-20260713.js?h=b8",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     }
   ],
@@ -373,6 +373,14 @@
       "destination": "https://grudge-api-production-0d46.up.railway.app/api/items/:path*"
     },
     {
+      "source": "/api/treaty",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/treaty"
+    },
+    {
+      "source": "/api/treaty/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/treaty/:path*"
+    },
+    {
       "source": "/api/auth/puter",
       "destination": "https://grudge-api-production-0d46.up.railway.app/api/auth/puter"
     },
@@ -476,19 +484,20 @@
       "source": "/api/games/:path*",
       "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/games/:path*"
     },
-        {
-      "source": "/api/treaty",
-      "destination": "https://grudge-api-production-0d46.up.railway.app/api/treaty"
+    {
+      "source": "/api/grudge/fleet",
+      "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/grudge/fleet"
     },
     {
-      "source": "/api/treaty/:path*",
-      "destination": "https://grudge-api-production-0d46.up.railway.app/api/treaty/:path*"
-    },{
+      "source": "/api/mp/health",
+      "destination": "https://warlord-mp.up.railway.app/health"
+    },
+    {
       "source": "/api/:path*",
       "destination": "https://grudge-api-production-0d46.up.railway.app/api/:path*"
     },
     {
-      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
+      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap).*)",
       "destination": "/index.html"
     }
   ]

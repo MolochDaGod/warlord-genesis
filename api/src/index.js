@@ -293,17 +293,122 @@ app.get("/api/games", (_req, res) => {
   res.json([
     {
       id: "grudge-warlords",
-      title: "Warlord Genesis",
+      title: "Warlord Genesis MOBA",
       slug: "warlord-genesis",
       platform: "web",
-      category: "rts",
+      category: "moba",
+      modes: ["moba", "lane-rts", "warcamp"],
       isPlayable: true,
       isFeatured: true,
-      description: "Three-lane RTS warcamp — Puter / Grudge ID login, lane deploy, Grudge Engine combat.",
+      description:
+        "Three-lane MOBA warcamp — Grudge ID login, lane deploy, fleet PvP, production leaderboards.",
       url: "https://warlord-genesis.vercel.app",
       embedUrl: "/play",
+      fleet: {
+        leaderboards: "/api/games/grudge-warlords/leaderboards",
+        pvp: process.env.VITE_MP_URL || process.env.MP_PUBLIC_URL || "https://warlord-mp.up.railway.app",
+        connections: "/fleet-connections.html",
+      },
     },
   ]);
+});
+
+/* ── Production leaderboards (in-memory + mirrored into player meta) ── */
+const LB_BOARDS = new Set([
+  "moba_wins",
+  "lane_kills",
+  "match_score",
+  "warlord_score",
+]);
+/** @type {Map<string, Map<string, object>>} */
+const leaderboards = new Map();
+
+function lbMap(board) {
+  let m = leaderboards.get(board);
+  if (!m) {
+    m = new Map();
+    leaderboards.set(board, m);
+  }
+  return m;
+}
+
+function lbSorted(board, limit = 25) {
+  return [...lbMap(board).values()]
+    .sort((a, b) => b.score - a.score)
+    .slice(0, Math.min(50, Math.max(1, limit)))
+    .map((e, i) => ({ ...e, rank: i + 1 }));
+}
+
+app.get("/api/games/:gameId/leaderboards", (req, res) => {
+  if (req.params.gameId !== "grudge-warlords") {
+    return res.status(404).json({ error: "Unknown game" });
+  }
+  const boards = {};
+  for (const id of LB_BOARDS) boards[id] = lbSorted(id, 10);
+  res.json({ gameId: "grudge-warlords", boards, ts: Date.now() });
+});
+
+app.get("/api/games/:gameId/leaderboards/:board", (req, res) => {
+  if (req.params.gameId !== "grudge-warlords") {
+    return res.status(404).json({ error: "Unknown game" });
+  }
+  const board = String(req.params.board || "");
+  if (!LB_BOARDS.has(board)) {
+    return res.status(404).json({ error: "unknown_board", boards: [...LB_BOARDS] });
+  }
+  const limit = Number(req.query.limit ?? 25);
+  res.json({ board, entries: lbSorted(board, limit), ts: Date.now() });
+});
+
+app.post("/api/games/:gameId/leaderboards/:board", (req, res) => {
+  if (req.params.gameId !== "grudge-warlords") {
+    return res.status(404).json({ error: "Unknown game" });
+  }
+  const board = String(req.params.board || "");
+  if (!LB_BOARDS.has(board)) {
+    return res.status(404).json({ error: "unknown_board" });
+  }
+  const body = req.body || {};
+  const accountId = String(body.accountId || body.grudgeId || "").slice(0, 64);
+  if (!accountId) return res.status(400).json({ error: "accountId_required" });
+  const score = Math.max(0, Math.floor(Number(body.score) || 0));
+  const prev = lbMap(board).get(accountId);
+  if (prev && score < prev.score) {
+    return res.json({ ok: true, kept: true, entry: prev });
+  }
+  const entry = {
+    accountId,
+    displayName: String(body.displayName || "Warlord").slice(0, 32),
+    heroId: body.heroId ? String(body.heroId).slice(0, 48) : undefined,
+    heroName: body.heroName ? String(body.heroName).slice(0, 48) : undefined,
+    score,
+    updatedAt: Date.now(),
+  };
+  lbMap(board).set(accountId, entry);
+  res.json({ ok: true, entry });
+});
+
+/** Fleet connection map for production dashboards */
+app.get("/api/grudge/fleet", (_req, res) => {
+  res.json({
+    gameId: "warlord-genesis",
+    title: "Warlord Genesis MOBA",
+    production: true,
+    origins: [
+      "https://warlord-genesis.vercel.app",
+      "https://warstrat.grudge-studio.com",
+    ],
+    connections: {
+      identity: "https://id.grudge-studio.com",
+      gameData: process.env.GRUDGE_API_URL || "https://grudge-api-production-0d46.up.railway.app",
+      titleApi: process.env.PUBLIC_URL || "https://warlord-genesis-api-production-3b5a.up.railway.app",
+      assets: "https://assets.grudge-studio.com",
+      objectstore: "https://objectstore.grudge-studio.com",
+      mp: process.env.MP_PUBLIC_URL || "https://warlord-mp.up.railway.app",
+      leaderboards: "/api/games/grudge-warlords/leaderboards",
+    },
+    boards: [...LB_BOARDS],
+  });
 });
 
 function emptyMeta() {
@@ -431,7 +536,7 @@ app.patch("/api/games/:gameId/profile", async (req, res) => {
   }
 });
 
-/** Match result — apply reward GBUX into save meta when authenticated. */
+/** Match result — apply reward GBUX into save meta when authenticated; bump leaderboards. */
 app.post("/api/games/:gameId/matches", async (req, res) => {
   try {
     if (req.params.gameId !== "grudge-warlords") {
@@ -455,6 +560,59 @@ app.post("/api/games/:gameId/matches", async (req, res) => {
     if (typeof body.rewardGbux === "number") {
       meta.gbux = Number(meta.gbux || 0) + body.rewardGbux;
     }
+    // Leaderboard hooks from match payload
+    const displayName =
+      me?.displayName || me?.username || me?.name || "Warlord";
+    const accountId = String(grudgeId);
+    if (body.won === true || body.result === "win") {
+      const prev = lbMap("moba_wins").get(accountId);
+      const wins = (prev?.score || 0) + 1;
+      lbMap("moba_wins").set(accountId, {
+        accountId,
+        displayName,
+        score: wins,
+        updatedAt: Date.now(),
+      });
+      meta.mobaWins = wins;
+    }
+    if (typeof body.kills === "number" && body.kills > 0) {
+      const prev = lbMap("lane_kills").get(accountId);
+      const kills = (prev?.score || 0) + Math.floor(body.kills);
+      lbMap("lane_kills").set(accountId, {
+        accountId,
+        displayName,
+        score: kills,
+        updatedAt: Date.now(),
+      });
+      meta.laneKills = kills;
+    }
+    if (typeof body.score === "number" && body.score > 0) {
+      const prev = lbMap("match_score").get(accountId);
+      const next = Math.max(prev?.score || 0, Math.floor(body.score));
+      lbMap("match_score").set(accountId, {
+        accountId,
+        displayName,
+        score: next,
+        updatedAt: Date.now(),
+      });
+    }
+    const warlordScore =
+      (meta.mobaWins || 0) * 100 +
+      (meta.laneKills || 0) * 10 +
+      (Number(meta.gbux) || 0);
+    lbMap("warlord_score").set(accountId, {
+      accountId,
+      displayName,
+      score: warlordScore,
+      updatedAt: Date.now(),
+    });
+    meta.warlordScore = warlordScore;
+    meta.lastMatchReward = {
+      at: new Date().toISOString(),
+      rewardGbux: body.rewardGbux ?? 0,
+      won: body.won === true || body.result === "win",
+    };
+
     const row = await upsertPlayerSave({
       grudgeId,
       userId: me?.userId || me?.id,

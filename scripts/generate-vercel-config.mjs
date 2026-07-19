@@ -19,6 +19,8 @@ const GAME_DATA =
 const WARLORD_API =
   process.env.WARLORD_GENESIS_API_URL?.replace(/\/$/, "") ||
   "https://warlord-genesis-api-production-3b5a.up.railway.app";
+const WARLORD_MP =
+  process.env.WARLORD_MP_URL?.replace(/\/$/, "") || "https://warlord-mp.up.railway.app";
 
 const PREFIXES = [
   "health",
@@ -169,14 +171,19 @@ rewrites.push(
   { source: "/brand/logo.png", destination: `${AUTH_GATEWAY}/brand/logo.png` },
   { source: "/brand/:path*", destination: `${AUTH_GATEWAY}/brand/:path*` },
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
-  // Game profiles / matches for this title — NOT grudge-studio.com (retro ROM catalog).
+  // Game profiles / matches / leaderboards for this title — NOT grudge-studio.com (retro ROM catalog).
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
   { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
+  // Fleet map for dashboards
+  { source: "/api/grudge/fleet", destination: `${WARLORD_API}/api/grudge/fleet` },
+  // MOBA / PvP multipath health (Socket.IO server — set WARLORD_MP_URL when live)
+  { source: "/api/mp/health", destination: `${WARLORD_MP}/health` },
   // Unknown fleet APIs → grudge-api (account/characters already rewritten above).
   // Never proxy to grudge-studio.com — that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
   {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
+    source:
+      "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap).*)",
     destination: "/index.html",
   },
 );
