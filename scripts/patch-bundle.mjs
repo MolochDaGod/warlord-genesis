@@ -295,7 +295,24 @@ js = js.replaceAll(
 );
 js = js.replaceAll(
   'tower_ruins_inner:"/models/towers/ruins/bashnia.glb"',
+  'tower_ruins_inner:"/models/towers/ruins/ruin_15.glb"',
+);
+js = js.replaceAll(
   'tower_ruins_inner:"/models/towers/ruins/slow_t3.glb"',
+  'tower_ruins_inner:"/models/towers/ruins/ruin_15.glb"',
+);
+js = js.replaceAll(
+  'tower_ruins_outer:"/models/towers/ruins/slow_t1.glb"',
+  'tower_ruins_outer:"/models/towers/ruins/ruin_11.glb"',
+);
+// Grudge SDK must be same-origin (objectstore /sdk is 404 / ERR_CONNECTION_CLOSED).
+js = js.replaceAll(
+  'DO="https://objectstore.grudge-studio.com/sdk/grudge-sdk.js"',
+  'DO="/sdk/grudge-sdk.js"',
+);
+js = js.replaceAll(
+  '"https://objectstore.grudge-studio.com/sdk/grudge-sdk.js"',
+  '"/sdk/grudge-sdk.js"',
 );
 
 // Canonical KayKit medium rig — mesh + movement GLBs from info.grudge-studio.com / ObjectStore.
@@ -1201,7 +1218,16 @@ js = js.replace(
 // v47 — upgraded tower GLBs (embedded + animated) + hero weapon anim/mesh sync.
 js = js.replace(
   'CIA={medieval:{outer:"tower_02_1",inner:"tower_03_1_full"},elven:{outer:"tower_2",inner:"tower_3_full"},orc:{outer:"tower_02",inner:"tower_3_full"},ruins:{outer:"ruin_11",inner:"ruin_15"}}',
-  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}',
+  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"ruin_11",inner:"ruin_15"}}',
+);
+// Retire broken Assimp slow_t* ruins towers (invalid metallicRoughnessTexture indices crash GLTFLoader).
+js = js.replaceAll(
+  'ruins:{outer:"slow_t1",inner:"slow_t3"}',
+  'ruins:{outer:"ruin_11",inner:"ruin_15"}',
+);
+js = js.replaceAll(
+  'ruins:{outer:"slow_t1",inner:"bashnia"}',
+  'ruins:{outer:"ruin_11",inner:"ruin_15"}',
 );
 js = js.replace(
   "function fT(C,A,I){const g=CIA[C][A];return`${pT}models/towers/${C}/${g}.glb`}",
@@ -1228,7 +1254,7 @@ if (js.includes(OIA_ORIG)) {
 if (!js.includes('outer:"watchtower_lvl1"')) {
   js = js.replace(
     'CIA={medieval:{outer:"luchnik",inner:"stylized_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"mag"},orc:{outer:"pushka",inner:"bashnia2"},ruins:{outer:"slow_t1",inner:"bashnia"}}',
-    'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}',
+    'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"ruin_11",inner:"ruin_15"}}',
   );
 }
 // tower-v48: verified after final safety pass below
@@ -1246,7 +1272,7 @@ js = js.replace(
 );
 js = js.replace(
   'tower_medieval_outer:"/models/towers/medieval/luchnik.glb",tower_medieval_inner:"/models/towers/medieval/stylized_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/mag.glb",tower_orc_outer:"/models/towers/orc/pushka.glb",tower_orc_inner:"/models/towers/orc/bashnia2.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/bashnia.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"',
-  'tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb",tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/archer_t3.glb",tower_orc_outer:"/models/towers/orc/bomber_t1.glb",tower_orc_inner:"/models/towers/orc/bomber_t3.glb",tower_ruins_outer:"/models/towers/ruins/slow_t1.glb",tower_ruins_inner:"/models/towers/ruins/slow_t3.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"',
+  'tower_medieval_outer:"/models/towers/medieval/watchtower_lvl1.glb",tower_medieval_inner:"/models/towers/medieval/game_ready_turret.glb",tower_elven_outer:"/models/towers/elven/fantasy_crossbow_tower.glb",tower_elven_inner:"/models/towers/elven/archer_t3.glb",tower_orc_outer:"/models/towers/orc/bomber_t1.glb",tower_orc_inner:"/models/towers/orc/bomber_t3.glb",tower_ruins_outer:"/models/towers/ruins/ruin_11.glb",tower_ruins_inner:"/models/towers/ruins/ruin_15.glb",core_medieval:"/models/buildings/faction/muu.glb",core_elven:"/models/buildings/faction/mantah.glb",core_orc:"/models/buildings/faction/krakee.glb",core_ruins:"/models/buildings/faction/antuk.glb"',
 );
 
 js = js.replace("cdnReachable:!0,bootedAt:0", "cdnReachable:!1,bootedAt:0");
@@ -1974,11 +2000,15 @@ js = js.replace(
 mustPatch("combat-cast-charge-vfx", js.includes("WgCastChargeTick"));
 
 // Final safety — v48 split GLBs crash Three.js; lobby palId typo crashes React.
+// Ruins use small valid ruin_11/ruin_15 (slow_t* had out-of-range texture indices).
 const CIA_V47 =
-  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}';
+  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"ruin_11",inner:"ruin_15"}}';
 const CIA_BROKEN =
   'CIA={medieval:{outer:"luchnik",inner:"stylized_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"mag"},orc:{outer:"pushka",inner:"bashnia2"},ruins:{outer:"slow_t1",inner:"bashnia"}}';
+const CIA_SLOW =
+  'CIA={medieval:{outer:"watchtower_lvl1",inner:"game_ready_turret"},elven:{outer:"fantasy_crossbow_tower",inner:"archer_t3"},orc:{outer:"bomber_t1",inner:"bomber_t3"},ruins:{outer:"slow_t1",inner:"slow_t3"}}';
 if (js.includes(CIA_BROKEN)) js = js.replace(CIA_BROKEN, CIA_V47);
+if (js.includes(CIA_SLOW)) js = js.replace(CIA_SLOW, CIA_V47);
 js = js.replaceAll(
   'd.jsx(WgPaletteSwatches,{value:palId,onChange:setPal})',
   'd.jsx(WgPaletteSwatches,{value:WgGetPaletteId(),onChange:id=>XI.getState().setCustom({teamPalette:id})})',
@@ -2575,6 +2605,7 @@ function WgFleetAboutHub(){return d.jsxs("div",{className:"gw-hub-body gw-about-
 }
 
 // v73: grudge6 height fit (no 100×) + always load baked Bip001 packs on hero GLB path
+// v74: ORC 2 m system — geometry AABB measure (not expandByObject under-read), target 2.0 m
 {
   // Replace Y6 wherever it starts — reset/measure/multiply only (never setScalar(target/worldH) alone)
   const yMark = "function Y6(C,A=";
@@ -2596,13 +2627,28 @@ function WgFleetAboutHub(){return d.jsxs("div",{className:"gw-hub-body gw-about-
       }
     }
     if (yEnd <= yStart) break;
-    // Prefer body height; cm if hy>20; multiply fit; plant feet; rebind skeleton last
-    const Y6_V73 =
-      "function Y6(C,A=1.85){C.rotation.set(0,0,0);C.scale.set(1,1,1);C.position.set(0,0,0);C.updateWorldMatrix(!0,!0);const measure=()=>{const b=new YC;let n=0;C.traverse(o=>{if(!(o instanceof GB||o instanceof EC)||!o.visible)return;const nm=(o.name||\"\").toLowerCase();if(/(weapon|sword|axe|hammer|mace|spear|bow|staff|shield|quiver|bag)/.test(nm))return;if(o instanceof GB||/(body|torso|legs|units_|pelvis|head|arms)/.test(nm)){b.expandByObject(o);n++}});return n&&!b.isEmpty()?b:new YC().setFromObject(C)};let box=measure(),sz=box.getSize(new O),hy=Math.max(sz.y,.001);if(hy>20){C.scale.setScalar(.01),C.updateWorldMatrix(!0,!0),box=measure(),sz=box.getSize(new O),hy=Math.max(sz.y,.001)}const target=Math.min(Math.max(A||1.85,1.55),2.15),e=target/Math.max(hy,.05);C.scale.multiplyScalar(e),C.updateWorldMatrix(!0,!0);box=measure();const c=box.getCenter(new O);C.position.set(-c.x,-box.min.y,-c.z),C.updateWorldMatrix(!0,!0);const I=typeof J6==\"function\"?J6(C):null;C.updateWorldMatrix(!0,!0);return I}";
-    js = js.slice(0, yStart) + Y6_V73 + js.slice(yEnd);
-    console.log("[patch] Y6 v73 body-height fit (cm detect @20, multiply only)");
-    yStart = js.indexOf(yMark, yStart + Y6_V73.length);
+    // ORC 2 m: geo AABB corners (SkinnedMesh-safe); direct unit fit when hy>10; fine-fit clamp 0.25..4
+    const Y6_V74 =
+      'function Y6(C,A=2){C.rotation.set(0,0,0);C.scale.set(1,1,1);C.position.set(0,0,0);C.updateWorldMatrix(!0,!0);const _v=new O;const measure=()=>{const b=new YC;let n=0;C.traverse(o=>{if(!(o instanceof GB||o instanceof EC)||!o.visible)return;const nm=(o.name||"").toLowerCase();if(/(weapon|sword|axe|hammer|mace|spear|bow|staff|shield|quiver|bag)/.test(nm))return;if(!(o instanceof GB||/(body|torso|legs|units_|pelvis|head|arms)/.test(nm)))return;const g=o.geometry;if(!g)return;g.boundingBox||g.computeBoundingBox();const bb=g.boundingBox;if(!bb||bb.isEmpty())return;for(let ix=0;ix<2;ix++)for(let iy=0;iy<2;iy++)for(let iz=0;iz<2;iz++){_v.set(ix?bb.max.x:bb.min.x,iy?bb.max.y:bb.min.y,iz?bb.max.z:bb.min.z).applyMatrix4(o.matrixWorld);b.expandByPoint(_v)}n++});return n&&!b.isEmpty()?b:new YC().setFromObject(C)};let box=measure(),hy=Math.max(box.getSize(new O).y,.001);const target=Math.min(Math.max(A||2,1.6),2.4);if(hy>10){const u=target/hy;Number.isFinite(u)&&u>0&&C.scale.multiplyScalar(u)}else if(hy>.05){const e=Math.min(Math.max(target/hy,.25),4);C.scale.multiplyScalar(e)}C.updateWorldMatrix(!0,!0);box=measure();const c=box.getCenter(new O);C.position.set(-c.x,-box.min.y,-c.z),C.updateWorldMatrix(!0,!0);const I=typeof J6=="function"?J6(C):null;C.updateWorldMatrix(!0,!0);return I}';
+    js = js.slice(0, yStart) + Y6_V74 + js.slice(yEnd);
+    console.log("[patch] Y6 v74 ORC 2m geo-AABB fit (no decade, no cm setScalar chain)");
+    yStart = js.indexOf(yMark, yStart + Y6_V74.length);
   }
+
+  // Force clone of GLTF scene before mutate (loader cache shares scene → 100× stack)
+  if (js.includes("const gltf=await WgHeroGltf.loadAsync(url),o=gltf.scene;")) {
+    js = js.replace(
+      "const gltf=await WgHeroGltf.loadAsync(url),o=gltf.scene;",
+      "const gltf=await WgHeroGltf.loadAsync(url),o=gltf.scene.clone(!0);",
+    );
+    console.log("[patch] hero GLB scene.clone(true) before Y6");
+  }
+
+  // Player / default fitHeight → 2.0 (ORC system)
+  js = js.replaceAll("fitHeight:1.85", "fitHeight:2");
+  js = js.replaceAll("fitHeight??1.85", "fitHeight??2");
+  js = js.replaceAll("fitHeight??2.05", "fitHeight??2");
+  js = js.replaceAll("A.fitHeight??2.05", "A.fitHeight??2");
 
   // Hero GLB success path: after Y6, force baked pack via pY (staged GLBs often have 0 clips)
   // Pattern: create mixer + director from embedded picks — replace with pY when available
@@ -2633,8 +2679,9 @@ function WgFleetAboutHub(){return d.jsxs("div",{className:"gw-hub-body gw-about-
     console.log("[patch] gear visibility before Y6 fit");
   }
 
-  mustPatch("y6-v73", js.includes("if(hy>20)") || js.includes("hy>20"));
+  mustPatch("y6-v74-orc2m", js.includes("function Y6(C,A=2)") && js.includes("expandByPoint"));
   mustPatch("baked-on-glb", js.includes("await pY(l,Q)") || js.includes("pY(l,Q)"));
+  mustPatch("hero-glb-clone", js.includes("o=gltf.scene.clone(!0)") || js.includes("o=gltf.scene.clone(true)"));
 }
 
 writeFileSync(OUT, js);

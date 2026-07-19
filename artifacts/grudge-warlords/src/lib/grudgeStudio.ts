@@ -8,7 +8,8 @@
 import type { GrudgeUser } from "./grudgeAuth";
 
 const AUTH_ORIGIN = "https://id.grudge-studio.com";
-const SDK_URL = "https://objectstore.grudge-studio.com/sdk/grudge-sdk.js";
+/** Same-origin shim — objectstore.grudge-studio.com/sdk is 404 / ERR_CONNECTION_CLOSED. */
+const SDK_URL = "/sdk/grudge-sdk.js";
 const TOKEN_KEY = "grudge_auth_token";
 const POPUP_TIMEOUT_MS = 120_000;
 
