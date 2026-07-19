@@ -3,6 +3,7 @@ import { EM } from "./entities";
 import { heroDealDamage, isAttackable, isUnit, meleeConeHit, structRadius } from "./combat";
 import type { WarlordWeaponSkill } from "./warlordWeaponSkills";
 import type { ApiWeaponId } from "@workspace/game-content";
+import { deploySandboxVfx, effectIdForWeaponSkill, VFX_HOTKEYS } from "./vfxSandboxHotkeys";
 
 const _origin = new THREE.Vector3();
 const _dir = new THREE.Vector3();
@@ -21,6 +22,18 @@ export function applyWeaponSkillHit(
   const dmg = skill.damage * damageMult * EM.factionDmgMult("ally");
   _dir.copy(cameraDir).normalize();
   _origin.copy(cameraPos);
+
+  // Fire matching Fantasy VFX Sandbox effect (V/B/F/G/T/C catalog) on skill cast.
+  const effectId =
+    effectIdForWeaponSkill(skill.id ?? "") ||
+    effectIdForWeaponSkill(skill.label ?? "");
+  if (effectId) {
+    const bind =
+      VFX_HOTKEYS.find((b) => b.effectId === effectId) ??
+      VFX_HOTKEYS.find((b) => b.key === "C")!;
+    const feet = new THREE.Vector3(EM.playerPos.x, EM.playerPos.y + 1.1, EM.playerPos.z);
+    deploySandboxVfx({ ...bind, effectId }, feet, _dir);
+  }
 
   const ranged = RANGED_API.has(apiWeapon);
   const reach = ranged ? 42 : 5.5;

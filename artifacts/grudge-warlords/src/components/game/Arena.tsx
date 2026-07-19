@@ -5,10 +5,11 @@ import * as THREE from "three";
 import { EM } from "../../game/entities";
 import { useGame } from "../../game/store";
 
-// Vertex tint blended by terrain height: warm path tan in the low corridors,
-// mossy green on the raised ridge dividers.
-const LOW = new THREE.Color("#c9a875");
-const HIGH = new THREE.Color("#5d6b3c");
+// Vertex tint: warm packed-earth paths, darker ridge walls for maze readability.
+const PATH = new THREE.Color("#d4b896"); // open lane floor
+const EDGE = new THREE.Color("#6a5438"); // path/ridge boundary (maze edge)
+const RIDGE = new THREE.Color("#3f4d2e"); // high ridge tops
+const EDGE_DIST = 2.4; // world units from lane centerline → edge band
 
 /**
  * Battlefield visual mesh + Rapier heightfield collider (same height samples).
@@ -18,9 +19,11 @@ const HIGH = new THREE.Color("#5d6b3c");
 export function Arena() {
   const mapVersion = useGame((s) => s.mapVersion);
 
-  const [groundDiff, groundNor] = useTexture([
+  const [groundDiff, groundNor, groundAo, groundRough] = useTexture([
     "/textures/ground_diff.jpg",
     "/textures/ground_nor.jpg",
+    "/textures/ground_ao.jpg",
+    "/textures/ground_rough.jpg",
   ]);
 
   // Build the terrain geometry + Rapier heightfield args from the active map.
@@ -29,8 +32,9 @@ export function Arena() {
     const { hmCols: cols, hmRows: rows, heights, width, length } = m;
     const halfW = width / 2;
     const halfL = length / 2;
-    const repX = width / 8;
-    const repY = length / 8;
+    // Tighter UV repeat = clearer ground grain (was /8, now /5.5).
+    const repX = width / 5.5;
+    const repY = length / 5.5;
 
     const positions = new Float32Array(cols * rows * 3);
     const uvs = new Float32Array(cols * rows * 2);
@@ -47,8 +51,16 @@ export function Arena() {
         positions[i * 3 + 2] = z;
         uvs[i * 2] = (c / (cols - 1)) * repX;
         uvs[i * 2 + 1] = (r / (rows - 1)) * repY;
-        const t = Math.min(1, h / 3.2);
-        tmp.copy(LOW).lerp(HIGH, t);
+        // Height ridge factor + maze edge factor (near lane corridor walls).
+        const ht = Math.min(1, Math.max(0, h / 2.8));
+        const dPath = typeof m.distToPath === "function" ? m.distToPath(x, z) : 99;
+        // Edge band: close to path but rising → dark ridge wall (maze outline).
+        const edge = THREE.MathUtils.smoothstep(dPath, 0.6, EDGE_DIST);
+        const pathness = 1 - THREE.MathUtils.smoothstep(dPath, 0.4, EDGE_DIST * 1.4);
+        tmp.copy(PATH).lerp(RIDGE, ht);
+        // Boost path floor brightness; darken maze edges for clear routing.
+        tmp.lerp(PATH, pathness * 0.55 * (1 - ht));
+        tmp.lerp(EDGE, edge * (0.35 + ht * 0.45));
         colors[i * 3] = tmp.r;
         colors[i * 3 + 1] = tmp.g;
         colors[i * 3 + 2] = tmp.b;
@@ -69,6 +81,8 @@ export function Arena() {
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(positions, 3));
     g.setAttribute("uv", new THREE.BufferAttribute(uvs, 2));
+    // aoMap in three.js samples uv2 — mirror primary UVs so AO shows correctly.
+    g.setAttribute("uv2", new THREE.BufferAttribute(uvs.slice(), 2));
     g.setAttribute("color", new THREE.BufferAttribute(colors, 3));
     g.setIndex(indices);
     g.computeVertexNormals();
@@ -98,13 +112,15 @@ export function Arena() {
 
   useMemo(() => {
     const m = EM.map;
-    for (const t of [groundDiff, groundNor]) {
+    for (const t of [groundDiff, groundNor, groundAo, groundRough]) {
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
-      t.repeat.set(m.width / 8, m.length / 8);
-      t.anisotropy = 8;
+      t.repeat.set(m.width / 5.5, m.length / 5.5);
+      t.anisotropy = 12;
+      t.needsUpdate = true;
     }
+    groundDiff.colorSpace = THREE.SRGBColorSpace;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [groundDiff, groundNor, mapVersion]);
+  }, [groundDiff, groundNor, groundAo, groundRough, mapVersion]);
 
   const m = EM.map;
   const halfW = m.width / 2;
@@ -119,14 +135,19 @@ export function Arena() {
 
   return (
     <group>
-      {/* Visual terrain mesh (no physics) */}
+      {/* Visual terrain mesh (no physics) — AO + roughness + maze edge tints */}
       <mesh key={`vis-${mapVersion}`} geometry={geom} receiveShadow castShadow>
         <meshStandardMaterial
           map={groundDiff}
           normalMap={groundNor}
+          normalScale={new THREE.Vector2(1.15, 1.15)}
+          aoMap={groundAo}
+          aoMapIntensity={0.85}
+          roughnessMap={groundRough}
+          roughness={0.92}
+          metalness={0.02}
           vertexColors
-          roughness={1}
-          metalness={0}
+          envMapIntensity={0.35}
         />
       </mesh>
 
@@ -179,11 +200,11 @@ export function Arena() {
         >
           <mesh castShadow receiveShadow>
             <boxGeometry args={w.s as unknown as [number, number, number]} />
-            <meshStandardMaterial color="#3a2a22" roughness={0.85} metalness={0.2} />
+            <meshStandardMaterial color="#4a382c" roughness={0.78} metalness={0.12} />
           </mesh>
           <mesh position={[0, wallDepth / 2 - 0.15, 0]}>
             <boxGeometry args={[w.s[0], 0.12, w.s[2]]} />
-            <meshStandardMaterial color="#c0392b" emissive="#c0392b" emissiveIntensity={1.2} />
+            <meshStandardMaterial color="#e85d4c" emissive="#c0392b" emissiveIntensity={0.85} />
           </mesh>
         </RigidBody>
       ))}

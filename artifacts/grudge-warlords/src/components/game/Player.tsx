@@ -42,6 +42,7 @@ import {
   type WarlordWeaponSkill,
 } from "../../game/warlordWeaponSkills";
 import { applyWeaponSkillHit } from "../../game/weaponSkillCombat";
+import { deploySandboxVfx, vfxHotkeyByCode } from "../../game/vfxSandboxHotkeys";
 
 const _dir = new THREE.Vector3();
 const _front = new THREE.Vector3();
@@ -75,10 +76,11 @@ const COMBAT_SHOULDER = 0.48;
 const COMMAND_DIST = 14;
 const COMMAND_LIFT = 12;
 
-/** Mouse-wheel camera zoom: a clamped multiplier on the third-person distance. */
-const ZOOM_MIN = 0.55;
-const ZOOM_MAX = 2.2;
-const ZOOM_STEP = 0.12;
+/** Mouse-wheel camera zoom: multiplier on third-person distance (1 = default). */
+const ZOOM_MIN = 0.4;
+const ZOOM_MAX = 2.8;
+const ZOOM_STEP = 0.1;
+const ZOOM_STEP_FAST = 0.22;
 
 /** Numpad camera nudge (command view): 4/6 orbit speed, 8/2 tilt range + speed. */
 const CAM_ORBIT_SPEED = 1.7;
@@ -288,8 +290,26 @@ export function Player() {
     const onKey = (e: KeyboardEvent) => {
       if (e.code === "KeyR") startReload();
       if (e.code === "KeyQ") swapWeapon();
-      if (e.code === "KeyC") triggerDash();
-      if (e.code === "KeyG") triggerSlam();
+      // Bare C/G = mobility (dash / slam). Alt+C / Alt+G = sandbox VFX deploy.
+      if (e.code === "KeyC" && !e.altKey) triggerDash();
+      if (e.code === "KeyG" && !e.altKey) triggerSlam();
+      // Alt+V/B/F/G/T/C → Fantasy VFX Sandbox effects (vfxgrudge.puter.site).
+      if (e.altKey && !e.repeat && useGame.getState().phase === "battle") {
+        const bind = vfxHotkeyByCode(e.code);
+        if (bind) {
+          e.preventDefault();
+          const rb = body.current;
+          const root = animatorRef.current?.root;
+          const origin = root
+            ? new THREE.Vector3().setFromMatrixPosition(root.matrixWorld)
+            : rb
+              ? new THREE.Vector3(rb.translation().x, rb.translation().y, rb.translation().z)
+              : new THREE.Vector3();
+          origin.y += 1.1;
+          camera.getWorldDirection(_camDir);
+          deploySandboxVfx(bind, origin, _camDir);
+        }
+      }
       if (useCommand.getState().mode === "combat" && /^Digit[1-6]$/.test(e.code) && !e.repeat) {
         castWeaponSkill(parseInt(e.code.slice(5), 10) - 1);
       }
@@ -325,21 +345,30 @@ export function Player() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
-  // Mouse-wheel camera zoom (clamped). Scroll up pulls the camera in, scroll
-  // down pushes it out; the multiplier is applied to the third-person distance.
+  // Mouse-wheel camera zoom (clamped). Scroll UP zooms IN (closer), scroll DOWN
+  // zooms OUT. Bound on the canvas (and window fallback) so the page never steals
+  // the wheel during battle. Shift accelerates the step for big framing jumps.
   useEffect(() => {
     const onWheel = (e: WheelEvent) => {
       if (useGame.getState().phase !== "battle") return;
-      const dir = Math.sign(e.deltaY);
+      e.preventDefault();
+      // Natural "wheel up = zoom in": negative deltaY shrinks distance mult.
+      const step = e.shiftKey ? ZOOM_STEP_FAST : ZOOM_STEP;
+      const dir = Math.sign(e.deltaY); // +1 scroll down → zoom out
       zoom.current = THREE.MathUtils.clamp(
-        zoom.current + dir * ZOOM_STEP,
+        zoom.current + dir * step,
         ZOOM_MIN,
         ZOOM_MAX,
       );
     };
-    window.addEventListener("wheel", onWheel, { passive: true });
-    return () => window.removeEventListener("wheel", onWheel);
-  }, []);
+    const el = gl.domElement;
+    el.addEventListener("wheel", onWheel, { passive: false });
+    window.addEventListener("wheel", onWheel, { passive: false });
+    return () => {
+      el.removeEventListener("wheel", onWheel);
+      window.removeEventListener("wheel", onWheel);
+    };
+  }, [gl]);
 
   // Mouse-look (combat): accumulate raw pointer deltas into a target yaw/pitch
   // while the pointer is locked. Sensitivity scales the delta; pitch is clamped
