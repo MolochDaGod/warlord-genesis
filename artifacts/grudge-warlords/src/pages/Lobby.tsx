@@ -251,14 +251,38 @@ export function Lobby() {
 
             {/* Fleet diagnostics intentionally collapsed — keep march path clear */}
             <div className="gw-deploy-summary gw-deploy-fleet-links" style={{ marginTop: "0.5rem", opacity: 0.75 }}>
+              <button
+                type="button"
+                className="gw-deploy-hint"
+                style={{ display: "block", background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left", fontSize: 11 }}
+                onClick={() => navigate("/missions")}
+              >
+                Island missions · dark elves · whisps
+              </button>
+              <button
+                type="button"
+                className="gw-deploy-hint"
+                style={{ display: "block", marginTop: 4, background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left", fontSize: 11 }}
+                onClick={() => navigate("/home-island")}
+              >
+                Home island · shadow shrine
+              </button>
+              <button
+                type="button"
+                className="gw-deploy-hint"
+                style={{ display: "block", marginTop: 4, background: "none", border: 0, padding: 0, cursor: "pointer", color: "inherit", textAlign: "left", fontSize: 11 }}
+                onClick={() => navigate("/dungeon/DUNGEON_BRIAR_DEPTHS")}
+              >
+                Briar Depths dungeon instance
+              </button>
               <a
                 className="gw-deploy-hint"
                 href={sailAethermoorUrl(getStudioToken())}
                 target="_blank"
                 rel="noreferrer"
-                style={{ display: "block", fontSize: 11 }}
+                style={{ display: "block", marginTop: 4, fontSize: 11 }}
               >
-                Sail Aethermoor ↗
+                Sail Aethermoor · 9 sectors ↗
               </a>
               <a
                 className="gw-deploy-hint"
