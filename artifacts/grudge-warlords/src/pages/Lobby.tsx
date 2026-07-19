@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGame } from "../game/store";
 import { DIFFICULTY, DIFFICULTY_ORDER } from "../game/config";
-import { meleeDisplayName, rangedDisplayName } from "../game/canonicalLoadout";
+import { meleeDisplayName, offhandDisplayName, rangedDisplayName } from "../game/canonicalLoadout";
 import { useUI } from "../game/ui";
 import { useSession } from "../game/session";
 import { CharacterSelect } from "../components/ui/CharacterSelect";
@@ -42,6 +42,7 @@ export function Lobby() {
   const prefabId = useRoster((s) => s.prefabId);
   const meleeId = useRoster((s) => s.meleeId);
   const rangedId = useRoster((s) => s.rangedId);
+  const offhandId = useRoster((s) => s.offhandId);
   const setEnemyFaction = useRoster((s) => s.setEnemyFaction);
   const lockLoadout = useRoster((s) => s.lockLoadout);
   const { ready: warlordReady, blockReason } = useWarcampReady();
@@ -91,11 +92,18 @@ export function Lobby() {
     GRUDGE_FACTIONS[1] ??
     playerFaction;
 
+  const [marchError, setMarchError] = useState<string | null>(null);
+
   const march = () => {
+    setMarchError(null);
+    // Two passes: first unlocks starter / gear; second re-reads stores after writes
+    ensureWarcampReady();
     ensureWarcampReady();
     const gate = evaluateWarcampReady();
     if (!gate.ready) {
+      const msg = warcampBlockMessage(gate.blockReason);
       console.warn("[warlord-genesis] march blocked", gate.blockReason);
+      setMarchError(msg);
       return;
     }
     lockLoadout();
@@ -106,6 +114,10 @@ export function Lobby() {
       const ok = startGame();
       if (!ok) {
         console.warn("[warlord-genesis] march: start failed", prepared.error);
+        setMarchError(
+          prepared.error || "Could not start match — try Quick Battle from the title screen.",
+        );
+        return;
       }
     }
     navigate("/play");
@@ -190,6 +202,10 @@ export function Lobby() {
               <div className="gw-deploy-row">
                 <span className="gw-deploy-k">Melee</span>
                 <span className="gw-deploy-v">{meleeDisplayName(prefabId, meleeId)}</span>
+              </div>
+              <div className="gw-deploy-row">
+                <span className="gw-deploy-k">Off-hand</span>
+                <span className="gw-deploy-v">{offhandDisplayName(offhandId)}</span>
               </div>
               <div className="gw-deploy-row">
                 <span className="gw-deploy-k">Ranged</span>
@@ -305,6 +321,16 @@ export function Lobby() {
               </button>
             </div>
 
+            {marchError && (
+              <p className="gw-form-error" role="alert" style={{ marginBottom: 8 }}>
+                {marchError}
+              </p>
+            )}
+            {!warlordReady && blockReason && (
+              <p className="gw-deploy-hint" style={{ marginBottom: 8 }}>
+                {warcampBlockMessage(blockReason)}
+              </p>
+            )}
             <button
               type="button"
               className="gw-btn gw-lobby-march"
@@ -313,10 +339,22 @@ export function Lobby() {
               title={
                 warlordReady
                   ? "Deploy with chosen warlord and canonical weapons"
-                  : "Unlock warlord in War Chest or finish loadout"
+                  : warcampBlockMessage(blockReason)
               }
             >
               MARCH TO WAR
+            </button>
+            <button
+              type="button"
+              className="gw-btn gw-btn-ghost"
+              style={{ width: "100%", marginTop: 8 }}
+              onClick={() => {
+                ensureWarcampReady();
+                ensureWarcampReady();
+                navigate("/play?skirmish=1");
+              }}
+            >
+              QUICK SKIRMISH
             </button>
             <button
               type="button"

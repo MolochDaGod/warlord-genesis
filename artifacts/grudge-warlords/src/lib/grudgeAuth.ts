@@ -15,6 +15,8 @@ export interface GrudgeUser {
   role: string;
   needsProfile?: boolean;
   isNew?: boolean;
+  /** Present on guest/puter responses — persist for fleet hydrate */
+  token?: string;
 }
 
 async function post(path: string, body?: unknown): Promise<GrudgeUser> {
@@ -28,6 +30,15 @@ async function post(path: string, body?: unknown): Promise<GrudgeUser> {
   });
   const data = (await res.json()) as GrudgeUser & { error?: string };
   if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
+  // Persist JWT so /api/characters + restore work across reloads
+  if (data.token) {
+    try {
+      localStorage.setItem("grudge_auth_token", data.token);
+      localStorage.setItem("sso_token", data.token);
+    } catch {
+      /* ignore */
+    }
+  }
   return data;
 }
 

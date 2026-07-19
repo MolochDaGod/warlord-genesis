@@ -32,13 +32,28 @@ async function run(
   set({ loading: true, error: null });
   try {
     const user = await fn();
-    await hydrateMetaFromServer();
-    await hydrateRosterFromFleet();
+    // Non-fatal: progress hydrate can fail offline / without characters
+    try {
+      await hydrateMetaFromServer();
+    } catch {
+      /* ignore */
+    }
+    try {
+      await hydrateRosterFromFleet();
+    } catch {
+      /* ignore */
+    }
     set({ user, loading: false });
   } catch (err) {
+    const msg = err instanceof Error ? err.message : "Something went wrong";
+    // Redirect-in-progress is not a hard failure
+    if (/Redirecting to Grudge ID/i.test(msg)) {
+      set({ loading: true, error: null });
+      return;
+    }
     set({
       loading: false,
-      error: err instanceof Error ? err.message : "Something went wrong",
+      error: msg,
     });
   }
 }
