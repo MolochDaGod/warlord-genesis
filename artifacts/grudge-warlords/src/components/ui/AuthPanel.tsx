@@ -77,7 +77,7 @@ export function AuthPanel() {
             </a>
             <a
               className="gw-btn gw-btn-ghost"
-              href={`${GRUDGE_FLEET_URLS.identity}/login?redirect_uri=${encodeURIComponent(typeof window !== "undefined" ? window.location.origin + "/" : GRUDGE_FLEET_URLS.warlordGenesis)}`}
+              href={`${GRUDGE_FLEET_URLS.identity}/login?redirect_uri=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat + "/")}&redirect=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat + "/")}&return=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat + "/")}&returnTo=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat + "/")}&return_to=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat + "/")}&origin=${encodeURIComponent(GRUDGE_FLEET_URLS.warstrat)}&app=genesis`}
               target="_blank"
               rel="noreferrer"
             >

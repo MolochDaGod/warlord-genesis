@@ -185,17 +185,34 @@ const AUTH_SUCCESS_TYPES = new Set([
   "GRUDGE_AUTH_SUCCESS",
 ]);
 
+/** Brand Warstrat host — never pin login return to warlord-genesis.vercel.app. */
+const WARSTRAT_BRAND = "https://warstrat.grudge-studio.com";
+
+function isLocalDevHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "[::1]";
+}
+
+/** Production callback URL on warstrat brand domain. */
+export function warstratReturnUrl(path = "/auth/callback"): string {
+  const p = path.startsWith("/") ? path : `/${path}`;
+  if (typeof window === "undefined") return `${WARSTRAT_BRAND}${p}`;
+  const h = window.location.hostname || "";
+  if (isLocalDevHost(h)) return new URL(p, window.location.origin).href;
+  if (h === "warstrat.grudge-studio.com") return new URL(p, window.location.origin).href;
+  return `${WARSTRAT_BRAND}${p}`;
+}
+
 /** Canonical login URL with dual return params (fleet contract). */
 export function buildStudioLoginUrl(
-  returnUrl: string = typeof window !== "undefined"
-    ? `${window.location.origin}/auth/callback`
-    : "https://warlord-genesis.vercel.app/auth/callback",
+  returnUrl: string = warstratReturnUrl("/auth/callback"),
 ): string {
   const q = new URLSearchParams();
   q.set("redirect_uri", returnUrl);
   q.set("redirect", returnUrl);
   q.set("return", returnUrl);
-  q.set("origin", typeof window !== "undefined" ? window.location.origin : returnUrl);
+  q.set("returnTo", returnUrl);
+  q.set("return_to", returnUrl);
+  q.set("origin", WARSTRAT_BRAND);
   q.set("app", "genesis");
   return `${AUTH_ORIGIN}/login?${q.toString()}`;
 }
@@ -203,15 +220,13 @@ export function buildStudioLoginUrl(
 /** Full-page redirect SSO (most reliable on mobile / popup blockers). */
 export function loginWithRedirect(returnPath = "/auth/callback"): void {
   if (typeof window === "undefined") return;
-  const returnUrl = new URL(returnPath, window.location.origin).href;
-  window.location.href = buildStudioLoginUrl(returnUrl);
+  window.location.href = buildStudioLoginUrl(warstratReturnUrl(returnPath));
 }
 
 /** Open the Grudge Studio popup and resolve with the returned session token. */
 function openAuthPopup(): Promise<string> {
   return new Promise<string>((resolve, reject) => {
-    const origin = window.location.origin;
-    const returnUrl = `${origin}/auth/callback`;
+    const returnUrl = warstratReturnUrl("/auth/callback");
     const authUrl = buildStudioLoginUrl(returnUrl);
     const popup = window.open(
       authUrl,
