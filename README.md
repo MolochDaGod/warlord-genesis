@@ -13,6 +13,7 @@
 | **Vercel production** | https://warlord-genesis.vercel.app |
 | **Branded DNS** | https://warstrat.grudge-studio.com |
 | **Play** | `/play` on either host |
+| **Map Edit** | `/edit` — scale + pathfinding routes |
 | **Warcamp** | `/lobby` · march orders `/deploy` |
 | **Repo** | [github.com/MolochDaGod/warlord-genesis](https://github.com/MolochDaGod/warlord-genesis) |
 
@@ -23,6 +24,42 @@ Both hosts serve the same Vercel project (`warlord-genesis`). DNS for `warstrat`
 - `artifacts/grudge-warlords` — React + Vite + R3F + Rapier (source of truth for client)
 - `lib/gw-sim` — Headless PvP simulation
 - `lib/r3f-fleet`, `lib/game-content`, `lib/grudge-engine` — shared engine/content
+
+
+## Map Edit Studio (`/edit`)
+
+Production map tooling for **terrain / tower / building scales** and **pathfinding routes**.
+
+| | |
+|--|--|
+| **Live** | https://warlord-genesis.vercel.app/edit |
+| **Alias** | `/map-edit` · `/edit.html` |
+| **Package** | `edit.html` + `assets/map-edit.mjs` (static ship; Three.js via CDN importmap) |
+
+### Features
+
+- Choose **map size** (Standard / Large) and **seed**
+- Scale layers (SI): terrain height, towers, buildings, trees, props, route lift
+- Pathfinding: **Grid A\*** (walk grid) or straight debug line
+- Draw routes from structure **bottom · mid · top** anchors **on the terrain mesh**
+- Prefs in `localStorage` (`wg:map-edit:standalone:v1`)
+
+### Dependencies (edit package)
+
+| Dep | How |
+|-----|-----|
+| **three@0.184** | CDN importmap in `edit.html` (jsDelivr) — no npm install for the static page |
+| Game SPA (gw-core) | Separate; edit ships beside the battle bundle |
+
+React source (future Vite builds): `artifacts/grudge-warlords/src/pages/Edit.tsx`.
+
+### Verify
+
+```bash
+pnpm run verify
+pnpm run edit:verify
+```
+
 
 ## Play defaults (campaign-ready)
 
