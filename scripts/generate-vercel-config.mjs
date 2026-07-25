@@ -1,4 +1,4 @@
-#!/usr/bin/env node
+﻿#!/usr/bin/env node
 /**
  * Generate vercel.json with Grudge fleet API rewrites + warlord-genesis API proxy.
  */
@@ -19,8 +19,6 @@ const GAME_DATA =
 const WARLORD_API =
   process.env.WARLORD_GENESIS_API_URL?.replace(/\/$/, "") ||
   "https://warlord-genesis-api-production-3b5a.up.railway.app";
-const WARLORD_MP =
-  process.env.WARLORD_MP_URL?.replace(/\/$/, "") || "https://warlord-mp.up.railway.app";
 
 const PREFIXES = [
   "health",
@@ -44,7 +42,7 @@ const PREFIXES = [
   "races",
   "classes",
   "items",
-  /** Fleet Treaty — friends, DMs, groups, server chat (Railway SSOT) */
+  /** Fleet Treaty ΓÇö friends, DMs, groups, server chat (Railway SSOT) */
   "treaty",
 ];
 
@@ -70,7 +68,7 @@ const AUTH_PATHS = [
 
 const OBJECTSTORE = "https://objectstore.grudge-studio.com";
 
-/** KayKit creeps, GRUDGE6 FBX heroes, projectiles — live on ObjectStore, not in this static deploy. */
+/** KayKit creeps, GRUDGE6 FBX heroes, projectiles ΓÇö live on ObjectStore, not in this static deploy. */
 const OBJECTSTORE_MODEL_PREFIXES = [
   "kaykit",
   "characters",
@@ -85,7 +83,7 @@ const ASSET_CDN = "https://client.grudge-studio.com";
 
 const rewrites = [
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
-  // Fixed tower GLBs ship from this deploy — CDN copies are Assimp/non-standard and crash GLTFLoader.
+  // Fixed tower GLBs ship from this deploy ΓÇö CDN copies are Assimp/non-standard and crash GLTFLoader.
   {
     source: "/api/assets/models/maps/:theme/:file",
     destination: "/models/towers/:theme/:file",
@@ -102,13 +100,13 @@ const rewrites = [
     source: "/api/assets/grudge-nexus/models/rts/units/:file",
     destination: "/models/units/:file",
   },
-  /** GRUDGE6 faction hero GLBs (~240MB) — too large for Vercel static output; proxy from git raw. */
+  /** GRUDGE6 faction hero GLBs (~240MB) ΓÇö too large for Vercel static output; proxy from git raw. */
   {
     source: "/models/heroes/grudge6/:file",
     destination:
       "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file",
   },
-  /** GRUDGE6 race atlases — local /textures/grudge6 fallback proxies to canonical R2 CDN. */
+  /** GRUDGE6 race atlases ΓÇö local /textures/grudge6 fallback proxies to canonical R2 CDN. */
   {
     source: "/textures/grudge6/:race/:file",
     destination: "https://assets.grudge-studio.com/assets/:race/textures/:file",
@@ -158,7 +156,7 @@ for (const segment of AUTH_PATHS) {
   });
 }
 
-/** Canonical fleet auth proxy — id hub, not deprecated api.grudge-studio.com */
+/** Canonical fleet auth proxy ΓÇö id hub, not deprecated api.grudge-studio.com */
 rewrites.push(
   { source: "/auth/callback", destination: "/index.html" },
   { source: "/api/auth/:path*", destination: `${AUTH_GATEWAY}/api/auth/:path*` },
@@ -171,21 +169,30 @@ rewrites.push(
   { source: "/brand/logo.png", destination: `${AUTH_GATEWAY}/brand/logo.png` },
   { source: "/brand/:path*", destination: `${AUTH_GATEWAY}/brand/:path*` },
   { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
-  // Game profiles / matches / leaderboards for this title — NOT grudge-studio.com (retro ROM catalog).
+  // Game profiles / matches for this title ΓÇö NOT grudge-studio.com (retro ROM catalog).
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
   { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
-  // Fleet map for dashboards
-  { source: "/api/grudge/fleet", destination: `${WARLORD_API}/api/grudge/fleet` },
-  // MOBA / PvP multipath health (Socket.IO server — set WARLORD_MP_URL when live)
-  { source: "/api/mp/health", destination: `${WARLORD_MP}/health` },
-  // Unknown fleet APIs → grudge-api (account/characters already rewritten above).
-  // Never proxy to grudge-studio.com — that host serves NES/NDS listings as /api/games.
+  // Unknown fleet APIs ΓåÆ grudge-api (account/characters already rewritten above).
+  // Never proxy to grudge-studio.com ΓÇö that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
-  {
-    source:
-      "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap).*)",
-    destination: "/index.html",
-  },
+  // Client SPA routes (Vercel does not support JS negative-lookahead path regex).
+  // Static files under assets/ models/ etc. still win over rewrites when present on disk.
+  { source: "/play", destination: "/index.html" },
+  { source: "/edit", destination: "/edit.html" },
+  { source: "/map-edit", destination: "/edit.html" },
+  { source: "/lobby", destination: "/index.html" },
+  { source: "/deploy", destination: "/index.html" },
+  { source: "/battle", destination: "/index.html" },
+  { source: "/warcamp", destination: "/index.html" },
+  { source: "/mp", destination: "/index.html" },
+  { source: "/mp/:path*", destination: "/index.html" },
+  { source: "/onboarding/:path*", destination: "/index.html" },
+  { source: "/missions", destination: "/index.html" },
+  { source: "/home", destination: "/index.html" },
+  { source: "/island", destination: "/index.html" },
+  { source: "/faction", destination: "/index.html" },
+  { source: "/warlord", destination: "/index.html" },
+  { source: "/:path*", destination: "/index.html" },
 );
 
 /** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
@@ -196,7 +203,7 @@ const config = {
   installCommand: "",
   outputDirectory: ".",
   framework: null,
-  // Dead bundle URLs → Sprite-safe core (filename browsers have never cached).
+  // Dead bundle URLs ΓåÆ Sprite-safe core (filename browsers have never cached).
   redirects: [
     {
       source: "/assets/index-warlord-fix3.js",
@@ -264,7 +271,7 @@ const config = {
       headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
     {
-      source: "/anims/(.*)",
+      source: "/anims/|sdk/|(.*)",
       headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
   ],
