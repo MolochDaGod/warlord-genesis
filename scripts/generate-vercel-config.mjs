@@ -192,7 +192,11 @@ rewrites.push(
   { source: "/island", destination: "/index.html" },
   { source: "/faction", destination: "/index.html" },
   { source: "/warlord", destination: "/index.html" },
-  { source: "/:path*", destination: "/index.html" },
+  // SPA fallback — must exclude static asset dirs so /models/*.glb is never HTML
+  {
+    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html).*)",
+    destination: "/index.html",
+  },
 );
 
 /** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
