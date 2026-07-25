@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Standalone Map Edit runtime for warlord-genesis.vercel.app/edit
  * Terrain + towers/buildings scales + grid pathfinding + bottom/mid/top routes.
  */
