@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Map Edit · Warlord Genesis</title>
+    <meta name="description" content="Scale terrain, towers, buildings; pathfinding; draw bottom/mid/top routes on the map mesh." />
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <style>
+      * { box-sizing: border-box; }
+      html, body { margin: 0; height: 100%; background: #070b14; color: #e2e8f0; font-family: Inter, system-ui, sans-serif; overflow: hidden; }
+      #app { display: flex; height: 100%; }
+      #view { flex: 1; position: relative; min-width: 0; }
+      #c { width: 100%; height: 100%; display: block; }
+      #hud {
+        position: absolute; top: 12px; left: 12px; display: flex; gap: 8px; align-items: center; z-index: 2;
+      }
+      #hud a, #hud span {
+        font-size: 12px; padding: 6px 10px; border-radius: 6px; border: 1px solid rgba(255,255,255,0.15);
+        background: rgba(0,0,0,0.55); color: #e2e8f0; text-decoration: none;
+      }
+      #hud .tag { border-color: rgba(245,158,11,0.45); background: rgba(245,158,11,0.18); color: #fde68a; font-weight: 600; }
+      #status {
+        position: absolute; bottom: 12px; left: 12px; max-width: 480px; z-index: 2;
+        font: 11px/1.4 ui-monospace, monospace; padding: 8px 12px; border-radius: 8px;
+        background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.1); color: #94a3b8;
+      }
+      aside {
+        width: 340px; max-width: 42vw; border-left: 1px solid rgba(255,255,255,0.1);
+        background: rgba(12,18,32,0.96); overflow-y: auto; padding: 0;
+      }
+      aside header, aside section, aside footer { padding: 14px 16px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+      aside footer { border-bottom: 0; font-size: 10px; color: #64748b; }
+      h1 { margin: 0; font-size: 14px; }
+      p.sub { margin: 6px 0 0; font-size: 11px; color: #94a3b8; line-height: 1.4; }
+      label.lab { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 0.06em; color: #64748b; margin: 8px 0 4px; }
+      select, input[type=text] {
+        width: 100%; background: rgba(0,0,0,0.4); border: 1px solid rgba(255,255,255,0.15);
+        border-radius: 6px; padding: 6px 8px; color: #e2e8f0; font-size: 12px;
+      }
+      input[type=range] { width: 100%; }
+      .row { display: flex; justify-content: space-between; font-size: 11px; margin-bottom: 2px; }
+      .row span.v { color: #fde68a; font-family: ui-monospace, monospace; }
+      button.mode, button.layer, button.act {
+        display: block; width: 100%; text-align: left; margin: 0 0 6px; padding: 8px 10px;
+        border-radius: 6px; border: 1px solid rgba(255,255,255,0.1); background: transparent;
+        color: #e2e8f0; cursor: pointer; font-size: 12px;
+      }
+      button.mode.on { border-color: rgba(56,189,248,0.45); background: rgba(56,189,248,0.12); }
+      button.layer { display: inline-block; width: auto; margin-right: 6px; text-transform: capitalize; }
+      button.layer.on-bottom { border-color: #f59e0b; color: #f59e0b; background: rgba(245,158,11,0.15); }
+      button.layer.on-mid { border-color: #38bdf8; color: #38bdf8; background: rgba(56,189,248,0.15); }
+      button.layer.on-top { border-color: #e879f9; color: #e879f9; background: rgba(232,121,249,0.15); }
+      button.act {
+        text-align: center; background: #d97706; border-color: #d97706; color: #000; font-weight: 700; margin-top: 10px;
+      }
+      button.act:disabled { opacity: 0.4; cursor: not-allowed; }
+      .chk { font-size: 11px; color: #94a3b8; display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+      .hint { font-size: 10px; color: #64748b; margin: 4px 0 8px; line-height: 1.4; }
+      .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    </style>
+  </head>
+  <body>
+    <div id="app">
+      <div id="view">
+        <canvas id="c"></canvas>
+        <div id="hud">
+          <a href="/play">← Play</a>
+          <span class="tag">/edit · Map Scale + Routes</span>
+        </div>
+        <div id="status">Booting…</div>
+      </div>
+      <aside>
+        <header>
+          <h1>Map Edit Studio</h1>
+          <p class="sub">Scale terrain & meshes, choose pathfinding, draw bottom / mid / top routes on the battlefield mesh.</p>
+        </header>
+        <section>
+          <label class="lab">Map size</label>
+          <select id="mapSize">
+            <option value="standard">Standard (240×390 m)</option>
+            <option value="large">Large (600×975 m)</option>
+          </select>
+          <label class="lab">Seed (hex)</label>
+          <div style="display:flex;gap:6px">
+            <input type="text" id="seed" value="51c0de" />
+            <button class="layer" id="randSeed" type="button">🎲</button>
+          </div>
+        </section>
+        <section>
+          <label class="lab">Layer scales (SI)</label>
+          <div id="scales"></div>
+        </section>
+        <section>
+          <label class="lab">Pathfinding</label>
+          <button class="mode on" data-mode="grid" type="button"><b>Grid A*</b><br/><span class="hint">Walkability grid + A* (default)</span></button>
+          <button class="mode" data-mode="straight" type="button"><b>Straight</b><br/><span class="hint">Direct line on terrain (debug)</span></button>
+          <label class="chk"><input type="checkbox" id="showNav" checked /> Show walkable samples</label>
+          <label class="chk"><input type="checkbox" id="showLanes" checked /> Show lane polylines</label>
+        </section>
+        <section>
+          <label class="lab">Draw routes on terrain</label>
+          <p class="hint">Path XZ from pathfinding; Y on terrain + lift. Stubs from structure <span style="color:#f59e0b">bottom</span> / <span style="color:#38bdf8">mid</span> / <span style="color:#e879f9">top</span>.</p>
+          <div class="grid2">
+            <div>
+              <label class="lab">From</label>
+              <select id="from"></select>
+            </div>
+            <div>
+              <label class="lab">To</label>
+              <select id="to"></select>
+            </div>
+          </div>
+          <div style="margin-top:10px">
+            <button class="layer on-bottom" data-layer="bottom" type="button">bottom</button>
+            <button class="layer on-mid" data-layer="mid" type="button">mid</button>
+            <button class="layer on-top" data-layer="top" type="button">top</button>
+          </div>
+          <button class="act" id="draw" type="button">Draw route layers</button>
+        </section>
+        <footer>Warlord Genesis · warlord-genesis.vercel.app/edit · prefs in localStorage</footer>
+      </aside>
+    </div>
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://cdn.jsdelivr.net/npm/three@0.184.0/build/three.module.js",
+          "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.184.0/examples/jsm/"
+        }
+      }
+    </script>
+    <script type="module" src="/assets/map-edit.mjs?h=1"></script>
+  </body>
+</html>

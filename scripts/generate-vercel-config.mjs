@@ -175,10 +175,24 @@ rewrites.push(
   // Unknown fleet APIs → grudge-api (account/characters already rewritten above).
   // Never proxy to grudge-studio.com — that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
-  {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|favicon\\.svg|auth-bg|grudge-id-logo|brand/).*)",
-    destination: "/index.html",
-  },
+  // Client SPA routes (Vercel does not support JS negative-lookahead path regex).
+  // Static files under assets/ models/ etc. still win over rewrites when present on disk.
+  { source: "/play", destination: "/index.html" },
+  { source: "/edit", destination: "/edit.html" },
+  { source: "/map-edit", destination: "/edit.html" },
+  { source: "/lobby", destination: "/index.html" },
+  { source: "/deploy", destination: "/index.html" },
+  { source: "/battle", destination: "/index.html" },
+  { source: "/warcamp", destination: "/index.html" },
+  { source: "/mp", destination: "/index.html" },
+  { source: "/mp/:path*", destination: "/index.html" },
+  { source: "/onboarding/:path*", destination: "/index.html" },
+  { source: "/missions", destination: "/index.html" },
+  { source: "/home", destination: "/index.html" },
+  { source: "/island", destination: "/index.html" },
+  { source: "/faction", destination: "/index.html" },
+  { source: "/warlord", destination: "/index.html" },
+  { source: "/:path*", destination: "/index.html" },
 );
 
 /** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
@@ -257,7 +271,7 @@ const config = {
       headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
     {
-      source: "/anims/(.*)",
+      source: "/anims/|sdk/|(.*)",
       headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
     },
   ],

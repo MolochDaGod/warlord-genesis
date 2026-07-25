@@ -10,6 +10,7 @@ import { Play } from "./pages/Play";
 import { Missions } from "./pages/Missions";
 import { HomeIsland } from "./pages/HomeIsland";
 import { DungeonInstance } from "./pages/DungeonInstance";
+import { Edit } from "./pages/Edit";
 import { MultiplayerPage } from "./components/mp/MultiplayerPage";
 import { GrudgeHub } from "./components/ui/GrudgeHub";
 import { RequireSession } from "./components/ui/RequireSession";
@@ -40,6 +41,9 @@ function App() {
           <Route path="/lobby" element={<Gate><Lobby /></Gate>} />
           <Route path={DEPLOY_PATH} element={<Gate><Deploy /></Gate>} />
           <Route path="/play" element={<Gate><Play /></Gate>} />
+          {/* Map scale + pathfinding routes — no session gate (tooling) */}
+          <Route path="/edit" element={<Edit />} />
+          <Route path="/map-edit" element={<Edit />} />
           <Route path="/mp" element={<Gate><MultiplayerPage /></Gate>} />
           <Route path="/missions" element={<Gate><Missions /></Gate>} />
           <Route path="/events" element={<Gate><Missions /></Gate>} />
