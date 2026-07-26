@@ -1,10 +1,10 @@
 {
   "name": "warlord-genesis",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "packageManager": "pnpm@9.15.9",
   "license": "MIT",
   "private": true,
-  "description": "Warlord Genesis / Warstrat — https://warlord-genesis.vercel.app · https://warstrat.grudge-studio.com",
+  "description": "Warlord Genesis / Warstrat — play, warcamp, map edit studio. https://warlord-genesis.vercel.app · https://warstrat.grudge-studio.com",
   "type": "module",
   "scripts": {
     "preinstall": "node -e \"const ua=process.env.npm_config_user_agent||''; if(!ua.includes('pnpm')){console.error('Use pnpm instead');process.exit(1)}\"",
@@ -39,7 +39,9 @@
     "vercel:config": "node scripts/generate-vercel-config.mjs",
     "api:dev": "cd api && npm run dev",
     "api:migrate": "cd api && npm run db:migrate",
-    "clean:scratch": "node scripts/clean-scratch.mjs"
+    "clean:scratch": "node scripts/clean-scratch.mjs",
+    "edit:verify": "node scripts/verify-deploy.mjs --live --url=https://warlord-genesis.vercel.app",
+    "package:edit": "node scripts/print-edit-package.mjs"
   },
   "engines": {
     "node": ">=20"

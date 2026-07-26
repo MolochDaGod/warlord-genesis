@@ -1,0 +1,160 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "description": "Dragon egg items — first step of the Grudge Warlords dragon-rider path. One egg type per canonical dragon.",
+  "itemClass": "dragon_egg",
+  "slot": "inventory_quest",
+  "stackable": false,
+  "bindOnPickup": true,
+  "eggs": [
+    {
+      "id": "egg_usurper",
+      "itemId": "ITEM-DRAGON-EGG-USURPER",
+      "name": "Usurper Drake Egg",
+      "dragonTypeId": "usurper",
+      "element": "fire",
+      "rarity": "epic",
+      "icon": "/icons/items/dragon_eggs/usurper_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/usurper_egg.glb",
+      "hatchTo": "usurper.hatchling",
+      "sources": [
+        { "type": "mission", "id": "dragon_egg_retrieval", "weight": 0.35 },
+        { "type": "zone_drop", "zone": "dragon_peaks", "weight": 0.15 },
+        { "type": "vendor", "faction": "crusade", "rep": "Honored", "costGold": 5000 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 20,
+        "sitSeconds": 3600,
+        "nestItem": "dragon_nest_basic",
+        "fuel": [{ "item": "fire-gland", "count": 3 }]
+      },
+      "status": "defined_mesh_missing"
+    },
+    {
+      "id": "egg_boar",
+      "itemId": "ITEM-DRAGON-EGG-BOAR",
+      "name": "Boar Dragon Egg",
+      "dragonTypeId": "boar",
+      "element": "earth",
+      "rarity": "epic",
+      "icon": "/icons/items/dragon_eggs/boar_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/boar_egg.glb",
+      "hatchTo": "boar.hatchling",
+      "sources": [
+        { "type": "enemy_drop", "enemyId": "boar-dragon", "weight": 0.08 },
+        { "type": "zone_drop", "zone": "Piglin Outpost", "weight": 0.1 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 22,
+        "sitSeconds": 4200,
+        "nestItem": "dragon_nest_basic",
+        "fuel": [{ "item": "drake-scale", "count": 5 }]
+      },
+      "status": "defined_mesh_missing"
+    },
+    {
+      "id": "egg_soul_eater",
+      "itemId": "ITEM-DRAGON-EGG-SOUL-EATER",
+      "name": "Soul Eater Egg",
+      "dragonTypeId": "soul_eater",
+      "element": "shadow",
+      "rarity": "legendary",
+      "icon": "/icons/items/dragon_eggs/soul_eater_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/soul_eater_egg.glb",
+      "hatchTo": "soul_eater.hatchling",
+      "sources": [
+        { "type": "enemy_drop", "enemyId": "shadow-dragon", "weight": 0.05 },
+        { "type": "boss_drop", "bossId": "four-evil-dragons", "weight": 0.02 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 28,
+        "sitSeconds": 5400,
+        "nestItem": "dragon_nest_shadow",
+        "fuel": [{ "item": "dragon-sinew", "count": 2 }]
+      },
+      "status": "defined_mesh_missing"
+    },
+    {
+      "id": "egg_nightmare",
+      "itemId": "ITEM-DRAGON-EGG-NIGHTMARE",
+      "name": "Nightmare Wyrm Egg",
+      "dragonTypeId": "nightmare",
+      "element": "frost",
+      "rarity": "legendary",
+      "icon": "/icons/items/dragon_eggs/nightmare_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/nightmare_egg.glb",
+      "hatchTo": "nightmare.hatchling",
+      "sources": [
+        { "type": "enemy_drop", "enemyId": "frost-wyrm", "weight": 0.05 },
+        { "type": "zone_drop", "zone": "Crusade Island", "weight": 0.08 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 26,
+        "sitSeconds": 4800,
+        "nestItem": "dragon_nest_frost",
+        "fuel": [{ "item": "frost-heart", "count": 1 }]
+      },
+      "status": "defined_mesh_missing"
+    },
+    {
+      "id": "egg_fantasy",
+      "itemId": "ITEM-DRAGON-EGG-FANTASY",
+      "name": "Peak Drake Egg",
+      "dragonTypeId": "fantasy_skin",
+      "element": "variable",
+      "rarity": "rare",
+      "icon": "/icons/items/dragon_eggs/fantasy_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/fantasy_egg.glb",
+      "hatchTo": "fantasy_skin.hatchling",
+      "sources": [
+        { "type": "vendor", "faction": "any", "costGold": 2500 },
+        { "type": "zone_drop", "zone": "dragon_peaks", "weight": 0.2 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 18,
+        "sitSeconds": 2400,
+        "nestItem": "dragon_nest_basic",
+        "fuel": []
+      },
+      "status": "defined_mesh_missing",
+      "notes": "Entry-level dragon path using fantasy-dragons mesh + chosen skin."
+    },
+    {
+      "id": "egg_terror",
+      "itemId": "ITEM-DRAGON-EGG-TERROR",
+      "name": "Terror Bringer Egg",
+      "dragonTypeId": "terror_bringer",
+      "element": "apocalypse",
+      "rarity": "mythic",
+      "icon": "/icons/items/dragon_eggs/terror_egg.png",
+      "cdnMesh": "/models/grudge6/dragons/eggs/terror_egg.glb",
+      "hatchTo": "terror_bringer.hatchling",
+      "sources": [
+        { "type": "boss_drop", "bossId": "dragon-terror-bringer", "weight": 0.01, "altMountDrop": "dragon-mount" },
+        { "type": "boss_drop", "bossId": "four-evil-dragons", "itemHint": "evil-dragon-mount", "weight": 0.01 }
+      ],
+      "hatchRequirements": {
+        "playerLevel": 40,
+        "sitSeconds": 7200,
+        "nestItem": "dragon_nest_terror",
+        "fuel": [
+          { "item": "dragon-soul-gem", "count": 1 },
+          { "item": "elemental-soul", "count": 1 }
+        ]
+      },
+      "status": "defined_mesh_missing",
+      "notes": "Legendary exclusive. bosses.json already defines Terror Drake (Mount) and Evil Dragon Hatchling (Mount) drops."
+    }
+  ],
+  "relatedExistingContent": {
+    "mission": "dragon_egg_retrieval",
+    "region": "dragon_peaks",
+    "materials": ["dragon-sinew", "drake-scale", "dragon-bone"],
+    "bossMountDrops": ["dragon-mount", "evil-dragon-mount"],
+    "nonDragonEggsOnDisk": [
+      "D:/Games/Models/cryptosuchus_egg.glb",
+      "D:/Games/Models/lily_paddler_egg.glb"
+    ],
+    "notes": "Non-dragon egg GLBs must NOT be used as SSOT (wrong creature). Prefer authored dragon egg props after Unity source import or art pass."
+  }
+}

@@ -1,0 +1,248 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "description": "Toon RTS cavalry mounts + siege engines for Grudge Warlords 3D. Source pack verified on disk; CDN conversion pending.",
+  "visualRefs": [
+    "docs/ref-toon-rts/ref5-fab-mounts-siege.jpg",
+    "https://media.fab.com/image_previews/gallery_images/643c8a46-b4dd-4734-b8e7-1bc776ad18b4/75710a8d-d985-413d-aa08-32e048396a48.jpg"
+  ],
+  "packRoots": {
+    "toon_rts": "C:/Users/nugye/Documents/RPG-Souls-Environment/RPG-Souls-Environment/game-assets/rts/Toon_RTS/Toon_RTS",
+    "objectstore_icons": "F:/GitHub/ObjectStore/icons/entities"
+  },
+  "cdnLayout": {
+    "mounts": "/models/grudge6/mounts/{repoRaceId}/cavalry.glb",
+    "siege": "/models/grudge6/siege/{siegeId}.glb",
+    "horseTex": "/textures/grudge6/mounts/{repoRaceId}/horse.webp",
+    "animsCavalry": "/anims/baked/cavalry/{repoRaceId}/{clip}.json",
+    "animsSiege": "/anims/baked/siege/{siegeId}/{clip}.json"
+  },
+  "entries": [
+    {
+      "id": "wk_cavalry",
+      "class": "mount",
+      "label": "Western Kingdoms Cavalry",
+      "repoRaceId": "western-kingdoms",
+      "prefix": "WK_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "WesternKingdoms/models/WK_Cavalry_customizable.FBX",
+      "textures": ["WK_Horse_A", "WK_Standard_Units"],
+      "teamColorAtlases": [
+        "WK_StandardUnits_red",
+        "WK_StandardUnits_blue",
+        "WK_StandardUnits_green",
+        "WK_StandardUnits_brown",
+        "WK_StandardUnits_black",
+        "WK_StandardUnits_white"
+      ],
+      "anims": [
+        { "logical": "idle", "sourceFbx": "WesternKingdoms/animation/Cavalry/WK_cavalry_01_idle.FBX" },
+        { "logical": "run", "sourceFbx": "WesternKingdoms/animation/Cavalry/WK_cavalry_03_run.FBX" },
+        { "logical": "death", "sourceFbx": "WesternKingdoms/animation/Cavalry/WK_cavalry_10_death_B.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/mounts/western-kingdoms/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bone_seat", "Rider_attach", "Bip001"],
+      "teamTint": true,
+      "status": "source",
+      "notes": "Modular horse + rider kit. Horse albedo WK_Horse_A.tga verified."
+    },
+    {
+      "id": "brb_cavalry",
+      "class": "mount",
+      "label": "Barbarian Cavalry",
+      "repoRaceId": "barbarians",
+      "prefix": "BRB_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Barbarians/models/BRB_Cavalry_customizable.FBX",
+      "textures": ["BRB_StandardUnits_texture"],
+      "anims": [],
+      "cdnGlb": "/models/grudge6/mounts/barbarians/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bip001"],
+      "teamTint": true,
+      "status": "source",
+      "notes": "No dedicated cavalry anim folder in pack; reuse WK or universal horse clips until BRB clips staged."
+    },
+    {
+      "id": "dwf_cavalry",
+      "class": "mount",
+      "label": "Dwarf Cavalry",
+      "repoRaceId": "dwarves",
+      "prefix": "DWF_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Dwarves/models/DWF_Cavalry_customizable.FBX",
+      "textures": ["DWF_Standard_Units"],
+      "anims": [
+        { "logical": "idle", "sourceFbx": "Dwarves/animation/Cavalry/DWF_cavalry_01_idle.FBX" },
+        { "logical": "run", "sourceFbx": "Dwarves/animation/Cavalry/DWF_cavalry_03_run.FBX" },
+        { "logical": "death", "sourceFbx": "Dwarves/animation/Cavalry/DWF_cavalry_10_death_B.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/mounts/dwarves/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bip001"],
+      "teamTint": true,
+      "status": "source"
+    },
+    {
+      "id": "elf_cavalry",
+      "class": "mount",
+      "label": "High Elf Cavalry",
+      "repoRaceId": "high-elves",
+      "prefix": "ELF_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Elves/models/ELF_Cavalry_customizable.FBX",
+      "textures": ["ELF_HighElves_Texture"],
+      "anims": [
+        { "logical": "charge", "sourceFbx": "Elves/animation/Cavalry_Spear/ELF_cavalry_spear_04_charge.FBX" },
+        { "logical": "idle", "sourceFbx": "Elves/animation/Cavalry_Spear/ELF_cavalry_spear_05_combat_idle.FBX" },
+        { "logical": "attack", "sourceFbx": "Elves/animation/Cavalry_Spear/ELF_cavalry_spear_07_attack.FBX" },
+        { "logical": "death", "sourceFbx": "Elves/animation/Cavalry_Spear/ELF_cavalry_spear_10_death_A.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/mounts/high-elves/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bip001"],
+      "teamTint": true,
+      "status": "source",
+      "notes": "Extra Cavalry_Mage attack available for mage-mounted variants."
+    },
+    {
+      "id": "orc_cavalry",
+      "class": "mount",
+      "label": "Orc Wolf Cavalry",
+      "repoRaceId": "orcs",
+      "prefix": "ORC_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Orcs/models/ORC_Cavalry_Customizable.FBX",
+      "textures": ["ORC_StandardUnits", "ORC_Wolf_texture_A"],
+      "anims": [
+        { "logical": "idle", "sourceFbx": "Orcs/animation/Cavalry/ORC_cavalry_01_idle.FBX" },
+        { "logical": "run", "sourceFbx": "Orcs/animation/Cavalry/ORC_cavalry_03_run.FBX" },
+        { "logical": "death", "sourceFbx": "Orcs/animation/Cavalry/ORC_cavalry_10_death_B.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/mounts/orcs/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bip001"],
+      "teamTint": true,
+      "status": "source",
+      "notes": "Mount body uses ORC_Wolf_texture_A.tga (wolf, not horse)."
+    },
+    {
+      "id": "ud_cavalry",
+      "class": "mount",
+      "label": "Undead Cavalry",
+      "repoRaceId": "undead",
+      "prefix": "UD_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Undead/models/UD_Cavalry_customizable.FBX",
+      "textures": ["UD_Standard_Units"],
+      "anims": [],
+      "cdnGlb": "/models/grudge6/mounts/undead/cavalry.glb",
+      "seatBones": ["Mount_Seat", "Seat", "Bip001"],
+      "teamTint": true,
+      "status": "source",
+      "notes": "No dedicated cavalry anim folder; reuse skeletal charger clips or WK horse bank."
+    },
+    {
+      "id": "wk_catapult",
+      "class": "siege",
+      "label": "Western Kingdoms Catapult",
+      "repoRaceId": "western-kingdoms",
+      "prefix": "WK_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "WesternKingdoms/models/WK_Catapult.FBX",
+      "textures": ["WK_Standard_Units"],
+      "icon": "/icons/entities/Catapult.png",
+      "anims": [
+        { "logical": "idle", "sourceFbx": "WesternKingdoms/animation/Catapult/WK_catapult_01_idle.FBX" },
+        { "logical": "move", "sourceFbx": "WesternKingdoms/animation/Catapult/WK_catapult_02_move.FBX" },
+        { "logical": "attack", "sourceFbx": "WesternKingdoms/animation/Catapult/WK_catapult_03_attack.FBX" },
+        { "logical": "death", "sourceFbx": "WesternKingdoms/animation/Catapult/WK_catapult_04_death.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/siege/wk_catapult.glb",
+      "teamTint": true,
+      "status": "source",
+      "role": "siege_artillery",
+      "combat": { "range": 40, "projectile": "boulder", "crew": 2 }
+    },
+    {
+      "id": "orc_catapult",
+      "class": "siege",
+      "label": "Orc Catapult",
+      "repoRaceId": "orcs",
+      "prefix": "ORC_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Orcs/models/ORC_Catapult.FBX",
+      "textures": ["ORC_StandardUnits"],
+      "icon": "/icons/entities/Heavy Catapult.png",
+      "anims": [
+        { "logical": "idle", "sourceFbx": "Orcs/animation/Catapult/ORC_catapult_01_idle.FBX" },
+        { "logical": "move", "sourceFbx": "Orcs/animation/Catapult/ORC_catapult_02_move.FBX" },
+        { "logical": "attack", "sourceFbx": "Orcs/animation/Catapult/ORC_catapult_03_attack.FBX" },
+        { "logical": "death", "sourceFbx": "Orcs/animation/Catapult/ORC_catapult_04_death.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/siege/orc_catapult.glb",
+      "teamTint": true,
+      "status": "source",
+      "role": "siege_artillery",
+      "combat": { "range": 38, "projectile": "fire_boulder", "crew": 2 }
+    },
+    {
+      "id": "elf_boltthrower",
+      "class": "siege",
+      "label": "Elf Bolt Thrower",
+      "repoRaceId": "high-elves",
+      "prefix": "ELF_",
+      "sourceRoot": "toon_rts",
+      "sourceFbx": "Elves/models/ELF_BoltThrower.FBX",
+      "projectileFbx": "Elves/models/extra models/ELF_bolt.FBX",
+      "textures": ["ELF_HighElves_Texture"],
+      "icon": "/icons/entities/Bolt Thrower.png",
+      "anims": [
+        { "logical": "idle", "sourceFbx": "Elves/animation/BoltThrower/ELF_boltthrower_01_idle.FBX" },
+        { "logical": "move", "sourceFbx": "Elves/animation/BoltThrower/ELF_boltthrower_02_move.FBX" },
+        { "logical": "attack", "sourceFbx": "Elves/animation/BoltThrower/ELF_boltthrower_03_attack.FBX" },
+        { "logical": "death", "sourceFbx": "Elves/animation/BoltThrower/ELF_boltthrower_04_death.FBX" }
+      ],
+      "cdnGlb": "/models/grudge6/siege/elf_boltthrower.glb",
+      "teamTint": true,
+      "status": "source",
+      "role": "siege_ballista",
+      "combat": { "range": 50, "projectile": "elf_bolt", "crew": 1 }
+    }
+  ],
+  "objectstoreMountsCrosswalk": {
+    "note": "ObjectStore master-mounts.json has 8 conceptual mounts (Warhorse, Dire Wolf, etc.) without 3D mesh ids. Toon RTS cavalry kits are the production 3D SSOT for those roles.",
+    "map": {
+      "Warhorse": "wk_cavalry",
+      "Painted Stallion": "brb_cavalry",
+      "Ironback Boar": "dwf_cavalry",
+      "Moonlit Stag": "elf_cavalry",
+      "Dire Wolf": "orc_cavalry",
+      "Skeletal Charger": "ud_cavalry"
+    }
+  },
+  "iconOnlyMechanicalDevices": [
+    {
+      "id": "siege_tower",
+      "label": "Siege Tower",
+      "icon": "/icons/entities/Siege Tower.PNG",
+      "status": "icon_only",
+      "notes": "Icon exists in ObjectStore; no Toon RTS FBX in pack. Gate 3D until source mesh found."
+    },
+    {
+      "id": "ram_mount",
+      "label": "Ram Mount / Battering Ram",
+      "icon": "/icons/entities/Ram mount.PNG",
+      "status": "icon_only",
+      "notes": "Icon only. Not in Toon_RTS models."
+    },
+    {
+      "id": "dragon_glider",
+      "label": "Dragon Glider",
+      "icon": "/icons/entities/Dragon Glider Icon.png",
+      "status": "icon_only",
+      "notes": "Utility/glider concept icon; not a full dragon rider mount mesh."
+    }
+  ],
+  "gaps": [
+    "CDN GLBs for siege/mounts not yet on assets.grudge-studio.com (404 as of inventory).",
+    "GenesisGrudge Low Poly Castle Siege Pack folder present but empty of FBX (meta-only).",
+    "No dedicated ballista/trebuchet/ram FBX in Toon_RTS — only catapult + bolt thrower."
+  ]
+}

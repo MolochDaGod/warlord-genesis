@@ -1,0 +1,120 @@
+.gw-royale-hand {
+  position: fixed;
+  left: 50%;
+  bottom: 12px;
+  transform: translateX(-50%);
+  z-index: 40;
+  width: min(560px, 96vw);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  pointer-events: auto;
+  font-family: system-ui, Segoe UI, sans-serif;
+}
+
+.gw-royale-elixir {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 4px;
+}
+
+.gw-royale-elixir-track {
+  flex: 1;
+  height: 10px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.45);
+  border: 1px solid rgba(180, 120, 255, 0.35);
+  overflow: hidden;
+}
+
+.gw-royale-elixir-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #7b3cff, #d4a0ff);
+  box-shadow: 0 0 12px rgba(160, 80, 255, 0.55);
+  transition: width 0.12s linear;
+}
+
+.gw-royale-elixir-label {
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  color: #e8d4ff;
+  min-width: 7.5rem;
+  text-align: right;
+}
+
+.gw-royale-cards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+}
+
+.gw-royale-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 6px 8px;
+  border-radius: 12px;
+  border: 2px solid rgba(200, 170, 90, 0.45);
+  background: linear-gradient(180deg, rgba(40, 32, 55, 0.95), rgba(18, 14, 28, 0.95));
+  color: #f4e8c8;
+  cursor: pointer;
+  min-height: 88px;
+  transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+}
+
+.gw-royale-card:hover:not(:disabled) {
+  transform: translateY(-4px);
+  border-color: rgba(255, 220, 120, 0.75);
+}
+
+.gw-royale-card.is-active {
+  border-color: #7dffb0;
+  box-shadow: 0 0 18px rgba(80, 255, 160, 0.35);
+  transform: translateY(-6px);
+}
+
+.gw-royale-card.is-locked,
+.gw-royale-card:disabled {
+  opacity: 0.42;
+  cursor: not-allowed;
+  filter: grayscale(0.4);
+}
+
+.gw-royale-card-glyph {
+  font-size: 22px;
+  line-height: 1;
+}
+
+.gw-royale-card-name {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-align: center;
+}
+
+.gw-royale-card-cost {
+  position: absolute;
+  top: 6px;
+  right: 8px;
+  font-size: 13px;
+  font-weight: 900;
+  color: #d4a0ff;
+  text-shadow: 0 0 8px rgba(160, 80, 255, 0.6);
+}
+
+.gw-royale-card-count {
+  font-size: 10px;
+  opacity: 0.75;
+}
+
+.gw-royale-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: rgba(255, 240, 210, 0.7);
+}

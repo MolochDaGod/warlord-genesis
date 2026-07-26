@@ -199,6 +199,8 @@ if (!existsSync(bundlePath)) {
   }
 
   if (GW_CORE || VITE) {
+    // /edit is a standalone static package (edit.html + assets/map-edit.mjs),
+    // not a gw-core SPA route — verified separately below via editPackage files.
     for (const route of ["/lobby", "/deploy", "/play", "/warcamp", "/battle", "/mp"]) {
       const pathNeedle = `path:"${route}"`;
       if (!bundle.includes(pathNeedle) && !bundle.includes(route)) {
@@ -300,6 +302,26 @@ if (vercel.buildCommand !== CI_BUILD) {
 }
 
 // ── Live smoke (optional) ────────────────────────────────────────────────────
+
+// Edit package (map scale + pathfinding studio)
+for (const rel of ["edit.html", "assets/map-edit.mjs"]) {
+  const abs = join(ROOT, rel);
+  if (!existsSync(abs)) fail(`edit package missing: ${rel}`);
+  else ok(`edit package: ${rel}`);
+}
+if (existsSync(join(ROOT, "edit.html"))) {
+  const eh = readFileSync(join(ROOT, "edit.html"), "utf8");
+  if (!eh.includes("map-edit.mjs")) fail("edit.html must load assets/map-edit.mjs");
+  else ok("edit.html loads map-edit.mjs");
+}
+if (existsSync(join(ROOT, "assets/map-edit.mjs"))) {
+  const em = readFileSync(join(ROOT, "assets/map-edit.mjs"), "utf8");
+  if (!em.includes("three")) fail("map-edit.mjs must import three");
+  else ok("map-edit.mjs three dependency");
+  if (!em.includes("findPath") && !em.includes("pathfind")) warn("map-edit.mjs may lack pathfinding");
+  else ok("map-edit.mjs pathfinding present");
+}
+
 if (LIVE) {
   console.log(`\n── Live smoke: ${SITE} ──`);
   const home = await fetch(SITE, { redirect: "follow", cache: "no-store" });
@@ -439,7 +461,7 @@ if (LIVE) {
     ok(`live /api/auth/guest ${guestRes.status}`);
   }
 
-  for (const route of ["/", "/lobby", "/deploy", "/warcamp", "/play", "/battle", "/mp"]) {
+  for (const route of ["/", "/lobby", "/deploy", "/warcamp", "/play", "/battle", "/mp", "/edit", "/edit.html"]) {
     const res = await fetch(`${SITE}${route}`, { redirect: "manual", cache: "no-store" });
     const ct = res.headers.get("content-type") || "";
     if (!ct.includes("text/html")) {

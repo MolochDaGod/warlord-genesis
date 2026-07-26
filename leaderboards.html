@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Warlord Genesis — Leaderboards</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <style>
+      :root {
+        --bg: #0a0a0c;
+        --gold: #c5a059;
+        --muted: #8a8478;
+        --card: #141218;
+      }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: #e8e4dc;
+        font-family: "EB Garamond", Georgia, serif;
+      }
+      header {
+        padding: 2rem 1.5rem 1rem;
+        border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+      }
+      h1 {
+        margin: 0;
+        font-family: Cinzel, serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-size: 1.5rem;
+      }
+      .kicker {
+        font-size: 0.7rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+      main { padding: 1.5rem; max-width: 900px; margin: 0 auto; }
+      .tabs { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-bottom: 1rem; }
+      .tab {
+        font-family: Cinzel, serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        background: transparent;
+        color: var(--muted);
+        padding: 0.45rem 0.75rem;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .tab.active {
+        border-color: rgba(197, 160, 89, 0.5);
+        color: var(--gold);
+        background: rgba(197, 160, 89, 0.1);
+      }
+      table { width: 100%; border-collapse: collapse; background: var(--card); border-radius: 8px; overflow: hidden; }
+      th, td { padding: 0.75rem 1rem; text-align: left; border-bottom: 1px solid rgba(255, 255, 255, 0.06); }
+      th {
+        font-family: Cinzel, serif;
+        font-size: 0.65rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      td.rank { color: var(--gold); font-family: ui-monospace, monospace; width: 3rem; }
+      td.score { font-family: ui-monospace, monospace; color: var(--gold); text-align: right; }
+      .meta { color: var(--muted); font-size: 0.85rem; margin-bottom: 1rem; }
+      a { color: var(--gold); }
+      .empty { padding: 2rem; text-align: center; color: var(--muted); }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="kicker">Production ranks · fleet API</p>
+      <h1>Warlord Genesis MOBA Leaderboards</h1>
+    </header>
+    <main>
+      <p class="meta">
+        Source: <code>/api/games/grudge-warlords/leaderboards</code> ·
+        <a href="/fleet-connections.html">Connections</a> ·
+        <a href="/">Game</a>
+      </p>
+      <div class="tabs" id="tabs"></div>
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Warlord</th>
+            <th>Hero</th>
+            <th style="text-align: right">Score</th>
+          </tr>
+        </thead>
+        <tbody id="body"></tbody>
+      </table>
+    </main>
+    <script>
+      const BOARDS = [
+        { id: "moba_wins", label: "MOBA Wins" },
+        { id: "lane_kills", label: "Lane Kills" },
+        { id: "match_score", label: "Match Score" },
+        { id: "warlord_score", label: "Warlord Score" },
+      ];
+      let active = "moba_wins";
+
+      const tabs = document.getElementById("tabs");
+      tabs.innerHTML = BOARDS.map(
+        (b) => `<button type="button" class="tab${b.id === active ? " active" : ""}" data-id="${b.id}">${b.label}</button>`,
+      ).join("");
+      tabs.onclick = (e) => {
+        const btn = e.target.closest(".tab");
+        if (!btn) return;
+        active = btn.dataset.id;
+        [...tabs.querySelectorAll(".tab")].forEach((t) => t.classList.toggle("active", t.dataset.id === active));
+        load();
+      };
+
+      async function load() {
+        const body = document.getElementById("body");
+        body.innerHTML = `<tr><td colspan="4" class="empty">Loading…</td></tr>`;
+        try {
+          const res = await fetch(`/api/games/grudge-warlords/leaderboards/${active}?limit=25`, {
+            cache: "no-store",
+          });
+          if (!res.ok) throw new Error("HTTP " + res.status);
+          const data = await res.json();
+          const entries = data.entries || [];
+          if (!entries.length) {
+            body.innerHTML = `<tr><td colspan="4" class="empty">No scores yet — win MOBA matches to climb.</td></tr>`;
+            return;
+          }
+          body.innerHTML = entries
+            .map(
+              (e, i) =>
+                `<tr>
+                  <td class="rank">${e.rank ?? i + 1}</td>
+                  <td>${escapeHtml(e.displayName || "Warlord")}</td>
+                  <td>${escapeHtml(e.heroName || "—")}</td>
+                  <td class="score">${e.score}</td>
+                </tr>`,
+            )
+            .join("");
+        } catch (err) {
+          body.innerHTML = `<tr><td colspan="4" class="empty">Offline or API unreachable: ${escapeHtml(err.message)}</td></tr>`;
+        }
+      }
+
+      function escapeHtml(s) {
+        return String(s)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;");
+      }
+
+      load();
+    </script>
+  </body>
+</html>

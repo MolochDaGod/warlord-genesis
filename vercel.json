@@ -6,17 +6,17 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b25",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b25",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/gw-core-20260713.js?h=b25",
+      "destination": "/assets/gw-core-20260713.js?h=b19",
       "permanent": true
     }
   ],
@@ -118,7 +118,7 @@
       ]
     },
     {
-      "source": "/anims/|sdk/|(.*)",
+      "source": "/anims/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -485,12 +485,16 @@
       "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/games/:path*"
     },
     {
-      "source": "/api/:path*",
-      "destination": "https://grudge-api-production-0d46.up.railway.app/api/:path*"
+      "source": "/api/grudge/fleet",
+      "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/grudge/fleet"
     },
     {
-      "source": "/play",
-      "destination": "/index.html"
+      "source": "/api/mp/health",
+      "destination": "https://warlord-mp.up.railway.app/health"
+    },
+    {
+      "source": "/api/:path*",
+      "destination": "https://grudge-api-production-0d46.up.railway.app/api/:path*"
     },
     {
       "source": "/edit",
@@ -501,55 +505,7 @@
       "destination": "/edit.html"
     },
     {
-      "source": "/lobby",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/deploy",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/battle",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/warcamp",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/mp",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/mp/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/onboarding/:path*",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/missions",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/home",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/island",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/faction",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/warlord",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/:path*",
+      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap).*)",
       "destination": "/index.html"
     }
   ]

@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Warlord Genesis — Fleet Connections</title>
+    <link rel="icon" type="image/png" href="/favicon.png" />
+    <style>
+      :root {
+        --bg: #0a0a0c;
+        --gold: #c5a059;
+        --muted: #8a8478;
+        --card: #141218;
+        --ok: #34d399;
+        --bad: #fbbf24;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: #e8e4dc;
+        font-family: "EB Garamond", Georgia, serif;
+      }
+      header {
+        padding: 2rem 1.5rem 1rem;
+        border-bottom: 1px solid rgba(197, 160, 89, 0.25);
+      }
+      h1 {
+        margin: 0;
+        font-family: Cinzel, serif;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        color: var(--gold);
+        font-size: 1.5rem;
+      }
+      .kicker {
+        font-size: 0.7rem;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--muted);
+        margin-bottom: 0.4rem;
+      }
+      main { padding: 1.5rem; max-width: 960px; margin: 0 auto; }
+      .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-bottom: 1.25rem; }
+      button, a.btn {
+        font-family: Cinzel, serif;
+        font-size: 0.7rem;
+        letter-spacing: 0.14em;
+        text-transform: uppercase;
+        border: 1px solid rgba(197, 160, 89, 0.45);
+        background: rgba(197, 160, 89, 0.1);
+        color: var(--gold);
+        padding: 0.55rem 0.9rem;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+      }
+      button:hover, a.btn:hover { background: rgba(197, 160, 89, 0.2); }
+      .grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
+      .card {
+        background: var(--card);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 8px;
+        padding: 1rem;
+      }
+      .card h3 {
+        margin: 0 0 0.35rem;
+        font-family: Cinzel, serif;
+        font-size: 0.85rem;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+      .card p { margin: 0.25rem 0; font-size: 0.9rem; color: var(--muted); }
+      .url { font-family: ui-monospace, monospace; font-size: 0.68rem; color: var(--gold); word-break: break-all; }
+      .status { font-family: ui-monospace, monospace; font-size: 0.72rem; margin-top: 0.5rem; }
+      .ok { color: var(--ok); }
+      .bad { color: var(--bad); }
+      footer { padding: 2rem 1.5rem; color: var(--muted); font-size: 0.85rem; text-align: center; }
+    </style>
+  </head>
+  <body>
+    <header>
+      <p class="kicker">Grudge Studio · Production</p>
+      <h1>Warlord Genesis MOBA — Fleet Connections</h1>
+      <p style="color: var(--muted); margin: 0.5rem 0 0; max-width: 40rem">
+        Auth, Railway account API, title API, CDN, Socket.IO PvP, and leaderboards for production deploy.
+      </p>
+    </header>
+    <main>
+      <div class="actions">
+        <button type="button" id="probe">Probe all</button>
+        <a class="btn" href="/">Enter game</a>
+        <a class="btn" href="/leaderboards.html">Leaderboards</a>
+        <a class="btn" href="/lobby">Lobby</a>
+        <a class="btn" href="/deploy">Deploy</a>
+      </div>
+      <div class="grid" id="grid"></div>
+    </main>
+    <footer>warlord-genesis.vercel.app · warstrat.grudge-studio.com</footer>
+    <script>
+      const ORIGIN = location.origin;
+      const CONNECTIONS = [
+        {
+          id: "auth",
+          label: "Grudge ID",
+          description: "SSO login",
+          url: "https://id.grudge-studio.com/login",
+          probe: "https://id.grudge-studio.com/login",
+        },
+        {
+          id: "account",
+          label: "Account API",
+          description: "Railway game-data health",
+          url: ORIGIN + "/api/health",
+          probe: ORIGIN + "/api/health",
+        },
+        {
+          id: "title",
+          label: "Genesis title API",
+          description: "Profiles · matches · boards",
+          url: ORIGIN + "/api/games",
+          probe: ORIGIN + "/api/games",
+        },
+        {
+          id: "fleet",
+          label: "Fleet map JSON",
+          description: "Production connection SSOT",
+          url: ORIGIN + "/api/grudge/fleet",
+          probe: ORIGIN + "/api/grudge/fleet",
+        },
+        {
+          id: "leaderboards",
+          label: "Leaderboards",
+          description: "MOBA ranks",
+          url: ORIGIN + "/api/games/grudge-warlords/leaderboards",
+          probe: ORIGIN + "/api/games/grudge-warlords/leaderboards",
+        },
+        {
+          id: "assets",
+          label: "Assets CDN",
+          description: "R2 meshes",
+          url: "https://assets.grudge-studio.com",
+          probe: "https://assets.grudge-studio.com",
+        },
+        {
+          id: "mp",
+          label: "MOBA PvP (Socket.IO)",
+          description: "Set WARLORD_MP_URL / VITE_MP_URL",
+          url: "https://warlord-mp.up.railway.app",
+          probe: ORIGIN + "/api/mp/health",
+        },
+      ];
+
+      async function probeOne(c) {
+        const t0 = performance.now();
+        try {
+          const res = await fetch(c.probe, { cache: "no-store", mode: "cors" });
+          return {
+            ok: res.ok || res.status === 204 || res.type === "opaque",
+            ms: Math.round(performance.now() - t0),
+            detail: res.ok || res.type === "opaque" ? "up" : "HTTP " + res.status,
+          };
+        } catch (e) {
+          return { ok: false, ms: Math.round(performance.now() - t0), detail: e.message || "fail" };
+        }
+      }
+
+      async function render() {
+        const grid = document.getElementById("grid");
+        grid.innerHTML = CONNECTIONS.map(
+          (c) =>
+            `<div class="card" data-id="${c.id}">
+              <h3>${c.label}</h3>
+              <p>${c.description}</p>
+              <p class="url">${c.url}</p>
+              <p class="status">probing…</p>
+            </div>`,
+        ).join("");
+        await Promise.all(
+          CONNECTIONS.map(async (c) => {
+            const r = await probeOne(c);
+            const el = grid.querySelector(`[data-id="${c.id}"] .status`);
+            if (!el) return;
+            el.className = "status " + (r.ok ? "ok" : "bad");
+            el.textContent = (r.ok ? "● " : "○ ") + r.detail + " · " + r.ms + "ms";
+          }),
+        );
+      }
+
+      document.getElementById("probe").onclick = () => render();
+      render();
+    </script>
+  </body>
+</html>

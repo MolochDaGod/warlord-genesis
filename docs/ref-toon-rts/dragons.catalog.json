@@ -1,0 +1,259 @@
+{
+  "version": 1,
+  "generatedAt": "2026-07-16T00:00:00.000Z",
+  "description": "Canonical dragon types for Grudge Warlords dragon-rider path, sourced from uMMORPG-era Unity packs registered in ObjectStore entities + bosses + enemies.",
+  "ssot": {
+    "definitions": "info.grudge-studio.com / ObjectStore api/v1",
+    "binaries": "assets.grudge-studio.com (R2) — currently 404 for many monster keys; re-upload required",
+    "catalogs": [
+      "F:/GitHub/ObjectStore/api/v1/entities.json",
+      "F:/GitHub/ObjectStore/api/v1/enemies.json",
+      "F:/GitHub/ObjectStore/api/v1/bosses.json",
+      "F:/GitHub/ObjectStore/api/v1/resource-mesh-catalog.json"
+    ]
+  },
+  "packs": {
+    "four-evil-dragons": {
+      "unityFolderHints": ["Assets/FourEvilDragonsHP", "four-evil-dragons"],
+      "bossId": "four-evil-dragons",
+      "meshes": [
+        "four-evil-dragons_DragonUsurperMesh.fbx",
+        "four-evil-dragons_DragonBoarMesh.fbx",
+        "four-evil-dragons_DragonSoulEaterMesh.fbx",
+        "four-evil-dragons_DragonTheNightmareMesh.fbx"
+      ],
+      "sharedAnims": [
+        "idle", "idle01", "run", "Die", "scream",
+        "Basic Attack", "Claw Attack", "Flame Attack",
+        "Fireball Shoot", "Fly Fireball Shoot",
+        "attack", "attackFlame", "attackHand", "attackMouth", "AttackWingClaw"
+      ],
+      "textures": [
+        "four-evil-dragons_Albedo.png",
+        "four-evil-dragons_Normal.png",
+        "four-evil-dragons_Metallic.png",
+        "four-evil-dragons_Emission.png",
+        "four-evil-dragons_AO.png",
+        "four-evil-dragons_RedHP.png",
+        "four-evil-dragons_GreyHP.png",
+        "four-evil-dragons_DarkblueHP.png"
+      ],
+      "cdnPrefix": "/game-assets/monsters/models/",
+      "cdnTexPrefix": "/game-assets/monsters/textures/",
+      "status": "cataloged_cdn_404",
+      "notes": "Four distinct adult dragon body meshes + shared anim bank + elemental HP color maps."
+    },
+    "fantasy-dragons": {
+      "unityFolderHints": ["Assets/Fantasy-dragons", "fantasy-dragons"],
+      "meshes": [
+        "fantasy-dragons_dragon_anim.FBX",
+        "fantasy-dragons_dragon_anim_low.FBX"
+      ],
+      "skins": [
+        "fantasy-dragons_dragon-01.png",
+        "fantasy-dragons_dragon-03.png",
+        "fantasy-dragons_dragon-05.png",
+        "fantasy-dragons_dragon-08.png",
+        "fantasy-dragons_dragon-09.png",
+        "fantasy-dragons_dragon-10.png",
+        "fantasy-dragons_dragon-11.png",
+        "fantasy-dragons_dragon-17.png",
+        "fantasy-dragons_dragon-19.png",
+        "fantasy-dragons_dragon-26.png",
+        "fantasy-dragons_dragon-35.png"
+      ],
+      "maps": [
+        "fantasy-dragons_dragon_normal.png",
+        "fantasy-dragons_dragon_specular.png"
+      ],
+      "status": "cataloged_cdn_404",
+      "notes": "Single animated dragon skeleton with many albedo skins — good for skin variants of fire/frost riders."
+    },
+    "dragon-terror": {
+      "unityFolderHints": ["Assets/DragonTerrorBringer", "dragon-terror"],
+      "bossId": "dragon-terror-bringer",
+      "meshes": ["dragon-terror_DefaultMesh.fbx"],
+      "textures": ["dragon-terror_BlueUnlit.png", "dragon-terror_shadow.png"],
+      "status": "cataloged_cdn_404",
+      "notes": "Boss-tier apocalypse dragon; also source for Terror Drake mount drop concept."
+    }
+  },
+  "ageStages": {
+    "note": "No separate baby/juvenile/adult FBX filenames found in ObjectStore entities or on-disk uMMORPG/Toon packs as of 2026-07-16. Canonical ages are progression stages applied to each dragon type mesh (scale + stats + seat offset). When dedicated age meshes are imported from Unity, replace scaleProxy with sourceFbx paths.",
+    "stages": [
+      {
+        "id": "hatchling",
+        "label": "Hatchling",
+        "order": 1,
+        "scaleProxy": 0.35,
+        "rideable": false,
+        "combat": false,
+        "followPet": true,
+        "notes": "Companion form after egg hatch. Ground-bound, no rider seat."
+      },
+      {
+        "id": "juvenile",
+        "label": "Juvenile",
+        "order": 2,
+        "scaleProxy": 0.65,
+        "rideable": true,
+        "flight": false,
+        "combat": true,
+        "notes": "First rideable stage — ground mount only."
+      },
+      {
+        "id": "adult",
+        "label": "Adult",
+        "order": 3,
+        "scaleProxy": 1.0,
+        "rideable": true,
+        "flight": true,
+        "combat": true,
+        "notes": "Full dragon-rider: flight + breath combat."
+      }
+    ]
+  },
+  "dragonTypes": [
+    {
+      "id": "usurper",
+      "name": "Usurper Drake",
+      "element": "fire",
+      "pack": "four-evil-dragons",
+      "meshFile": "four-evil-dragons_DragonUsurperMesh.fbx",
+      "hpTint": "RedHP",
+      "enemyId": "fire-drake",
+      "bossPhase": "Fire Dragon",
+      "factionAffinity": ["crusade", "any"],
+      "eggId": "egg_usurper",
+      "cdnMesh": "/models/grudge6/dragons/usurper/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/usurper/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/usurper/juvenile.glb",
+        "adult": "/models/grudge6/dragons/usurper/adult.glb"
+      },
+      "breath": "fire-breath",
+      "status": "defined_source_pending_upload"
+    },
+    {
+      "id": "boar",
+      "name": "Boar Dragon",
+      "element": "earth",
+      "pack": "four-evil-dragons",
+      "meshFile": "four-evil-dragons_DragonBoarMesh.fbx",
+      "hpTint": "GreyHP",
+      "enemyId": "boar-dragon",
+      "factionAffinity": ["legion", "orc", "any"],
+      "eggId": "egg_boar",
+      "cdnMesh": "/models/grudge6/dragons/boar/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/boar/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/boar/juvenile.glb",
+        "adult": "/models/grudge6/dragons/boar/adult.glb"
+      },
+      "breath": "stone-breath",
+      "status": "defined_source_pending_upload",
+      "notes": "Bulkier ground-preferring dragon; adult flight unlocked later than usurper."
+    },
+    {
+      "id": "soul_eater",
+      "name": "Soul Eater",
+      "element": "shadow",
+      "pack": "four-evil-dragons",
+      "meshFile": "four-evil-dragons_DragonSoulEaterMesh.fbx",
+      "hpTint": "DarkblueHP",
+      "enemyId": "shadow-dragon",
+      "bossPhase": "Shadow Dragon",
+      "factionAffinity": ["legion", "undead", "any"],
+      "eggId": "egg_soul_eater",
+      "cdnMesh": "/models/grudge6/dragons/soul_eater/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/soul_eater/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/soul_eater/juvenile.glb",
+        "adult": "/models/grudge6/dragons/soul_eater/adult.glb"
+      },
+      "breath": "void-breath",
+      "status": "defined_source_pending_upload"
+    },
+    {
+      "id": "nightmare",
+      "name": "The Nightmare",
+      "element": "frost",
+      "pack": "four-evil-dragons",
+      "meshFile": "four-evil-dragons_DragonTheNightmareMesh.fbx",
+      "hpTint": "DarkblueHP",
+      "enemyId": "frost-wyrm",
+      "bossPhase": "Ice Dragon",
+      "factionAffinity": ["fabled", "any"],
+      "eggId": "egg_nightmare",
+      "cdnMesh": "/models/grudge6/dragons/nightmare/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/nightmare/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/nightmare/juvenile.glb",
+        "adult": "/models/grudge6/dragons/nightmare/adult.glb"
+      },
+      "breath": "frost-breath",
+      "status": "defined_source_pending_upload"
+    },
+    {
+      "id": "fantasy_skin",
+      "name": "Peak Drake (Skin Variant)",
+      "element": "variable",
+      "pack": "fantasy-dragons",
+      "meshFile": "fantasy-dragons_dragon_anim.FBX",
+      "meshLow": "fantasy-dragons_dragon_anim_low.FBX",
+      "skins": [
+        "dragon-01", "dragon-03", "dragon-05", "dragon-08", "dragon-09",
+        "dragon-10", "dragon-11", "dragon-17", "dragon-19", "dragon-26", "dragon-35"
+      ],
+      "eggId": "egg_fantasy",
+      "cdnMesh": "/models/grudge6/dragons/fantasy/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/fantasy/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/fantasy/juvenile.glb",
+        "adult": "/models/grudge6/dragons/fantasy/adult.glb"
+      },
+      "status": "defined_source_pending_upload",
+      "notes": "Use as cosmetic/skin pool for player-chosen color; not a separate elemental path unless bound to a skin set."
+    },
+    {
+      "id": "terror_bringer",
+      "name": "Terror Bringer",
+      "element": "apocalypse",
+      "pack": "dragon-terror",
+      "meshFile": "dragon-terror_DefaultMesh.fbx",
+      "bossId": "dragon-terror-bringer",
+      "eggId": "egg_terror",
+      "mountDropId": "dragon-mount",
+      "cdnMesh": "/models/grudge6/dragons/terror/adult.glb",
+      "cdnAges": {
+        "hatchling": "/models/grudge6/dragons/terror/hatchling.glb",
+        "juvenile": "/models/grudge6/dragons/terror/juvenile.glb",
+        "adult": "/models/grudge6/dragons/terror/adult.glb"
+      },
+      "rarity": "legendary",
+      "status": "defined_source_pending_upload",
+      "notes": "Boss exclusive path. Boss drop Terror Drake (Mount) at 1% in bosses.json."
+    }
+  ],
+  "cdnTargetLayout": {
+    "mesh": "/models/grudge6/dragons/{typeId}/{age}.glb",
+    "egg": "/models/grudge6/dragons/eggs/{typeId}_egg.glb",
+    "eggIcon": "/icons/items/dragon_eggs/{typeId}_egg.png",
+    "textures": "/textures/grudge6/dragons/{typeId}/",
+    "anims": "/anims/baked/dragons/{typeId}/{clip}.json"
+  },
+  "gaps": [
+    "No dedicated egg 3D mesh under uMMORPG/ObjectStore monster packs (only mission dragon_egg_retrieval + food friedegg icons).",
+    "No baby/young/adult named FBX files found — age variants implemented via scaleProxy until Unity age meshes located/imported.",
+    "CDN keys for four-evil / fantasy / terror meshes return 404 — binaries need R2 upload from Unity project export.",
+    "Local ummorpgdev Assets lack the FourEvilDragonsHP / Fantasy-dragons package folders (only MAP/ExplosiveLLC/voxelhandoff)."
+  ],
+  "importPriority": [
+    "1. Export four mesh FBX + anim bank from Unity FourEvilDragonsHP",
+    "2. Export fantasy-dragons_dragon_anim.FBX + skins",
+    "3. Export dragon-terror_DefaultMesh.fbx",
+    "4. grudge-convert fbx2gltf → models/grudge6/dragons/{type}/{age}.glb (age via scale or dedicated FBX)",
+    "5. Author egg GLB props + icons; register D1 + ObjectStore eggs catalog",
+    "6. Wire rider seat sockets + flight controller on adult only"
+  ]
+}

@@ -1,0 +1,57 @@
+{
+  "title": "Grudge Warlord tactical equipment race cards",
+  "guide": "docs/references/tactical-equipment-race-cards.png",
+  "metrics": {
+    "slotPx": 48,
+    "gapPx": 9,
+    "padPx": 11
+  },
+  "left": [
+    "helm",
+    "chest",
+    "hands",
+    "legs",
+    "feet",
+    "ring"
+  ],
+  "right": [
+    "weapon",
+    "offhand",
+    "necklace",
+    "shoulder",
+    "relic",
+    "bag"
+  ],
+  "races": [
+    {
+      "id": "human",
+      "file": "human.png",
+      "url": "/assets/ui-kit/race-cards/human.png"
+    },
+    {
+      "id": "orc",
+      "file": "orc.png",
+      "url": "/assets/ui-kit/race-cards/orc.png"
+    },
+    {
+      "id": "elf",
+      "file": "elf.png",
+      "url": "/assets/ui-kit/race-cards/elf.png"
+    },
+    {
+      "id": "dwarf",
+      "file": "dwarf.png",
+      "url": "/assets/ui-kit/race-cards/dwarf.png"
+    },
+    {
+      "id": "barbarian",
+      "file": "barbarian.png",
+      "url": "/assets/ui-kit/race-cards/barbarian.png"
+    },
+    {
+      "id": "undead",
+      "file": "undead.png",
+      "url": "/assets/ui-kit/race-cards/undead.png"
+    }
+  ]
+}

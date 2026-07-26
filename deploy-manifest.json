@@ -2,8 +2,8 @@
   "name": "warlord-genesis",
   "site": "https://warlord-genesis.vercel.app",
   "buildMode": "gw-core",
-  "bundleVersion": 20260716,
-  "bundleCacheHash": "b13",
+  "bundleVersion": 20260718,
+  "bundleCacheHash": "b20",
   "bundleFile": "assets/gw-core-20260713.js",
   "bundleChecks": [
     {
@@ -94,6 +94,18 @@
       "id": "multiplayer",
       "screen": "Multiplayer lobby",
       "component": "NCA"
+    },
+    {
+      "path": "/edit",
+      "id": "map-edit",
+      "screen": "Map scale + pathfinding route studio",
+      "component": "edit.html",
+      "package": "map-edit"
+    },
+    {
+      "path": "/map-edit",
+      "id": "map-edit-alias",
+      "redirect": "/edit"
     },
     {
       "path": "*",
@@ -191,7 +203,9 @@
     "assets/icons/skills/warrior-01.png",
     "assets/icons/skills/warrior-02.png",
     "assets/icons/vox/fire-rock.png",
-    "assets/icons/vox/spectral-dagger.png"
+    "assets/icons/vox/spectral-dagger.png",
+    "edit.html",
+    "assets/map-edit.mjs"
   ],
   "vercelRewritesRequired": [
     "/api/grudge/:path*",
@@ -713,11 +727,34 @@
       "needle": "T.useLayoutEffect(()=>{WgEnsureReady()},[])"
     }
   ],
-  "lastBuilt": "2026-07-12T20:53:09.681Z",
-  "bundleBytes": 4148144,
-  "bundleSha256": "8835418cb1fcea54",
+  "lastBuilt": "2026-07-19T07:31:41.339Z",
+  "bundleBytes": 4148392,
+  "bundleSha256": "b667cc7ea0a89733",
   "sites": [
     "https://warlord-genesis.vercel.app",
     "https://warstrat.grudge-studio.com"
-  ]
+  ],
+  "editPackage": {
+    "name": "map-edit",
+    "version": "0.2.0",
+    "entry": "edit.html",
+    "script": "assets/map-edit.mjs",
+    "dependencies": {
+      "three": "0.184.0 (CDN importmap — jsDelivr)",
+      "runtime": "browser ES modules; no npm install for static edit page"
+    },
+    "routes": [
+      "/edit",
+      "/map-edit",
+      "/edit.html"
+    ],
+    "features": [
+      "map size standard/large + seed",
+      "SI scales: terrain towers buildings trees props routeLift",
+      "pathfinding grid A* or straight",
+      "draw bottom/mid/top routes on terrain mesh"
+    ]
+  },
+  "packageVersion": "0.2.0",
+  "lastPackaged": "2026-07-25T22:29:43.760Z"
 }

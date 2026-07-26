@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Map Edit · Warlord Genesis</title>
+    <title>Map Edit â”¬â•– Warlord Genesis</title>
     <meta name="description" content="Scale terrain, towers, buildings; pathfinding; draw bottom/mid/top routes on the map mesh." />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <style>
@@ -65,10 +65,10 @@
       <div id="view">
         <canvas id="c"></canvas>
         <div id="hud">
-          <a href="/play">← Play</a>
-          <span class="tag">/edit · Map Scale + Routes</span>
+          <a href="/play">Î“Ã¥Ã‰ Play</a>
+          <span class="tag">/edit â”¬â•– Map Scale + Routes</span>
         </div>
-        <div id="status">Booting…</div>
+        <div id="status">BootingÎ“Ã‡Âª</div>
       </div>
       <aside>
         <header>
@@ -78,13 +78,13 @@
         <section>
           <label class="lab">Map size</label>
           <select id="mapSize">
-            <option value="standard">Standard (240×390 m)</option>
-            <option value="large">Large (600×975 m)</option>
+            <option value="standard">Standard (240â”œÃ¹390 m)</option>
+            <option value="large">Large (600â”œÃ¹975 m)</option>
           </select>
           <label class="lab">Seed (hex)</label>
           <div style="display:flex;gap:6px">
             <input type="text" id="seed" value="51c0de" />
-            <button class="layer" id="randSeed" type="button">🎲</button>
+            <button class="layer" id="randSeed" type="button">â‰¡Æ’Ã„â–“</button>
           </div>
         </section>
         <section>
@@ -118,7 +118,7 @@
           </div>
           <button class="act" id="draw" type="button">Draw route layers</button>
         </section>
-        <footer>Warlord Genesis · warlord-genesis.vercel.app/edit · prefs in localStorage</footer>
+        <footer>Warlord Genesis â”¬â•– warlord-genesis.vercel.app/edit â”¬â•– prefs in localStorage</footer>
       </aside>
     </div>
     <script type="importmap">
@@ -129,6 +129,6 @@
         }
       }
     </script>
-    <script type="module" src="/assets/map-edit.mjs?h=1"></script>
+    <script type="module" src="/assets/map-edit.mjs?h=3"></script><script>window.addEventListener("error",function(e){var s=document.getElementById("status");if(s&&e&&e.message)s.textContent="ERROR: "+e.message;});</script>
   </body>
 </html>
