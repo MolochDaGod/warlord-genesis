@@ -199,7 +199,9 @@ if (!existsSync(bundlePath)) {
   }
 
   if (GW_CORE || VITE) {
-    for (const route of ["/lobby", "/deploy", "/play", "/warcamp", "/battle", "/mp", "/edit"]) {
+    // /edit is a standalone static package (edit.html + assets/map-edit.mjs),
+    // not a gw-core SPA route — verified separately below via editPackage files.
+    for (const route of ["/lobby", "/deploy", "/play", "/warcamp", "/battle", "/mp"]) {
       const pathNeedle = `path:"${route}"`;
       if (!bundle.includes(pathNeedle) && !bundle.includes(route)) {
         fail(`bundle missing route: ${route}`);
