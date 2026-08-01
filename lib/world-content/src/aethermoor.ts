@@ -18,7 +18,21 @@ export type IslandHostility = 'friendly' | 'neutral' | 'hostile' | 'contested';
 export type IslandGameplayType = 'safe' | 'trading_post' | 'hostile' | 'claimable' | 'capital';
 
 export interface IslandEnemyConfig {
-  enemyTypes: ('skeleton' | 'goblin' | 'orc' | 'undead_knight' | 'sea_creature' | 'pirate')[];
+  /** Maps to R2 threejs-games creeps via neutralCreepModels.resolveEnemyTypeModel */
+  enemyTypes: (
+    | 'skeleton'
+    | 'goblin'
+    | 'orc'
+    | 'undead_knight'
+    | 'sea_creature'
+    | 'pirate'
+    | 'demon'
+    | 'troll'
+    | 'witch'
+    | 'zombie'
+    | 'golem'
+    | 'ogre'
+  )[];
   enemyCount: number;
   bossType?: 'giant_skeleton' | 'orc_warlord' | 'necromancer' | 'pirate_captain' | 'sea_monster';
   bossHealth?: number;
