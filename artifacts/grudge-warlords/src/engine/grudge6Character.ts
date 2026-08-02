@@ -27,14 +27,22 @@ const gltfLoader = new GLTFLoader();
 
 type AnimPack = AnimPackId;
 
+/** Attack one-shots — aligned with Open DRC (samurai 1H primary for sword). */
 const ATTACK_BY_PACK: Record<AnimPack, string> = {
   unarmed: "unarmed/punching",
   magic: "magic/standing 1h cast spell 01",
-  sword_shield: "sword_shield/sword and shield attack",
+  sword_shield: "greatsword_samurai/gs_samurai_combo_a",
   longbow: "longbow/standing aim recoil",
-  rifle: "rifle/firing",
-  pistol: "pistol/gunplay",
+  rifle: "rifle/firing rifle",
+  pistol: "pistol/pistol idle",
 };
+
+/** Open DRC baked pack hosts (R2 prod/anims often 404). */
+const BAKED_ANIM_HOSTS = [
+  "https://open.grudge-studio.com/anims/baked",
+  "https://gameopen.vercel.app/anims/baked",
+  "/anims/baked", // same-origin if SPA mirrors packs
+] as const;
 
 /**
  * Race kit SSOT — prefer canonical grudge6 race FBX on CDN, then legacy
@@ -96,11 +104,18 @@ const RACE_CDN: Record<
   },
 };
 
-/** Ordered FBX URLs for a race kit (canonical first). */
+/** Production kit stem (WK_Characters) from canon FBX name. */
+function raceGlbStem(canonFbx: string): string {
+  return canonFbx.replace(/\.fbx$/i, ".glb");
+}
+
+/** Ordered race kit URLs — GLB first (prod), then FBX authoring fallbacks. */
 function raceModelUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
+  const glb = raceGlbStem(race.canonFbx);
   return [
+    `${ASSET_CDN}/models/grudge6/races/${glb}`,
     `${ASSET_CDN}/models/grudge6/races/${race.canonFbx}`,
     `${ASSET_CDN}/assets/${race.folder}/models/characters/${race.legacyFbx}`,
   ];
@@ -117,17 +132,26 @@ function raceTextureUrls(repoRaceId: string): string[] {
   ];
 }
 
-async function loadFirstFbx(urls: string[]): Promise<THREE.Group> {
+async function loadFirstRaceKit(urls: string[]): Promise<THREE.Group> {
   let lastErr: unknown;
   for (const url of urls) {
     try {
+      if (/\.glb($|\?)/i.test(url) || /\.gltf($|\?)/i.test(url)) {
+        const gltf = await gltfLoader.loadAsync(url);
+        return gltf.scene as THREE.Group;
+      }
       return (await fbxLoader.loadAsync(url)) as THREE.Group;
     } catch (e) {
       lastErr = e;
-      console.warn(`[grudge6] FBX miss ${url}`, e);
+      console.warn(`[grudge6] kit miss ${url}`, e);
     }
   }
-  throw lastErr ?? new Error("no race FBX");
+  throw lastErr ?? new Error("no race kit GLB/FBX");
+}
+
+/** @deprecated use loadFirstRaceKit */
+async function loadFirstFbx(urls: string[]): Promise<THREE.Group> {
+  return loadFirstRaceKit(urls);
 }
 
 async function loadFirstTexture(urls: string[]): Promise<THREE.Texture> {
@@ -143,13 +167,24 @@ async function loadFirstTexture(urls: string[]): Promise<THREE.Texture> {
   throw lastErr ?? new Error("no race texture");
 }
 
-function bakedClipUrl(rel: string): string {
-  const encoded = rel
+function encodeBakedRel(rel: string): string {
+  return rel
+    .replace(/^\//, "")
+    .replace(/\.json$/i, "")
     .split("/")
     .map((seg) => encodeURIComponent(seg))
     .join("/");
-  // Same-origin first — CDN anims/baked often 404 on assets.grudge-studio.com
-  return `/anims/baked/${encoded}.json`;
+}
+
+/** Candidate URLs for a baked Bip001 clip (Open SSOT first). */
+export function bakedClipCandidates(rel: string): string[] {
+  const enc = encodeBakedRel(rel);
+  return BAKED_ANIM_HOSTS.map((h) => `${h}/${enc}.json`);
+}
+
+/** @deprecated prefer bakedClipCandidates — kept for single-URL callers */
+function bakedClipUrl(rel: string): string {
+  return bakedClipCandidates(rel)[0]!;
 }
 
 /** Target hero height in world meters (matches PLAYER capsule ~1.2 + headroom). */
@@ -344,25 +379,36 @@ function buildSceneBoneNames(scene: THREE.Object3D): string[] {
   return names;
 }
 
-/** Load rotation-only baked clip — /anims/baked on deploy, warn+null on 404. */
+/**
+ * Load rotation-only Bip001 baked clip from Open DRC hosts.
+ * Tries open.grudge-studio.com then gameopen then same-origin.
+ */
 export async function loadBakedClipByRel(
   rel: string,
   scene: THREE.Object3D | null = null,
 ): Promise<THREE.AnimationClip | null> {
-  const url = bakedClipUrl(rel);
-  try {
-    const res = await fetch(url);
-    if (!res.ok) {
-      console.warn(`[grudge6] baked clip missing ${url} (${res.status})`);
-      return null;
+  let lastErr: unknown;
+  for (const url of bakedClipCandidates(rel)) {
+    try {
+      const res = await fetch(url, { mode: "cors" });
+      if (!res.ok) {
+        lastErr = `HTTP ${res.status} ${url}`;
+        continue;
+      }
+      const ct = res.headers.get("content-type") || "";
+      if (ct.includes("text/html")) {
+        lastErr = `HTML ${url}`;
+        continue;
+      }
+      const json = (await res.json()) as THREE.AnimationClipJSON;
+      const raw = THREE.AnimationClip.parse(json);
+      return normalizeBakedBip001Clip(toRotationOnlyClip(raw), scene);
+    } catch (err) {
+      lastErr = err;
     }
-    const json = (await res.json()) as THREE.AnimationClipJSON;
-    const raw = THREE.AnimationClip.parse(json);
-    return normalizeBakedBip001Clip(toRotationOnlyClip(raw), scene);
-  } catch (err) {
-    console.warn(`[grudge6] baked clip failed ${url}`, err);
-    return null;
   }
+  console.warn(`[grudge6] baked clip failed ${rel}`, lastErr);
+  return null;
 }
 
 export type Grudge6LocoState = "idle" | "walk" | "run" | "attack";

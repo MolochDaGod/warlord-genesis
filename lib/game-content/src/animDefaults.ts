@@ -36,37 +36,43 @@ function bakedOr(key: string, fallback: string): string {
   return ANIM_BY_KEY[key]?.baked ?? fallback;
 }
 
-/** Per-pack locomotion defaults — all paths under `/anims/baked/`. */
+/**
+ * Per-pack locomotion — DRC SSOT (Open anims.ts 2026-08).
+ * NEVER use locomotion/running (run-to-roll), locomotion/walking (tip),
+ * or sword_shield/sword and shield run (thin arena).
+ * Primary hosts: open.grudge-studio.com/anims/baked (not R2 prod/anims).
+ */
 export const LOCO_BAKED_BY_PACK: Record<AnimPackId, LocoBakedSet> = {
   unarmed: {
-    idle: bakedOr("venom_idle", "venom/idle"),
-    walk: bakedOr("venom_walk", "venom/walk-forward"),
-    run: bakedOr("venom_run", "venom/run-forward"),
-    sprint: bakedOr("venom_run", "venom/run-forward"),
+    idle: bakedOr("unarmed_idle", "unarmed/fight_idle"),
+    walk: bakedOr("walk_fwd", "magic/Standing Walk Forward"),
+    run: bakedOr("run_fwd", "locomotion/run_forward"),
+    sprint: bakedOr("run_fwd", "locomotion/run_forward"),
   },
   sword_shield: {
-    idle: bakedOr("idle_shield", "sword_shield/sword and shield idle"),
-    walk: bakedOr("walk", "locomotion/walking"),
-    run: bakedOr("run", "locomotion/running"),
-    sprint: bakedOr("sprint", "uploads_2026_06/locomotion/running"),
+    // Samurai 1H stance primary (purged thin sword_shield run)
+    idle: bakedOr("samurai_idle_sword", "greatsword_samurai/gs_samurai_idle_sword"),
+    walk: bakedOr("samurai_walk_sword", "greatsword_samurai/gs_samurai_walk_sword"),
+    run: bakedOr("samurai_run_sword", "greatsword_samurai/gs_samurai_run_sword"),
+    sprint: bakedOr("samurai_run_sword", "greatsword_samurai/gs_samurai_run_sword"),
   },
   magic: {
     idle: bakedOr("magic_idle", "magic/standing idle"),
-    walk: bakedOr("walk", "locomotion/walking"),
+    walk: bakedOr("magic_walk", "magic/Standing Walk Forward"),
     run: bakedOr("magic_run", "magic/Standing Run Forward"),
-    sprint: bakedOr("sprint", "uploads_2026_06/locomotion/running"),
+    sprint: bakedOr("run_fwd", "locomotion/run_forward"),
   },
   longbow: {
     idle: bakedOr("bow_idle", "longbow/standing idle 01"),
-    walk: bakedOr("walk", "locomotion/walking"),
+    walk: bakedOr("bow_walk", "longbow/standing walk forward"),
     run: bakedOr("bow_run", "longbow/standing run forward"),
-    sprint: bakedOr("sprint", "uploads_2026_06/locomotion/running"),
+    sprint: bakedOr("run_fwd", "locomotion/run_forward"),
   },
   rifle: {
-    idle: bakedOr("rifle_idle_loco", "rifle/idle"),
-    walk: bakedOr("rifle_walk_fwd", "rifle/walk forward"),
-    run: bakedOr("rifle_run_fwd", "rifle/run forward"),
-    sprint: bakedOr("rifle_run_fwd", "rifle/run forward"),
+    idle: bakedOr("rifle_idle_loco", "rifle/rifle aiming idle"),
+    walk: bakedOr("rifle_walk_fwd", "rifle/walking"),
+    run: bakedOr("rifle_run_fwd", "rifle/rifle run"),
+    sprint: bakedOr("rifle_run_fwd", "rifle/rifle run"),
   },
   pistol: {
     idle: bakedOr("pistol_idle_loco", "pistol/pistol idle"),
