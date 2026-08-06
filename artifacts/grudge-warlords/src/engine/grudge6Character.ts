@@ -121,14 +121,15 @@ function raceModelUrls(repoRaceId: string): string[] {
   ];
 }
 
-/** Ordered texture URLs — local stage first (real webp on deploy). */
+/** Ordered texture URLs — stone textures/grudge6 first (cdn-ssot), then local stage. */
 function raceTextureUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
   return [
-    race.localTex,
-    `${ASSET_CDN}/assets/${race.folder}/textures/${race.textureFile}`,
     `${ASSET_CDN}/textures/grudge6/${race.folder}/${race.textureFile}`,
+    race.localTex,
+    // legacy path often 404 — last resort only
+    `${ASSET_CDN}/assets/${race.folder}/textures/${race.textureFile}`,
   ];
 }
 
