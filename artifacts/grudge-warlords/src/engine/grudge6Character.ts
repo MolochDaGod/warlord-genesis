@@ -109,12 +109,28 @@ function raceGlbStem(canonFbx: string): string {
   return canonFbx.replace(/\.fbx$/i, ".glb");
 }
 
-/** Production browser kit = GLB only (FBX is convert/author, not runtime). */
+/** Map fleet repo race folder → Toon RTS character id (lab GOLDEN pack). */
+function mapRepoToFleetRace(repoRaceId: string): string {
+  const m: Record<string, string> = {
+    "western-kingdoms": "human",
+    barbarians: "barbarian",
+    "high-elves": "elf",
+    dwarves: "dwarf",
+    orcs: "orc",
+    undead: "undead",
+  };
+  return m[repoRaceId] || repoRaceId;
+}
+
+/**
+ * GOLDEN browser kit = Toon RTS pack (same as GRUDGE6_Characters lab).
+ * NOT models/grudge6/races/*_Characters.glb (compare bake only).
+ */
 function raceModelUrls(repoRaceId: string): string[] {
-  const race = RACE_CDN[repoRaceId];
-  if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
-  const glb = raceGlbStem(race.canonFbx);
-  return [`${ASSET_CDN}/models/grudge6/races/${glb}`];
+  const fleet = mapRepoToFleetRace(repoRaceId);
+  return [
+    `${ASSET_CDN}/asset-packs/toon-rts-characters/glb/characters/${fleet}.glb`,
+  ];
 }
 
 /** Stone atlas only (textures/grudge6/…). Local stage second; no legacy /assets/{folder}/textures. */
