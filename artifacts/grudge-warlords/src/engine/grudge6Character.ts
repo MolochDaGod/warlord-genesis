@@ -109,27 +109,21 @@ function raceGlbStem(canonFbx: string): string {
   return canonFbx.replace(/\.fbx$/i, ".glb");
 }
 
-/** Ordered race kit URLs — GLB first (prod), then FBX authoring fallbacks. */
+/** Production browser kit = GLB only (FBX is convert/author, not runtime). */
 function raceModelUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
   const glb = raceGlbStem(race.canonFbx);
-  return [
-    `${ASSET_CDN}/models/grudge6/races/${glb}`,
-    `${ASSET_CDN}/models/grudge6/races/${race.canonFbx}`,
-    `${ASSET_CDN}/assets/${race.folder}/models/characters/${race.legacyFbx}`,
-  ];
+  return [`${ASSET_CDN}/models/grudge6/races/${glb}`];
 }
 
-/** Ordered texture URLs — stone textures/grudge6 first (cdn-ssot), then local stage. */
+/** Stone atlas only (textures/grudge6/…). Local stage second; no legacy /assets/{folder}/textures. */
 function raceTextureUrls(repoRaceId: string): string[] {
   const race = RACE_CDN[repoRaceId];
   if (!race) throw new Error(`Unknown race repo: ${repoRaceId}`);
   return [
     `${ASSET_CDN}/textures/grudge6/${race.folder}/${race.textureFile}`,
     race.localTex,
-    // legacy path often 404 — last resort only
-    `${ASSET_CDN}/assets/${race.folder}/textures/${race.textureFile}`,
   ];
 }
 
