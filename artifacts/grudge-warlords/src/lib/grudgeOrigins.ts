@@ -144,3 +144,8 @@ export async function getOriginsCatalog(): Promise<OriginsCatalog> {
   writeCache(FALLBACK_CATALOG);
   return FALLBACK_CATALOG;
 }
+
+/** Alias used by net/url realtime discovery. */
+export async function fetchOrigins(_force = false): Promise<OriginsCatalog> {
+  return getOriginsCatalog();
+}

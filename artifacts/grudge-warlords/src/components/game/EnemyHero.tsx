@@ -571,12 +571,14 @@ export function EnemyHero() {
         }
       }
     }
-    hero.swing = Math.max(0, hero.swing - dt * 4);
+    // Hold attack swing ~0.55–0.7s so one-shot attack clips finish cleanly
+    hero.swing = Math.max(0, hero.swing - dt * 1.6);
     hero.hitFlash = Math.max(0, hero.hitFlash - dt);
 
     // --- Drive the rig -----------------------------------------------------
     a.root.position.set(hero.pos.x, hero.pos.y + groundCorr.current, hero.pos.z);
-    a.root.rotation.y = hero.yaw;
+    // faceYawOffset rotates kit +X → world +Z at yaw 0 (do not bake twice)
+    a.root.rotation.y = hero.yaw + (a.faceYawOffset ?? 0);
     a.setLocomotion({ x: 0, z: moving ? 1 : 0, speed: moving ? 0.6 : 0, running: false });
     a.update(dt);
 

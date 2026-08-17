@@ -282,6 +282,11 @@ export const SLAM = {
 // per spawned entity. `mesh` selects a procedural model (see UnitMesh).
 // ---------------------------------------------------------------------------
 
+/**
+ * Visual role for lane minions → defaultcreeps pack (blue ally / red enemy).
+ * Legacy names (footman, kaykit_*, etc.) still resolve via meshToCreepRole().
+ * Heroes / lane guards ignore this and use GRUDGE6.
+ */
 export type UnitMeshKind =
   | "footman"
   | "archer"
@@ -289,6 +294,14 @@ export type UnitMeshKind =
   | "grunt"
   | "raider"
   | "ogre"
+  | "melee"
+  | "ranged"
+  | "siege"
+  /** Sanctum jungle — belerick_guard_of_nature */
+  | "belerick"
+  /** Sanctum jungle — elemental_lord */
+  | "elemental_lord"
+  // legacy aliases — map to defaultcreeps for lane minions
   | "skeleton_warrior"
   | "skeleton_mage"
   | "kaykit_barbarian"
@@ -517,74 +530,74 @@ export const UNIT_TYPES: Record<string, UnitDef> = {
     mesh: "ogre",
     reward: 70,
   },
-  // --- Neutral jungle camp defenders ---
+  // --- Neutral jungle camp defenders (Sanctum — elemental_lord + belerick) ---
   jungle_wolf: {
     id: "jungle_wolf",
-    name: "Jungle Wolf",
-    hp: 72,
-    speed: 6.2,
-    damage: 14,
-    attackRange: 2.2,
-    attackCooldown: 0.75,
+    name: "Nature Guard",
+    hp: 95,
+    speed: 5.4,
+    damage: 16,
+    attackRange: 2.3,
+    attackCooldown: 0.85,
     aggroRange: 12,
     ranged: false,
-    radius: 0.46,
-    scale: 0.82,
+    radius: 0.55,
+    scale: 1,
     color: "#5a6a4a",
     accent: "#a8c878",
-    mesh: "grunt",
+    mesh: "belerick",
     reward: 28,
   },
   jungle_raider: {
     id: "jungle_raider",
-    name: "Bandit Archer",
-    hp: 88,
-    speed: 5,
+    name: "Nature Scout",
+    hp: 100,
+    speed: 5.2,
     damage: 18,
-    attackRange: 14,
-    attackCooldown: 1.2,
-    aggroRange: 16,
-    ranged: true,
-    radius: 0.48,
-    scale: 0.9,
+    attackRange: 2.4,
+    attackCooldown: 0.9,
+    aggroRange: 14,
+    ranged: false,
+    radius: 0.55,
+    scale: 1.05,
     color: "#6a5a3a",
     accent: "#d4b86a",
-    mesh: "raider",
+    mesh: "belerick",
     reward: 34,
   },
   jungle_brute: {
     id: "jungle_brute",
-    name: "Jungle Brute",
-    hp: 210,
-    speed: 4.2,
-    damage: 22,
-    attackRange: 2.5,
-    attackCooldown: 1.05,
-    aggroRange: 10,
+    name: "Elemental Lord",
+    hp: 260,
+    speed: 4.0,
+    damage: 28,
+    attackRange: 2.8,
+    attackCooldown: 1.1,
+    aggroRange: 11,
     ranged: false,
-    radius: 0.62,
-    scale: 1.12,
+    radius: 0.85,
+    scale: 1.35,
     color: "#4a5a38",
     accent: "#8eb86a",
-    mesh: "footman",
-    reward: 42,
+    mesh: "elemental_lord",
+    reward: 48,
   },
   jungle_shaman: {
     id: "jungle_shaman",
-    name: "Grove Shaman",
-    hp: 120,
-    speed: 4.6,
-    damage: 24,
-    attackRange: 15,
-    attackCooldown: 1.35,
-    aggroRange: 17,
-    ranged: true,
-    radius: 0.52,
-    scale: 0.98,
+    name: "Elemental Adept",
+    hp: 180,
+    speed: 4.4,
+    damage: 26,
+    attackRange: 3.0,
+    attackCooldown: 1.2,
+    aggroRange: 15,
+    ranged: false,
+    radius: 0.75,
+    scale: 1.2,
     color: "#3a6a48",
     accent: "#7ee8a0",
-    mesh: "raider",
-    reward: 48,
+    mesh: "elemental_lord",
+    reward: 52,
   },
 };
 

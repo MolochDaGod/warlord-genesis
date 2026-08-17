@@ -33,16 +33,17 @@ import { Controls } from "./controls";
 import type { ActionKey } from "../../game/anim";
 import type { WeaponClass } from "../../game/anim/types";
 import { useRoster } from "../../game/roster";
-import { Grudge6HeroRig, weaponClassToAnimPack } from "../../engine/grudge6HeroRig";
+import { Grudge6HeroRig, weaponClassToAnimPack, GRUDGE6_FACE_YAW } from "../../engine/grudge6HeroRig";
 import { useWeaponTuning } from "../../game/weaponTuning";
 import { resolveCameraOcclusion } from "../../game/cameraOcclusion";
 import {
   apiWeaponForLoadout,
-  warlordSkillsForLoadout,
   type WarlordWeaponSkill,
 } from "../../game/warlordWeaponSkills";
 import { applyWeaponSkillHit } from "../../game/weaponSkillCombat";
 import { deploySandboxVfx, vfxHotkeyByCode } from "../../game/vfxSandboxHotkeys";
+import { abilityPoolForHero, resolveAbility } from "../../game/abilityLoadout";
+import { useMeta } from "../../game/metaProgression";
 
 const _dir = new THREE.Vector3();
 const _front = new THREE.Vector3();
@@ -231,7 +232,7 @@ export function Player() {
         useWeaponTuning.getState().setActiveKey(rdef.model ?? null);
         animatorRef.current = a;
         setAnimator(a);
-        weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, "ranged");
+        weaponSkillsRef.current = equippedWeaponSkills();
         void a.preloadWeaponSkills(weaponSkillsRef.current);
         useGame.getState().setHeroActiveWeapon("ranged");
       })
@@ -247,7 +248,7 @@ export function Player() {
   }, [raceId, classId, meleeId, rangedId]);
 
   useEffect(() => {
-    weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, activeMode.current);
+    weaponSkillsRef.current = equippedWeaponSkills();
     void animatorRef.current?.preloadWeaponSkills(weaponSkillsRef.current);
   }, [meleeId, rangedId, animator]);
 
@@ -478,7 +479,7 @@ export function Player() {
     }
     const g = useGame.getState();
     const tune = useWeaponTuning.getState();
-    weaponSkillsRef.current = warlordSkillsForLoadout(meleeId, rangedId, mode);
+    weaponSkillsRef.current = equippedWeaponSkills();
     void animatorRef.current?.preloadWeaponSkills(weaponSkillsRef.current);
     g.setHeroActiveWeapon(mode);
     if (mode === "ranged") {
@@ -504,16 +505,64 @@ export function Player() {
     setActive(activeMode.current === "ranged" ? "melee" : "ranged");
   }
 
-  /** Fire a canonical weapon-skill (Digit1–6) — baked anim + crosshair-centered hit. */
+  function equippedWeaponSkills(): WarlordWeaponSkill[] {
+    const r = useRoster.getState();
+    const cardLevel = Math.max(1, useMeta.getState().characterLevel(r.prefabId));
+    const pool = abilityPoolForHero({
+      classId: r.classId,
+      meleeId: r.meleeId,
+      rangedId: r.rangedId,
+      cardLevel,
+    });
+    return r.abilitySlots
+      .map((id) => resolveAbility(id, pool)?.weaponSkill)
+      .filter((s): s is WarlordWeaponSkill => Boolean(s));
+  }
+
+  /** Digit1–6 — fire the warcamp-chosen ability in that Danger Room slot. */
   function castWeaponSkill(slot: number) {
     if (useCommand.getState().mode !== "combat" || dead.current) return;
-    const skill = weaponSkillsRef.current[slot];
-    if (!skill) return;
+    const r = useRoster.getState();
+    const cardLevel = Math.max(1, useMeta.getState().characterLevel(r.prefabId));
+    const pool = abilityPoolForHero({
+      classId: r.classId,
+      meleeId: r.meleeId,
+      rangedId: r.rangedId,
+      cardLevel,
+    });
+    const ab = resolveAbility(r.abilitySlots[slot], pool);
+    if (!ab) return;
     const g = useGame.getState();
-    if (!g.weaponSkillReady(skill.id)) return;
+    g.markHotbarSlot(slot + 1);
+    if (ab.kind === "mobility") {
+      if (ab.mobility === "dash") triggerDash();
+      else if (ab.mobility === "slam") triggerSlam();
+      return;
+    }
+    if (!g.weaponSkillReady(ab.id)) return;
     const a = animatorRef.current;
-    if (!a?.castWeaponSkill(skill)) return;
-    g.startWeaponSkillCooldown(skill.id, skill.cooldown);
+    const skill: WarlordWeaponSkill =
+      ab.weaponSkill ??
+      ({
+        id: ab.id,
+        label: ab.label,
+        baked: ab.baked ?? "",
+        animKey: ab.animKey,
+        description: ab.description,
+        cooldown: ab.cooldown,
+        damage: 28,
+        damageType: "physical",
+        blend: 0.9,
+        hotbarSlot: slot + 1,
+        effects: [],
+        keyLabel: String(slot + 1),
+      } satisfies WarlordWeaponSkill);
+    if (!a?.castWeaponSkill(skill)) {
+      // Still apply hit if the mixer has no matching clip — combat must not no-op.
+    } else {
+      /* clip played */
+    }
+    g.startWeaponSkillCooldown(ab.id, ab.cooldown);
     camera.getWorldDirection(_aim);
     _aim.normalize();
     applyWeaponSkillHit(
@@ -523,7 +572,7 @@ export function Player() {
       apiWeaponForLoadout(meleeId, rangedId, activeMode.current),
       g.damageMult,
     );
-    g.pushMessage(skill.label.toUpperCase(), "info");
+    g.pushMessage(ab.label.toUpperCase(), "info");
   }
 
   // Resolve one hitscan pellet along `_ray` for ranged weapon `w` and draw its
@@ -933,7 +982,9 @@ export function Player() {
     } else if (moving) {
       heroYaw = Math.atan2(_dir.x, _dir.z);
     } else {
-      heroYaw = a ? a.root.rotation.y : commandYaw.current;
+      // Hold last model facing — never read a.root.rotation.y here: that value
+      // already includes GRUDGE6_FACE_YAW and would drift the body by −π/2 when idle.
+      heroYaw = modelYaw.current;
     }
 
     if (a) {
@@ -949,7 +1000,8 @@ export function Player() {
         if (Math.abs(d) > 2.2) modelYaw.current = heroYaw;
         else modelYaw.current += d * (1 - Math.exp(-turnRate * dt));
       }
-      a.root.rotation.y = modelYaw.current;
+      // Kit faces +X; play space yaw=0 is +Z — apply FACE_YAW once on the root
+      a.root.rotation.y = modelYaw.current + GRUDGE6_FACE_YAW;
 
       if (!dead.current && !jumping.current) {
         const intensity = moving ? (sprint ? 0.95 : 0.5) : 0;

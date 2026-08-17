@@ -205,9 +205,9 @@ function momentumCreeps(side: Faction, lane: number): number {
 // --- Spawns -----------------------------------------------------------------
 
 /**
- * Spawn the player faction's baseline lane reinforcements on every lane (standard
- * and large maps). Each push sends 3 melee + 2 ranged KayKit creeps per lane,
- * scaled by escalation + ally momentum + tech HP.
+ * Spawn the player faction's baseline lane reinforcements on every lane.
+ * Each push sends melee + ranged defaultcreeps per lane (blue pack),
+ * scaled by escalation + ally momentum + tech HP. GRUDGE6 is for heroes only.
  */
 function spawnAllyPush() {
   const g = useGame.getState();

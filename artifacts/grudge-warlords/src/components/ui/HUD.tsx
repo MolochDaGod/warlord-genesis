@@ -4,119 +4,16 @@ import { useRoster } from "../../game/roster";
 import { useWeaponTuning, type TuningField } from "../../game/weaponTuning";
 import { getPreset, isMeleeWeapon } from "../../game/anim/presets";
 import { EM } from "../../game/entities";
-import { ABILITIES, type AbilityId } from "../../game/config";
+
 import { MAX_HERO_LEVEL, xpBar } from "../../game/heroSkillTree";
-import { warlordSkillsForLoadout } from "../../game/warlordWeaponSkills";
 import { CLASS_BY_ID } from "@workspace/game-content";
-import type { MeleeWeaponId, RangedWeaponId } from "../../game/config";
 import { Shop } from "./Shop";
 import { LaneDeployment } from "./LaneDeployment";
 import { HeroUpgradePanel } from "./HeroUpgradePanel";
 import { ProductionBuildingPanel } from "./ProductionBuildingPanel";
 import { BuildBar } from "./BuildBar";
 import { PortraitFrame, BarFrame } from "./UnitFrame";
-
-const ABILITY_ORDER: AbilityId[] = ["dash", "slam"];
-
-/** Level-up skill picker — class-branched, resets each match. */
-function SkillTreePicker() {
-  const pending = useGame((s) => s.pendingSkillPick);
-  const pickHeroSkill = useGame((s) => s.pickHeroSkill);
-  const classId = useRoster((s) => s.classId);
-  if (!pending) return null;
-  const cls = CLASS_BY_ID[classId];
-  return (
-    <div className="gw-skilltree-overlay">
-      <div className="gw-skilltree">
-        <div className="gw-skilltree-head">
-          <span className="gw-skilltree-title">Level {pending.level} — Choose a Skill</span>
-          <span className="gw-skilltree-class" style={{ color: cls.color }}>
-            {cls.name}
-          </span>
-        </div>
-        <div className="gw-skilltree-options">
-          {pending.options.map((opt) => (
-            <button
-              key={opt.id}
-              type="button"
-              className="gw-skilltree-opt"
-              style={{ borderColor: opt.color }}
-              onClick={() => pickHeroSkill(opt.id)}
-            >
-              <span className="gw-skilltree-icon" style={{ color: opt.color }}>
-                {opt.icon ?? "◆"}
-              </span>
-              <span className="gw-skilltree-name">{opt.label}</span>
-              <span className="gw-skilltree-desc">{opt.description}</span>
-            </button>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-/** Canonical GRUDGE6 weapon-skill hotbar (Digit1–6 / API matrix). */
-function WeaponSkillsBar() {
-  const weaponSkillCd = useGame((s) => s.weaponSkillCd);
-  const activeWeapon = useGame((s) => s.heroActiveWeapon);
-  const meleeId = useRoster((s) => s.meleeId) as MeleeWeaponId;
-  const rangedId = useRoster((s) => s.rangedId) as RangedWeaponId;
-  const skills = warlordSkillsForLoadout(meleeId, rangedId, activeWeapon);
-  if (!skills.length) return null;
-  return (
-    <div className="gw-weapon-skills">
-      {skills.map((sk) => {
-        const cd = weaponSkillCd[sk.id] ?? 0;
-        const ready = cd <= 0;
-        const pct = ready || sk.cooldown <= 0 ? 0 : (cd / sk.cooldown) * 100;
-        return (
-          <div
-            key={sk.id}
-            className={`gw-weapon-skill ${ready ? "is-ready" : "is-cooling"}`}
-            title={`${sk.label} — ${sk.damage} dmg · ${sk.description}`}
-          >
-            <div className="gw-weapon-skill-icon">
-              <span className="gw-weapon-skill-key">{sk.keyLabel}</span>
-              <span className="gw-weapon-skill-cool" style={{ height: `${pct}%` }} />
-              {!ready && sk.cooldown > 0 && (
-                <span className="gw-weapon-skill-timer">{Math.ceil(cd)}</span>
-              )}
-            </div>
-            <span className="gw-weapon-skill-name">{sk.label}</span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-/** Hero ability bar: shows each skill's hotkey, name, and live cooldown sweep. */
-function SkillsBar() {
-  const abilityCd = useGame((s) => s.abilityCd);
-  return (
-    <div className="gw-skills">
-      {ABILITY_ORDER.map((id) => {
-        const def = ABILITIES[id];
-        const cd = abilityCd[id];
-        const ready = cd <= 0;
-        const pct = ready ? 0 : (cd / def.cooldown) * 100;
-        return (
-          <div key={id} className={`gw-skill ${ready ? "is-ready" : "is-cooling"}`}>
-            <div className="gw-skill-icon" style={{ borderColor: def.color }}>
-              <span className="gw-skill-key">{def.key}</span>
-              <span className="gw-skill-cool" style={{ height: `${pct}%` }} />
-              {!ready && <span className="gw-skill-timer">{Math.ceil(cd)}</span>}
-            </div>
-            <span className="gw-skill-name" style={{ color: ready ? def.color : undefined }}>
-              {def.name}
-            </span>
-          </div>
-        );
-      })}
-    </div>
-  );
-}
+import { DangerRoomHotbar } from "./DangerRoomHotbar";
 
 function Marquee() {
   const m = useCommand((s) => s.marquee);
@@ -317,7 +214,6 @@ export function HUD() {
       )}
 
       <Marquee />
-      <SkillTreePicker />
 
       {armedBuild && isCommand && (
         <div className="gw-build-banner">
@@ -418,11 +314,9 @@ export function HUD() {
         )}
       </div>
 
-      {/* Single combat action strip: weapon skills + dash/slam */}
       {isCombat && (
         <div className="gw-action-strip">
-          <WeaponSkillsBar />
-          <SkillsBar />
+          <DangerRoomHotbar />
         </div>
       )}
 
@@ -442,12 +336,17 @@ export function HUD() {
         <div className="gw-credits"><span className="gw-cr-icon">◈</span> {credits}</div>
       </div>
 
-      {/* RTS panels only in command mode — keep combat FOV clean */}
+      {/* RTS panels only in command mode — keep combat FOV clean.
+          Both side rails scroll independently (left + right). */}
       {isCommand && (
         <>
-          <HeroUpgradePanel />
-          <ProductionBuildingPanel />
-          <LaneDeployment />
+          <div className="gw-cmd-rail gw-cmd-rail-left" aria-label="Command left — scroll">
+            <HeroUpgradePanel />
+            <ProductionBuildingPanel />
+          </div>
+          <div className="gw-cmd-rail gw-cmd-rail-right" aria-label="Command right — scroll">
+            <LaneDeployment />
+          </div>
           <BuildBar />
           <Shop />
         </>

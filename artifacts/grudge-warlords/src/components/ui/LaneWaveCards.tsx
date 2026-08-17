@@ -6,11 +6,12 @@ import {
   type LanePick,
 } from "../../game/laneDeployment";
 
-export function unitLabel(typeId: string): string {
+export function unitLabel(typeId: string, compact = false): string {
   const def = resolveUnitDef(typeId);
   if (!def) return typeId.replace(/_/g, " ");
-  const line = def.line === "ranged" ? "🏹" : "⚔️";
-  return `${line} ${def.name}`;
+  if (compact) return def.name; /* short for narrow March Orders rail */
+  const line = def.line === "ranged" ? "R" : "M";
+  return `${line} · ${def.name}`;
 }
 
 function LaneSelect({
@@ -31,10 +32,11 @@ function LaneSelect({
         className="gw-lane-select"
         value={value}
         onChange={(e) => onChange(e.target.value)}
+        title={unitLabel(value)}
       >
         {options.map((id) => (
           <option key={id} value={id}>
-            {unitLabel(id)}
+            {unitLabel(id, true)}
           </option>
         ))}
       </select>

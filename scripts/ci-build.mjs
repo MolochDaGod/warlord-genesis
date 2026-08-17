@@ -29,6 +29,20 @@ function run(cmd, { optional = false } = {}) {
   }
 }
 
+// Vite SPA static ship — root index.html loads /assets/index-*.js (ESM)
+const ROOT_INDEX = join(ROOT, "index.html");
+if (existsSync(ROOT_INDEX)) {
+  const html = readFileSync(ROOT_INDEX, "utf8");
+  if (/\/assets\/index-[^"']+\.js/.test(html) && !html.includes("gw-core-")) {
+    console.log("[ci-build] Vite SPA static ship (index → assets/index-*.js)");
+    run("node scripts/generate-vercel-config.mjs", { optional: true });
+    // Legacy IIFE inventory checks don't apply to Vite — optional only
+    run("node scripts/verify-deploy.mjs", { optional: true });
+    console.log("[ci-build] done (vite)");
+    process.exit(0);
+  }
+}
+
 // Ship patched game bundle (fix2 → fix3 → gw-core). Skips only when source missing.
 const FIX2 = join(ROOT, "assets", "index-warlord-fix2.js");
 if (existsSync(FIX2)) {

@@ -13,7 +13,7 @@ import {
   type WorgeSpec,
 } from "../../game/productionSpecs";
 import { useCommand } from "../../game/command";
-import { ICONS } from "./icons";
+import { HUD_ICONS } from "./hudIcons";
 
 type BuildingTab = "barracks" | "archery";
 
@@ -122,7 +122,7 @@ export function ProductionBuildingPanel() {
   return (
     <div className={`gw-prod-panel${collapsed ? " gw-prod-panel-collapsed" : ""}`}>
       <div className="gw-prod-panel-head">
-        <img className="gw-title-icon" src={ICONS.hammer} alt="" draggable={false} />
+        <img className="gw-title-icon" src={HUD_ICONS.armory} alt="" draggable={false} />
         <span className="gw-prod-panel-title">Production</span>
         <div className="gw-prod-tabs">
           <button

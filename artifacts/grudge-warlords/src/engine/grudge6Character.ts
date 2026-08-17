@@ -21,6 +21,12 @@ import {
 } from "./mixamoRetarget";
 import { ASSET_CDN } from "./warlordManifest";
 import { gearPresetFor, resolveUnitDef } from "./grudge6";
+import { verifyLoadedAsset, type AssetVerifyReport } from "./assetVerify";
+import {
+  attackFromNativeClips,
+  clipsFromLoadedFile,
+  locoFromNativeClips,
+} from "./sourceClips";
 
 const fbxLoader = new FBXLoader();
 const gltfLoader = new GLTFLoader();
@@ -143,26 +149,31 @@ function raceTextureUrls(repoRaceId: string): string[] {
   ];
 }
 
-async function loadFirstRaceKit(urls: string[]): Promise<THREE.Group> {
+async function loadFirstRaceKit(
+  urls: string[],
+): Promise<{ group: THREE.Group; animations: THREE.AnimationClip[]; url: string }> {
   let lastErr: unknown;
   for (const url of urls) {
     try {
       if (/\.glb($|\?)/i.test(url) || /\.gltf($|\?)/i.test(url)) {
         const gltf = await gltfLoader.loadAsync(url);
-        return gltf.scene as THREE.Group;
+        const group = gltf.scene as THREE.Group;
+        const animations = clipsFromLoadedFile(group, gltf.animations);
+        console.info(`[grudge6] GLB ${url} clips=${animations.length}`);
+        return { group, animations, url };
       }
-      return (await fbxLoader.loadAsync(url)) as THREE.Group;
+      const group = (await fbxLoader.loadAsync(url)) as THREE.Group & {
+        animations?: THREE.AnimationClip[];
+      };
+      const animations = clipsFromLoadedFile(group);
+      console.info(`[grudge6] FBX ${url} clips=${animations.length}`);
+      return { group, animations, url };
     } catch (e) {
       lastErr = e;
       console.warn(`[grudge6] kit miss ${url}`, e);
     }
   }
   throw lastErr ?? new Error("no race kit GLB/FBX");
-}
-
-/** @deprecated use loadFirstRaceKit */
-async function loadFirstFbx(urls: string[]): Promise<THREE.Group> {
-  return loadFirstRaceKit(urls);
 }
 
 async function loadFirstTexture(urls: string[]): Promise<THREE.Texture> {
@@ -202,6 +213,14 @@ function bakedClipUrl(rel: string): string {
 export const GRUDGE6_TARGET_HEIGHT_M = 1.85;
 
 /**
+ * Kit exports face +X; Three play space treats yaw=0 as facing +Z (atan2(dx,dz)).
+ * Apply this offset on the rig root so movement direction matches mesh forward.
+ * Player/Units must use: `root.rotation.y = facingYaw + GRUDGE6_FACE_YAW` when
+ * overwriting root rotation (Player), or leave it baked on the child (Units parent yaw).
+ */
+export const GRUDGE6_FACE_YAW = -Math.PI / 2;
+
+/**
  * Body mesh heuristic — prefer torso/legs for height so spear/shield outliers
  * do not inflate the bbox (which used to crush or explode scale).
  */
@@ -229,6 +248,36 @@ function measureCharacterBox(root: THREE.Object3D): THREE.Box3 {
   if (nBody > 0 && !bodyBox.isEmpty()) return bodyBox;
   const all = new THREE.Box3().setFromObject(root);
   return all;
+}
+
+/**
+ * Prefer the first skinned mesh's skeleton root / armature for AnimationMixer.
+ * Binding the mixer to a pure Group is fine if bones are descendants; armature
+ * roots avoid accidental binding to decoy empty nodes in multi-armature FBX.
+ */
+function findAnimRoot(root: THREE.Object3D): THREE.Object3D {
+  let skin: THREE.SkinnedMesh | undefined;
+  root.traverse((n) => {
+    if (skin) return;
+    const sm = n as THREE.SkinnedMesh;
+    if (sm.isSkinnedMesh && sm.skeleton?.bones?.length) skin = sm;
+  });
+  if (skin) {
+    let p: THREE.Object3D | null = skin;
+    while (p && p.parent && p.parent !== root) p = p.parent;
+    return p ?? root;
+  }
+  const byName = root.getObjectByName("Armature") ?? root.getObjectByName("Root");
+  return byName ?? root;
+}
+
+/** After mixer poses idle, re-plant soles on local y=0 (bind bbox ≠ idle pose). */
+function replantRoot(root: THREE.Object3D): void {
+  root.updateWorldMatrix(true, true);
+  const box = measureCharacterBox(root);
+  if (box.isEmpty()) return;
+  root.position.y -= box.min.y;
+  root.updateWorldMatrix(true, true);
 }
 
 function unifySkeletons(root: THREE.Object3D): THREE.Skeleton | null {
@@ -270,9 +319,12 @@ function normalizeCharacterGroup(
   // 1) Identity scale/pos for a clean local measure
   root.scale.set(1, 1, 1);
   root.position.set(0, 0, 0);
-  // Face -Z play space (kit exports face +X)
-  root.rotation.set(0, Math.PI / 2, 0);
+  // Kit faces +X → world +Z at parent yaw 0 (see GRUDGE6_FACE_YAW)
+  root.rotation.set(0, GRUDGE6_FACE_YAW, 0);
   root.updateWorldMatrix(true, true);
+
+  // Hard clamp final uniform scale so nothing stays 10–100× (cm exports)
+  // Applied after height fit below.
 
   // 2) cm-scale kits: humanoid taller than ~20 units at scale 1 is almost always cm
   let box = measureCharacterBox(root);
@@ -326,12 +378,27 @@ function normalizeCharacterGroup(
   root.position.y -= box.min.y;
   root.updateWorldMatrix(true, true);
 
-  if (typeof console !== "undefined") {
-    const finalH = measureCharacterBox(root).getSize(new THREE.Vector3()).y;
-    if (finalH > targetHeight * 3 || finalH < targetHeight * 0.25) {
-      console.warn(
-        `[grudge6] unexpected height after fit: ${finalH.toFixed(2)}m (target ${targetHeight}m)`,
-      );
+  // 6) Final height sanity — if still huge/tiny, force re-fit from measured Y
+  {
+    const finalBox = measureCharacterBox(root);
+    const finalH = finalBox.getSize(new THREE.Vector3()).y;
+    if (finalH > targetHeight * 2.5 || finalH < targetHeight * 0.35) {
+      const fix = targetHeight / Math.max(finalH, 1e-6);
+      if (Number.isFinite(fix) && fix > 0) {
+        root.scale.multiplyScalar(THREE.MathUtils.clamp(fix, 0.05, 20));
+        root.updateWorldMatrix(true, true);
+        const b2 = measureCharacterBox(root);
+        const c2 = b2.getCenter(new THREE.Vector3());
+        root.position.x -= c2.x;
+        root.position.z -= c2.z;
+        root.position.y -= b2.min.y;
+        root.updateWorldMatrix(true, true);
+      }
+      if (typeof console !== "undefined") {
+        console.warn(
+          `[grudge6] height re-fit: was ${finalH.toFixed(2)}m → target ${targetHeight}m`,
+        );
+      }
     }
   }
 
@@ -347,12 +414,114 @@ function applyGearPreset(group: THREE.Object3D, visibleMeshes: string[]): void {
   });
 }
 
+/**
+ * Mesh part class for Toon-RTS / GRUDGE6 multi-mesh kits.
+ * Skin + weapons keep authored atlas colors; only armor/cloth take faction tint.
+ */
+export type MeshPartClass = "skin" | "armor" | "cloth" | "weapon" | "other";
+
+export function classifyMeshPart(name: string): MeshPartClass {
+  const n = name.toLowerCase();
+  if (!n) return "other";
+  // Weapons / tools first
+  if (
+    /(weapon|sword|axe|hammer|mace|spear|bow|staff|shield|quiver|dagger|pick|gun|arrow)/.test(
+      n,
+    )
+  ) {
+    return "weapon";
+  }
+  // Skin / head / face / hair — never faction-tint
+  if (/(head|face|skin|hair|ear|eye|beard|tooth|teeth|horn)/.test(n)) {
+    return "skin";
+  }
+  // Cloth / robes / soft gear
+  if (/(cloth|robe|cape|cloak|hood|scarf|skirt|dress|tunic|fabric|rag)/.test(n)) {
+    return "cloth";
+  }
+  // Armor / plate / body kit pieces (body/arms/legs/shoulders on Synty kits)
+  if (
+    /(armor|armour|plate|mail|shoulder|pad|body|torso|chest|arms|arm|legs|leg|boot|glove|helm|helmet|bracer|gaunt|belt)/.test(
+      n,
+    )
+  ) {
+    return "armor";
+  }
+  return "other";
+}
+
+const _factionColor = new THREE.Color();
+const _baseWhite = new THREE.Color(0xffffff);
+
+/**
+ * Preserve real atlas textures: clone materials per mesh, force map color space,
+ * reset color to white so albedo reads correctly (no muddy shared tints).
+ */
+export function preserveAuthoredMaterials(group: THREE.Object3D): void {
+  group.traverse((node) => {
+    if (!(node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh)) return;
+    node.castShadow = true;
+    node.receiveShadow = true;
+    const mats = Array.isArray(node.material) ? node.material : node.material ? [node.material] : [];
+    const next = mats.map((m) => {
+      const c = m.clone() as THREE.MeshStandardMaterial;
+      if (c.map) {
+        c.map.colorSpace = THREE.SRGBColorSpace;
+        c.map.flipY = c.map.flipY ?? false;
+        c.map.anisotropy = Math.max(c.map.anisotropy || 1, 8);
+        c.map.needsUpdate = true;
+      }
+      // Authored albedo only — do not bake a gray/faction color into base
+      if (c.color) c.color.copy(_baseWhite);
+      c.roughness = Math.min(0.92, c.roughness ?? 0.78);
+      c.metalness = Math.min(0.25, c.metalness ?? 0.06);
+      if ("envMapIntensity" in c) c.envMapIntensity = 0.4;
+      c.needsUpdate = true;
+      return c;
+    });
+    node.material = Array.isArray(node.material) ? next : next[0]!;
+  });
+}
+
+/**
+ * Faction / loadout color: ONLY armor + cloth mesh parts.
+ * Skin, hair, weapons keep real textured colors.
+ * `strength` 0..1 how hard to blend toward the faction color (atlas still shows).
+ */
+export function applyFactionGearColors(
+  group: THREE.Object3D,
+  factionHex: string | undefined | null,
+  strength = 0.55,
+): void {
+  if (!factionHex || factionHex === "#ffffff" || factionHex === "#fff") return;
+  try {
+    _factionColor.set(factionHex);
+  } catch {
+    return;
+  }
+  const s = THREE.MathUtils.clamp(strength, 0, 1);
+  group.traverse((node) => {
+    if (!(node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh)) return;
+    if (!node.visible) return;
+    const part = classifyMeshPart(node.name);
+    if (part !== "armor" && part !== "cloth") return;
+    const mats = Array.isArray(node.material) ? node.material : node.material ? [node.material] : [];
+    for (const mat of mats) {
+      const sm = mat as THREE.MeshStandardMaterial;
+      if (!sm?.color) continue;
+      // Soft blend: keep atlas readable, shift armor/cloth toward faction
+      sm.color.copy(_baseWhite).lerp(_factionColor, part === "cloth" ? s * 0.85 : s);
+      sm.needsUpdate = true;
+    }
+  });
+}
+
+/** Apply race atlas to every visible mesh — white base so texture is true. */
 function applyBodyTexture(group: THREE.Object3D, texture: THREE.Texture): void {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.flipY = false;
   texture.anisotropy = 8;
   texture.needsUpdate = true;
-  // Per-mesh materials so tint/preview clones don't share one material instance
   group.traverse((node) => {
     if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
       node.material = new THREE.MeshStandardMaterial({
@@ -429,6 +598,10 @@ export interface PreparedGrudge6Character {
   mixer: THREE.AnimationMixer;
   director: AnimationDirector;
   attackClip: THREE.AnimationClip;
+  /** Clips that shipped on the GLB/FBX — bind these, do not invent empties. */
+  sourceClips: THREE.AnimationClip[];
+  sourceUrl?: string;
+  verify?: AssetVerifyReport;
   /** @deprecated Use `director` — kept for lane-guard fallback crossfades. */
   actions: Partial<Record<Grudge6LocoState, THREE.AnimationAction>>;
   swapAnimPack: (pack: AnimPack) => Promise<void>;
@@ -466,22 +639,46 @@ async function loadPackBundle(
   root: THREE.Object3D,
   mixer: THREE.AnimationMixer,
   pack: AnimPack,
+  nativeClips: THREE.AnimationClip[] = [],
 ): Promise<{
   director: AnimationDirector;
   attackClip: THREE.AnimationClip;
   actions: Partial<Record<Grudge6LocoState, THREE.AnimationAction>>;
 }> {
-  const loco = LOCO_BAKED_BY_PACK[pack];
-  const [idleClip, walkClip, runClip, sprintClip, attackClip] = await Promise.all([
-    loadBakedClipByRel(loco.idle, root),
-    loadBakedClipByRel(loco.walk, root),
-    loadBakedClipByRel(loco.run, root),
-    loadBakedClipByRel(loco.sprint, root),
-    loadBakedClipByRel(ATTACK_BY_PACK[pack], root),
-  ]);
-  const fallback =
-    idleClip ?? walkClip ?? runClip ?? sprintClip ?? attackClip;
-  if (!fallback) throw new Error(`[grudge6] no baked clips for pack ${pack}`);
+  // Native file clips first — they already target this skeleton.
+  const nativeLoco = locoFromNativeClips(nativeClips);
+  const nativeAtk = attackFromNativeClips(nativeClips);
+
+  let idleClip = nativeLoco?.idle ?? null;
+  let walkClip = nativeLoco?.walk ?? null;
+  let runClip = nativeLoco?.run ?? null;
+  let sprintClip = nativeLoco?.sprint ?? null;
+  let attackClip = nativeAtk;
+
+  if (!nativeLoco) {
+    const loco = LOCO_BAKED_BY_PACK[pack];
+    const baked = await Promise.all([
+      loadBakedClipByRel(loco.idle, root),
+      loadBakedClipByRel(loco.walk, root),
+      loadBakedClipByRel(loco.run, root),
+      loadBakedClipByRel(loco.sprint, root),
+      loadBakedClipByRel(ATTACK_BY_PACK[pack], root),
+    ]);
+    idleClip = baked[0];
+    walkClip = baked[1];
+    runClip = baked[2];
+    sprintClip = baked[3];
+    attackClip = baked[4];
+  } else if (!attackClip) {
+    attackClip = await loadBakedClipByRel(ATTACK_BY_PACK[pack], root);
+  }
+
+  const fallback = idleClip ?? walkClip ?? runClip ?? sprintClip ?? attackClip;
+  if (!fallback) {
+    throw new Error(
+      `[grudge6] no clips for pack ${pack} — file had ${nativeClips.length} native, baked also empty`,
+    );
+  }
   const clips: LocoClips = {
     idle: idleClip ?? fallback,
     walk: walkClip ?? fallback,
@@ -515,7 +712,8 @@ export function loadGrudge6Character(
     : undefined;
   const pack = asAnimPackId(opts.animPack ?? preset?.animPack ?? "unarmed");
   const fitHeight = opts.fitHeight ?? 2.05;
-  const tint = opts.tint ?? def?.grudge?.skinTint ?? "#ffffff";
+  // Explicit faction color only — race skinTint is baked into atlas textures
+  const tint = opts.tint && opts.tint !== "#ffffff" ? opts.tint : "#ffffff";
   const key = cacheKey(typeId, fitHeight, tint, pack);
   let cached = characterCache.get(key);
   if (!cached) {
@@ -543,41 +741,33 @@ export async function loadGrudge6CharacterInstance(
   const pack = asAnimPackId(opts.animPack ?? preset?.animPack ?? "unarmed");
 
   const root = SkeletonUtils.clone(shared.root) as unknown as THREE.Group;
-  // Ensure materials are unique + texture color space still valid after clone
-  root.traverse((node) => {
-    if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-      const mats = Array.isArray(node.material) ? node.material : [node.material];
-      const next = mats.map((m) => {
-        const c = m.clone();
-        const std = c as THREE.MeshStandardMaterial;
-        if (std.map) {
-          std.map.colorSpace = THREE.SRGBColorSpace;
-          std.map.needsUpdate = true;
-        }
-        if (std.color && opts.tint && opts.tint !== "#ffffff") {
-          // tint already applied on shared; clone keeps it
-        }
-        return c;
-      });
-      node.material = Array.isArray(node.material) ? next : next[0]!;
-      node.castShadow = true;
-      node.receiveShadow = true;
-    }
-  });
+  // Unique materials + real textures; faction tint only on armor/cloth
+  preserveAuthoredMaterials(root);
+  applyFactionGearColors(root, opts.tint);
 
-  const mixer = new THREE.AnimationMixer(root);
-  const bundle = await loadPackBundle(root, mixer, pack);
+  // Mixer on THIS clone's skeleton — native file clips bind by bone name.
+  const animRoot = findAnimRoot(root);
+  const mixer = new THREE.AnimationMixer(animRoot);
+  const sourceClips = shared.sourceClips ?? [];
+  const bundle = await loadPackBundle(root, mixer, pack, sourceClips);
   bundle.director.setGaitTarget(false, false);
+  // Force idle weight + sample one frame so lobby never shows bind T-pose
+  bundle.actions.idle?.reset().setEffectiveWeight(1).play();
+  mixer.update(1 / 30);
+  replantRoot(root);
 
   const prepared: PreparedGrudge6Character & { dispose: () => void } = {
     root,
     mixer,
     director: bundle.director,
     attackClip: bundle.attackClip,
+    sourceClips,
+    sourceUrl: shared.sourceUrl,
+    verify: shared.verify,
     actions: bundle.actions,
     swapAnimPack: async (nextPack: AnimPack) => {
       // Load first — never dispose working director on failed fetch
-      const next = await loadPackBundle(root, mixer, nextPack);
+      const next = await loadPackBundle(root, mixer, nextPack, sourceClips);
       try {
         prepared.director.dispose();
       } catch {
@@ -609,110 +799,56 @@ export async function loadGrudge6CharacterInstance(
   return prepared;
 }
 
-/** Lane guard loader — same GRUDGE6 Bip001 pipeline as warlords. */
+/**
+ * Lane guard loader — ALWAYS an independent instance (own skeleton + mixer).
+ * Never mount the shared cache root; multiple guards of the same type must
+ * each animate without stealing one mesh.
+ */
 export function loadGrudge6LaneGuard(
   typeId: string,
   opts: { fitHeight?: number; tint?: string } = {},
-): Promise<PreparedGrudge6Character> {
-  return loadGrudge6Character(typeId, opts);
-}
-
-function clipFromGltf(
-  animations: THREE.AnimationClip[],
-  name: string,
-  root: THREE.Object3D,
-  fallback = "idle",
-): THREE.AnimationClip {
-  const hit =
-    animations.find((c) => c.name === name) ??
-    animations.find((c) => c.name === fallback) ??
-    animations[0];
-  if (!hit) throw new Error(`baked prefab missing clip ${name}`);
-  return normalizeBakedBip001Clip(toRotationOnlyClip(hit), root);
+): Promise<PreparedGrudge6Character & { dispose: () => void }> {
+  return loadGrudge6CharacterInstance(typeId, opts);
 }
 
 async function prepareFromGltfRoot(
   root: THREE.Group,
   animations: THREE.AnimationClip[],
-  opts: { fitHeight: number; tint: string; animPack: AnimPack },
+  opts: { fitHeight: number; tint: string; animPack: AnimPack; sourceUrl?: string },
 ): Promise<PreparedGrudge6Character> {
-  root.traverse((child) => {
-    if (child instanceof THREE.SkinnedMesh || child instanceof THREE.Mesh) {
-      child.castShadow = true;
-      child.receiveShadow = true;
-    }
-  });
+  // Real atlas/skin first, then soft faction recolor on armor/cloth only
+  preserveAuthoredMaterials(root);
   normalizeCharacterGroup(root, opts.fitHeight);
-  if (opts.tint && opts.tint !== "#ffffff") {
-    root.traverse((node) => {
-      if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-        const mat = node.material as THREE.MeshStandardMaterial | THREE.MeshLambertMaterial;
-        if (mat?.color) mat.color.multiply(new THREE.Color(opts.tint));
-      }
-    });
-  }
+  applyFactionGearColors(root, opts.tint);
 
-  const mixer = new THREE.AnimationMixer(root);
+  const sourceClips = clipsFromLoadedFile(root, animations);
+  const verify = verifyLoadedAsset({
+    url: opts.sourceUrl ?? "gltf",
+    kind: "character",
+    root,
+    clips: sourceClips,
+    targetHeight: opts.fitHeight,
+    requireClips: false,
+  });
 
-  // Prefer same-origin baked Bip001 packs (staged GLBs often have zero clips).
-  // Fall back to embedded GLTF clips only if baked pack is unavailable.
-  let bundle: Awaited<ReturnType<typeof loadPackBundle>> | null = null;
-  try {
-    bundle = await loadPackBundle(root, mixer, opts.animPack);
-  } catch (err) {
-    console.warn(`[grudge6] baked pack ${opts.animPack} failed — trying embedded clips`, err);
-  }
+  const animRoot = findAnimRoot(root);
+  const mixer = new THREE.AnimationMixer(animRoot);
 
-  if (!bundle && animations.length > 0) {
-    const idleClip = clipFromGltf(animations, "idle", root);
-    const walkClip = clipFromGltf(animations, "walk", root);
-    const runClip = clipFromGltf(animations, "run", root);
-    const attackClip = clipFromGltf(animations, "attack", root);
-    const clips: LocoClips = {
-      idle: idleClip,
-      walk: walkClip,
-      run: runClip,
-      sprint: runClip.clone(),
-    };
-    const director = new AnimationDirector(mixer, clips);
-    bundle = {
-      director,
-      attackClip,
-      actions: {
-        idle: mixer.clipAction(idleClip),
-        walk: mixer.clipAction(walkClip),
-        run: mixer.clipAction(runClip),
-        attack: mixer.clipAction(attackClip),
-      },
-    };
-  }
-
-  if (!bundle) {
-    // Last resort: empty idle so the mesh still mounts (T-pose) without crashing.
-    const idleClip = new THREE.AnimationClip("idle", 1, []);
-    const director = new AnimationDirector(mixer, {
-      idle: idleClip,
-      walk: idleClip,
-      run: idleClip,
-      sprint: idleClip,
-    });
-    bundle = {
-      director,
-      attackClip: idleClip,
-      actions: { idle: mixer.clipAction(idleClip) },
-    };
-    console.warn("[grudge6] no animations for staged hero — T-pose until baked pack deploys");
-  }
+  // File clips first (same skeleton). Baked JSON only fills missing bands.
+  const bundle = await loadPackBundle(root, mixer, opts.animPack, sourceClips);
 
   const prepared: PreparedGrudge6Character = {
     root,
     mixer,
     director: bundle.director,
     attackClip: bundle.attackClip,
+    sourceClips,
+    sourceUrl: opts.sourceUrl,
+    verify,
     actions: bundle.actions,
     swapAnimPack: async (pack: AnimPack) => {
       // Load first — never dispose working director on failed fetch
-      const next = await loadPackBundle(root, mixer, pack);
+      const next = await loadPackBundle(root, mixer, pack, sourceClips);
       try {
         prepared.director.dispose();
       } catch {
@@ -741,8 +877,12 @@ async function tryBuildFromBakedPrefab(
 ): Promise<PreparedGrudge6Character | null> {
   try {
     const asset = prefabBakedAsset(prefabId);
-    const gltf = await gltfLoader.loadAsync(`${ASSET_CDN}${asset.glbUrl}`);
-    return prepareFromGltfRoot(gltf.scene as THREE.Group, gltf.animations, opts);
+    const url = `${ASSET_CDN}${asset.glbUrl}`;
+    const gltf = await gltfLoader.loadAsync(url);
+    return prepareFromGltfRoot(gltf.scene as THREE.Group, gltf.animations, {
+      ...opts,
+      sourceUrl: url,
+    });
   } catch {
     return null;
   }
@@ -761,7 +901,9 @@ async function tryBuildFromLocalHeroGlb(
   for (const url of urls) {
     try {
       const gltf = await gltfLoader.loadAsync(url);
-      return prepareFromGltfRoot(gltf.scene.clone(true) as THREE.Group, gltf.animations, opts);
+      // SkeletonUtils — never Object3D.clone on skinned meshes (T-pose forever)
+      const root = SkeletonUtils.clone(gltf.scene) as unknown as THREE.Group;
+      return prepareFromGltfRoot(root, gltf.animations, { ...opts, sourceUrl: url });
     } catch {
       // try next
     }
@@ -779,7 +921,9 @@ async function buildCharacter(
   const preset = gearPresetFor(raceId, classId);
   const animPack = opts.animPack;
   const fitHeight = opts.fitHeight ?? 2.05;
-  const tint = opts.tint ?? def.grudge.skinTint ?? "#ffffff";
+  // Faction / team color only — NEVER race skinTint (atlas already has real skin).
+  // Only armor + cloth receive this; head/weapons stay textured as authored.
+  const tint = opts.tint && opts.tint !== "#ffffff" ? opts.tint : "#ffffff";
 
   // Prefer lightweight staged GLBs for lobby/battle boot (local Vercel + CDN).
   const localHero = await tryBuildFromLocalHeroGlb(repoRaceId, classId, {
@@ -794,10 +938,12 @@ async function buildCharacter(
     if (baked) return baked;
   }
 
-  const [fbx, texture] = await Promise.all([
-    loadFirstFbx(raceModelUrls(repoRaceId)),
+  const [fbxFile, texture] = await Promise.all([
+    loadFirstRaceKit(raceModelUrls(repoRaceId)),
     loadFirstTexture(raceTextureUrls(repoRaceId)),
   ]);
+  const fbx = fbxFile.group;
+  const sourceClips = fbxFile.animations;
 
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.flipY = false;
@@ -815,26 +961,33 @@ async function buildCharacter(
   }
   normalizeCharacterGroup(fbx, fitHeight);
   applyBodyTexture(fbx, texture);
-  if (tint && tint !== "#ffffff") {
-    fbx.traverse((node) => {
-      if (node instanceof THREE.Mesh || node instanceof THREE.SkinnedMesh) {
-        const mat = node.material as THREE.MeshStandardMaterial | THREE.MeshLambertMaterial;
-        if (mat?.color) mat.color.multiply(new THREE.Color(tint));
-      }
-    });
-  }
+  // Skin stays from atlas (white base). Faction color only armor/cloth names.
+  applyFactionGearColors(fbx, tint);
 
-  const mixer = new THREE.AnimationMixer(fbx);
-  const bundle = await loadPackBundle(fbx, mixer, animPack);
+  const verify = verifyLoadedAsset({
+    url: fbxFile.url,
+    kind: "character",
+    root: fbx,
+    clips: sourceClips,
+    targetHeight: fitHeight,
+    requireClips: false,
+  });
+
+  const animRoot = findAnimRoot(fbx);
+  const mixer = new THREE.AnimationMixer(animRoot);
+  const bundle = await loadPackBundle(fbx, mixer, animPack, sourceClips);
 
   const prepared: PreparedGrudge6Character = {
     root: fbx,
     mixer,
     director: bundle.director,
     attackClip: bundle.attackClip,
+    sourceClips,
+    sourceUrl: fbxFile.url,
+    verify,
     actions: bundle.actions,
     swapAnimPack: async (pack: AnimPack) => {
-      const next = await loadPackBundle(fbx, mixer, pack);
+      const next = await loadPackBundle(fbx, mixer, pack, sourceClips);
       try {
         prepared.director.dispose();
       } catch {

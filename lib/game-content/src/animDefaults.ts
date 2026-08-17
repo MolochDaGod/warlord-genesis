@@ -40,17 +40,16 @@ function bakedOr(key: string, fallback: string): string {
  * Per-pack locomotion — DRC SSOT (Open anims.ts 2026-08).
  * NEVER use locomotion/running (run-to-roll), locomotion/walking (tip),
  * or sword_shield/sword and shield run (thin arena).
- * Primary hosts: open.grudge-studio.com/anims/baked (not R2 prod/anims).
+ * File-native clips still win at runtime (sourceClips). These paths are bake fill.
  */
 export const LOCO_BAKED_BY_PACK: Record<AnimPackId, LocoBakedSet> = {
   unarmed: {
-    idle: bakedOr("unarmed_idle", "unarmed/fight_idle"),
-    walk: bakedOr("walk_fwd", "magic/Standing Walk Forward"),
-    run: bakedOr("run_fwd", "locomotion/run_forward"),
-    sprint: bakedOr("run_fwd", "locomotion/run_forward"),
+    idle: bakedOr("unarmed_idle", "unarmed/idle"),
+    walk: bakedOr("walk_fwd", "unarmed/walking"),
+    run: bakedOr("run_fwd", "unarmed/running"),
+    sprint: bakedOr("run_fwd", "unarmed/running"),
   },
   sword_shield: {
-    // Samurai 1H stance primary (purged thin sword_shield run)
     idle: bakedOr("samurai_idle_sword", "greatsword_samurai/gs_samurai_idle_sword"),
     walk: bakedOr("samurai_walk_sword", "greatsword_samurai/gs_samurai_walk_sword"),
     run: bakedOr("samurai_run_sword", "greatsword_samurai/gs_samurai_run_sword"),
@@ -80,6 +79,14 @@ export const LOCO_BAKED_BY_PACK: Record<AnimPackId, LocoBakedSet> = {
     run: bakedOr("pistol_run", "pistol/pistol run"),
     sprint: bakedOr("pistol_run", "pistol/pistol run"),
   },
+};
+
+/** Ordered candidates when primary pack path 404s — never empty T-pose. */
+export const LOCO_BAKED_FALLBACKS: Record<LocoBand, string[]> = {
+  idle: ["unarmed/idle", "venom/idle", "locomotion/idle", "sword_shield/sword and shield idle"],
+  walk: ["unarmed/walking", "venom/walk-forward", "locomotion/walking"],
+  run: ["unarmed/running", "venom/run-forward", "locomotion/running"],
+  sprint: ["unarmed/running", "venom/run-forward", "locomotion/running"],
 };
 
 /** Overlay blend when a skill plays (1 = full body; lower = legs keep locomotion). */

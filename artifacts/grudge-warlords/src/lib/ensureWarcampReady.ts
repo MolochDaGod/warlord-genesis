@@ -108,6 +108,8 @@ export function ensureWarcampReady(): void {
   if (!laneDeploymentValid()) {
     useGame.getState().resetLaneDeployment();
   }
+
+  useRoster.getState().refillAbilitySlots();
 }
 
 export interface PlayReadyResult {

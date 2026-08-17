@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------
-// Hero skill tree — levels 1–10 per match, class-branched picks from GRUDGE6
-// trees (compressed from game-content tiers 0/1/5/10/15/20). Resets every game.
+// Hero skill tree — card-level unlocks + in-match XP stat growth.
+// Active abilities are chosen in the warcamp (6-slot loadout), not mid-match.
 // ---------------------------------------------------------------------------
 
 import {
@@ -12,9 +12,23 @@ import {
 
 export const MAX_HERO_LEVEL = 10;
 
-/** Cumulative XP required to reach each level (index = level). */
+/**
+ * Cumulative XP required to *reach* each level (index = level).
+ * Level 1 starts at 0 XP — NOT 100 (was showing "-100/120" on the bar).
+ */
 export const HERO_LEVEL_XP: number[] = [
-  0, 100, 220, 360, 520, 700, 900, 1120, 1360, 1620, 1900,
+  0, // unused index 0
+  0, // level 1
+  100, // level 2
+  220,
+  360,
+  520,
+  700,
+  900,
+  1120,
+  1360,
+  1620,
+  1900, // level 10+
 ];
 
 /** Levels where the player chooses one skill from the class tree. */
@@ -191,11 +205,12 @@ export function levelFromXp(xp: number): number {
 
 export function xpBar(level: number, xp: number): { cur: number; need: number; pct: number } {
   if (level >= MAX_HERO_LEVEL) return { cur: 0, need: 0, pct: 100 };
-  const floor = HERO_LEVEL_XP[level];
-  const ceil = HERO_LEVEL_XP[level + 1];
-  const cur = xp - floor;
-  const need = ceil - floor;
-  return { cur, need, pct: need > 0 ? Math.min(100, (cur / need) * 100) : 100 };
+  const safeLevel = Math.max(1, Math.min(MAX_HERO_LEVEL, level | 0));
+  const floor = HERO_LEVEL_XP[safeLevel] ?? 0;
+  const ceil = HERO_LEVEL_XP[safeLevel + 1] ?? floor + 100;
+  const cur = Math.max(0, xp - floor);
+  const need = Math.max(1, ceil - floor);
+  return { cur, need, pct: Math.min(100, (cur / need) * 100) };
 }
 
 export function computeHeroBonuses(

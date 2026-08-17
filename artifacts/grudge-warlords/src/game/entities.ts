@@ -5,6 +5,7 @@ import { ALLY_TECH, PROJECTILES, RELIC, STRUCT, TREE, UNIT_TYPES } from "./confi
 import { resolveUnitDef } from "../engine/grudge6";
 import { generateMap, randomSeed, type GameMap, type MapSize } from "./mapgen";
 import { spawnMapCamps, type NeutralCampState } from "./neutralCamps";
+import { getMapSurfaceId, placeTowerOnDeck, sampleDeckY } from "../engine/mapSurface";
 
 /** Order the player can issue to selected commandable units. */
 export type OrderKind = "idle" | "move" | "attackMove" | "hold" | "stop";
@@ -37,7 +38,7 @@ export interface UnitEntity {
    * rendering, so Units.tsx skips it in every simulation + render pass.
    */
   isHero: boolean;
-  /** GRUDGE6 lane guard champion — Bip001 viewer hero, not a KayKit creep mob. */
+  /** GRUDGE6 lane guard champion — Bip001 hero; creeps use defaultcreeps pack. */
   isLaneGuard: boolean;
   // Order state.
   order: OrderKind;
@@ -56,6 +57,8 @@ export interface UnitEntity {
   pathIdx: number;
   /** Identifies which dest the current `path` was computed for. */
   pathFor: THREE.Vector3 | null;
+  /** Sticky chase point for A* engage (updated each frame toward target). */
+  chaseDest: THREE.Vector3 | null;
   /** Production specialization label (Paladin, Frost Mage, …). */
   specLabel?: string;
   /** Active skills granted by production upgrades. */
@@ -396,8 +399,44 @@ class EntityManager {
   private nextId = 1;
 
   /** Terrain surface height at a world XZ (for grounding entities + the hero). */
+  /**
+   * World Y for feet / pads. Prefer authored map deck raycast (Sanctum / 1v1)
+   * so nothing sits under the island on the skybox floor.
+   */
   groundY(x: number, z: number): number {
-    return this.map.heightAt(x, z);
+    const fallback = this.map.heightAt(x, z);
+    if (getMapSurfaceId()) return sampleDeckY(x, z, fallback);
+    return fallback;
+  }
+
+  /**
+   * After the authored GLB finishes planting, re-seat cores/towers/units/camps
+   * onto the real deck and snap Sanctum towers toward pad holes when possible.
+   */
+  resyncToMapSurface(): void {
+    if (!getMapSurfaceId()) return;
+    const preferSockets = getMapSurfaceId() === "sanctum";
+
+    for (const s of this.structures) {
+      if (s.kind === "tower" && preferSockets) {
+        const p = placeTowerOnDeck(s.pos.x, s.pos.z, true);
+        s.pos.set(p.x, p.y, p.z);
+      } else {
+        s.pos.y = this.groundY(s.pos.x, s.pos.z);
+      }
+    }
+    for (const u of this.units) {
+      if (!u.alive) continue;
+      u.pos.y = this.groundY(u.pos.x, u.pos.z);
+    }
+    for (const t of this.trees) {
+      if (!t.alive) continue;
+      t.pos.y = this.groundY(t.pos.x, t.pos.z);
+    }
+    if (this.match?.relic?.pos) {
+      const r = this.match.relic.pos;
+      r.y = this.groundY(r.x, r.z);
+    }
   }
 
   /** True if a runtime obstacle occupies the cell containing this world point. */
@@ -499,8 +538,17 @@ class EntityManager {
     const m = this.map;
     this.allyCore = this.addStructure("ally", "core", m.allyCore.x, m.allyCore.z);
     this.enemyCore = this.addStructure("enemy", "core", m.enemyCore.x, m.enemyCore.z);
+    const sanctum = m.size === "standard" || m.size === "large";
     for (const t of m.towers) {
-      const s = this.addStructure(t.faction, "tower", t.x, t.z, { lane: t.lane, tier: t.tier });
+      // On Sanctum, prefer deck pad sockets (holes) for tower XZ+Y when surface is ready
+      let x = t.x;
+      let z = t.z;
+      if (sanctum && getMapSurfaceId() === "sanctum") {
+        const p = placeTowerOnDeck(t.x, t.z, true);
+        x = p.x;
+        z = p.z;
+      }
+      const s = this.addStructure(t.faction, "tower", x, z, { lane: t.lane, tier: t.tier });
       // Record the objective-ladder references for O(1) gating + AI lookups.
       if (t.faction === "ally" || t.faction === "enemy") {
         const gate = this.match.gate[t.faction][t.lane];
@@ -560,7 +608,7 @@ class EntityManager {
       id: this.id(),
       faction,
       kind,
-      pos: new THREE.Vector3(x, this.map.heightAt(x, z), z),
+      pos: new THREE.Vector3(x, this.groundY(x, z), z),
       hp: s.hp,
       maxHp: s.hp,
       range: s.range,
@@ -593,7 +641,7 @@ class EntityManager {
       dmgMult?: number;
       /** Marks this as the enemy warlord (EnemyHero.tsx owns its sim/render). */
       isHero?: boolean;
-      /** Deployed lane guard (GRUDGE6 Bip001 hero); creeps stay on KayKit faction mobs. */
+      /** Deployed lane guard (GRUDGE6 Bip001 hero); creeps use defaultcreeps only. */
       isLaneGuard?: boolean;
       specLabel?: string;
       skills?: UnitSkillId[];
@@ -640,6 +688,7 @@ class EntityManager {
       path: null,
       pathIdx: 0,
       pathFor: null,
+      chaseDest: null,
       specLabel: opts.specLabel,
       skills: opts.skills ?? [],
       skillCd: {},

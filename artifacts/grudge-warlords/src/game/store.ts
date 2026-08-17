@@ -38,9 +38,6 @@ import {
 import {
   computeHeroBonuses,
   levelFromXp,
-  nextPendingPickLevel,
-  startingSkillId,
-  toPickOptions,
   HERO_XP_KILL,
   type HeroSkillBonuses,
   type SkillPickOption,
@@ -129,6 +126,7 @@ interface GameState {
   heroSkillPicks: string[];
   heroBonuses: HeroSkillBonuses;
   pendingSkillPick: { level: number; options: SkillPickOption[] } | null;
+  lastUsedHotbarSlot: number;
 
   /** Current tier (1..MAX_BUILDING_LEVEL) of each ally production building. */
   buildings: { barracks: number; archery: number };
@@ -210,6 +208,7 @@ interface GameState {
 
   addHeroXp: (n: number) => void;
   pickHeroSkill: (skillId: string) => void;
+  markHotbarSlot: (slot: number) => void;
   recomputeHeroStats: () => void;
 
   /** Upgrade an ally production building one tier (spends credits). */
@@ -283,6 +282,7 @@ const initial = {
   heroSkillPicks: [] as string[],
   heroBonuses: { ...EMPTY_HERO_BONUSES },
   pendingSkillPick: null as { level: number; options: SkillPickOption[] } | null,
+  lastUsedHotbarSlot: 0,
   buildings: { barracks: 1, archery: 1 },
   productionSpecs: { ...DEFAULT_PRODUCTION_SPECS },
   objectiveLabel: "",
@@ -342,9 +342,11 @@ export const useGame = create<GameState>((set, get) => ({
     const rw = RANGED_WEAPONS[r.rangedId] ?? RANGED_WEAPONS.rifle;
     const keepBuildings = get().buildings;
     const keepSpecs = get().productionSpecs;
-    const autoSkill = startingSkillId(r.classId);
-    const heroSkillPicks = autoSkill ? [autoSkill] : [];
-    const heroBonuses = computeHeroBonuses(r.classId, heroSkillPicks, 1);
+    // Abilities are chosen in the warcamp (6-slot loadout). Match never opens a picker.
+    const heroSkillPicks = (r.abilitySlots ?? []).filter((id): id is string => Boolean(id));
+    const cardLevel = meta.characterLevel(r.prefabId);
+    const startLevel = Math.max(1, cardLevel);
+    const heroBonuses = computeHeroBonuses(r.classId, heroSkillPicks, startLevel);
     const heroMaxHealth = maxHealth + heroBonuses.bonusHp;
     // Preserve pre-match lane creep picks (lobby/deploy UI). Only fill missing slots.
     const prevLanes = get().laneDeployment;
@@ -367,11 +369,12 @@ export const useGame = create<GameState>((set, get) => ({
       buildings: keepBuildings,
       productionSpecs: keepSpecs,
       phase: "battle",
-      heroLevel: 1,
+      heroLevel: startLevel,
       heroXp: 0,
       heroSkillPicks,
       heroBonuses,
       pendingSkillPick: null,
+      lastUsedHotbarSlot: 0,
       laneDeployment: preservedLanes,
       deploymentRound: 1,
       deploymentHighlight: false,
@@ -552,29 +555,14 @@ export const useGame = create<GameState>((set, get) => ({
     if (newLevel > oldLevel) {
       get().pushMessage(`HERO LEVEL ${newLevel}`, "good");
       get().recomputeHeroStats();
-      const pl = nextPendingPickLevel(newLevel, get().heroSkillPicks);
-      if (pl !== null && !get().pendingSkillPick) {
-        const classId = useRoster.getState().classId;
-        set({ pendingSkillPick: { level: pl, options: toPickOptions(classId, pl) } });
-      }
     }
   },
 
-  pickHeroSkill: (skillId) => {
-    const pending = get().pendingSkillPick;
-    if (!pending) return;
-    const choice = pending.options.find((o) => o.id === skillId);
-    if (!choice) return;
-    const picks = [...get().heroSkillPicks, skillId];
-    set({ heroSkillPicks: picks, pendingSkillPick: null });
-    get().pushMessage(`${choice.label.toUpperCase()} — SKILL CHOSEN`, "good");
-    get().recomputeHeroStats();
-    const pl = nextPendingPickLevel(get().heroLevel, picks);
-    if (pl !== null) {
-      const classId = useRoster.getState().classId;
-      set({ pendingSkillPick: { level: pl, options: toPickOptions(classId, pl) } });
-    }
+  pickHeroSkill: (_skillId) => {
+    // Skills are chosen in the warcamp, not mid-match.
   },
+
+  markHotbarSlot: (slot) => set({ lastUsedHotbarSlot: slot }),
 
   upgradeProductionSpec: (line, spec) => {
     const specs = get().productionSpecs;

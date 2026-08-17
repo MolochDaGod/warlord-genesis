@@ -3,12 +3,13 @@ import { useCommand } from "../../game/command";
 import { BUILD_HOTKEY_ITEMS, armBuild, repairCitadel } from "../../game/buildActions";
 import { WARLORD_MANIFEST } from "../../engine/warlordManifest";
 import { ICONS } from "./icons";
+import { fortifyIcon } from "./hudIcons";
 
 const HOTKEYS = ["1", "2", "3", "4", "5"] as const;
 
 /**
  * RTS fortify bar — hotkeys 1–5 arm cannon, ballista, mage tower, barrier, or repair.
- * Visible only in command (warlord) mode.
+ * Real PNG icons from the Grudge icon pack (not emoji placeholders).
  */
 export function BuildBar() {
   const phase = useGame((s) => s.phase);
@@ -33,8 +34,7 @@ export function BuildBar() {
           const full = isRepair && allyCoreHp >= allyCoreMax;
           const disabled = credits < item.cost || full;
           const isArmed = !isRepair && armed?.ref === item.ref;
-          const turret = WARLORD_MANIFEST.turrets.find((t) => t.kind === item.ref);
-          const glyph = isRepair ? "🔧" : (turret?.glyph ?? "🏗️");
+          const iconSrc = fortifyIcon(item.ref);
 
           return (
             <button
@@ -50,7 +50,7 @@ export function BuildBar() {
               }}
             >
               <span className="gw-buildbar-key">{hotkey}</span>
-              <span className="gw-buildbar-glyph">{glyph}</span>
+              <img className="gw-buildbar-icon" src={iconSrc} alt="" draggable={false} />
               <span className="gw-buildbar-name">{item.name}</span>
               <span className={`gw-buildbar-cost${!full && credits < item.cost ? " gw-cost-cant" : ""}`}>
                 {item.cost}

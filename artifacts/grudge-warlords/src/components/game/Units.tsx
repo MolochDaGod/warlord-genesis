@@ -174,8 +174,21 @@ function laneStaging(u: UnitEntity, dt: number): THREE.Vector3 | null {
 
 function engage(u: UnitEntity, t: CombatEntity): Decision {
   const reach = u.def.attackRange * u.specRangeMult + (isUnit(t) ? t.def.radius : structRadius(t.kind));
-  if (distXZ(u.pos, t.pos.x, t.pos.z) <= reach) return { moveTo: null, target: t, hero: false };
-  return { moveTo: t.pos, target: t, hero: false };
+  if (distXZ(u.pos, t.pos.x, t.pos.z) <= reach) {
+    clearPath(u);
+    return { moveTo: null, target: t, hero: false };
+  }
+  // A* chase so units route around ridges instead of grinding into cliffs
+  if (!u.chaseDest) u.chaseDest = new THREE.Vector3();
+  u.chaseDest.set(t.pos.x, 0, t.pos.z);
+  const d = distXZ(u.pos, t.pos.x, t.pos.z);
+  // Close range: direct steer (cheaper, smoother last-mile)
+  if (d < 5) return { moveTo: u.chaseDest, target: t, hero: false };
+  // Recompute path when target drifts far from the planned goal
+  if (u.pathFor && distXZ(u.pathFor, u.chaseDest.x, u.chaseDest.z) > 3.5) {
+    clearPath(u);
+  }
+  return { moveTo: pathTarget(u, u.chaseDest), target: t, hero: false };
 }
 
 /** Lane creeps steer along their lane's flow-field toward the enemy core. */
@@ -232,8 +245,18 @@ function decideNeutral(u: UnitEntity, heroAlive: boolean): Decision {
     const heroD = distXZ(u.pos, EM.playerPos.x, EM.playerPos.z);
     if (heroD <= range) {
       const reach = u.def.attackRange * u.specRangeMult + 0.7;
-      if (heroD <= reach) return { moveTo: null, target: null, hero: true };
-      return { moveTo: EM.playerPos, target: null, hero: true };
+      if (heroD <= reach) {
+        clearPath(u);
+        return { moveTo: null, target: null, hero: true };
+      }
+      // A* chase the player so neutrals route around ridges/camps
+      if (!u.chaseDest) u.chaseDest = new THREE.Vector3();
+      u.chaseDest.set(EM.playerPos.x, 0, EM.playerPos.z);
+      if (heroD < 5) return { moveTo: u.chaseDest, target: null, hero: true };
+      if (u.pathFor && distXZ(u.pathFor, u.chaseDest.x, u.chaseDest.z) > 3.5) {
+        clearPath(u);
+      }
+      return { moveTo: pathTarget(u, u.chaseDest), target: null, hero: true };
     }
   }
 
@@ -494,11 +517,12 @@ export function Units() {
       while (dy < -Math.PI) dy += Math.PI * 2;
       u.yaw += dy * Math.min(1, dt * 10);
 
-      // Attack when standing in range.
+      // Attack when standing in range (face target, hold attack loco for clip length).
       u.attackTimer -= dt;
       if (!movingNow && (d.target || d.hero) && u.attackTimer <= 0) {
         performAttack(u, d, g);
         u.attackTimer = u.def.attackCooldown * u.specAttackRateMult;
+        // Hold attack locomotion ~0.55s so one-shot clips can finish (was ~0.25s)
         u.swing = 1;
         u.locomotion = "attack";
       } else if (movingNow) {
@@ -506,7 +530,8 @@ export function Units() {
       } else {
         u.locomotion = u.swing > 0.05 ? "attack" : "idle";
       }
-      u.swing = Math.max(0, u.swing - dt * 4);
+      // Decay so attack pose lasts ~0.55–0.7s (matches typical baked attack clips)
+      u.swing = Math.max(0, u.swing - dt * 1.6);
       u.hitFlash = Math.max(0, u.hitFlash - dt);
       u.vel.set(movingNow ? 1 : 0, 0, 0);
     }
@@ -603,13 +628,9 @@ export function Units() {
       } else {
         a.stuck = 0;
       }
-      // Commanded units recompute their A* route when wedged so they route around
-      // the blockage instead of grinding into it.
-      if (
-        a.commandable &&
-        a.stuck > STUCK_REPATH &&
-        (a.order === "move" || a.order === "attackMove")
-      ) {
+      // Recompute A* when wedged — player orders, engage chase, or neutral hunt
+      // so units route around ridges instead of grinding into cliffs.
+      if (a.stuck > STUCK_REPATH && (a.path || a.chaseDest)) {
         clearPath(a);
         a.stuck = 0;
       }
@@ -623,7 +644,9 @@ export function Units() {
       const bob = u.vel.x > 0 ? Math.abs(Math.sin(u.bob)) * 0.09 : 0;
       grp.position.set(u.pos.x, u.pos.y + bob, u.pos.z);
       grp.rotation.y = u.yaw;
-      grp.rotation.x = -u.swing * 0.35;
+      // Real attack clips live on the child mesh — do not pitch the whole group
+      // (old procedural lunge fought skinned attack anims and dug feet into ground).
+      grp.rotation.x = 0;
       grp.scale.setScalar(u.def.scale);
 
       const ud = grp.userData as {

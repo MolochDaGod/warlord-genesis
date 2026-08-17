@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EM, type StructureEntity } from "../../game/entities";
+// EM.map.size drives sanctum vs 1v1 tower art
 import { PROJECTILES, STRUCT_PROJECTILE } from "../../game/config";
 import { useGame } from "../../game/store";
 import { dealDamage, distXZ, findStructureTarget } from "../../game/combat";
@@ -9,6 +10,9 @@ import { playerGrudgeFaction, enemyGrudgeFaction } from "../../engine/grudge6";
 import { towerPackForFactionTier, type TowerPack, type TowerTier } from "../../engine/towerAssets";
 import { bootEngine, getEngine } from "../../engine/boot";
 import { TowerModel, preloadTowers } from "./TowerModel";
+import { SanctumTurret } from "./SanctumTurret";
+import { authoredMapForSize } from "../../engine/mapAssets";
+import { getMapSurfaceId } from "../../engine/mapSurface";
 
 preloadTowers(getEngine().cdnReachable);
 bootEngine().then((s) => preloadTowers(s.cdnReachable));
@@ -266,21 +270,55 @@ export function Structures() {
     else refs.delete(id);
   };
 
+  // When Sanctum / 1v1 deck finishes loading, re-seat towers into pads / deck Y
+  const mapVersion = useGame((s) => s.mapVersion);
+  useEffect(() => {
+    if (!getMapSurfaceId()) return;
+    EM.resyncToMapSurface();
+    force((n) => n + 1);
+  }, [mapVersion]);
+
+  // Poll once shortly after mount — AuthoredMap may register after first paint
+  useEffect(() => {
+    const t = window.setTimeout(() => {
+      if (getMapSurfaceId()) {
+        EM.resyncToMapSurface();
+        force((n) => n + 1);
+      }
+    }, 400);
+    const t2 = window.setTimeout(() => {
+      if (getMapSurfaceId()) {
+        EM.resyncToMapSurface();
+        force((n) => n + 1);
+      }
+    }, 1200);
+    return () => {
+      window.clearTimeout(t);
+      window.clearTimeout(t2);
+    };
+  }, [mapVersion]);
+
+  const useSanctum = authoredMapForSize(EM.map.size).useSanctumTurrets;
+
   return (
     <>
       {EM.structures
         .filter((s) => s.alive)
         .map((s) => {
           const barY =
-            s.kind === "tower" ? 7.8 : s.kind === "mage" ? 4.4 : s.kind === "barrier" ? 2.4 : 2.1;
+            s.kind === "tower" ? (useSanctum ? 6.2 : 7.8) : s.kind === "mage" ? 4.4 : s.kind === "barrier" ? 2.4 : 2.1;
           const barColor = s.faction === "ally" ? "#7ee37e" : "#ff6b6b";
           return (
             <group key={s.id} ref={setRef(s.id)} position={[s.pos.x, s.pos.y, s.pos.z]} rotation={[0, s.yaw, 0]}>
               {s.kind === "tower" ? (
-                <TowerModel
-                  pack={towerPackForSide(s.faction, s.tier ?? "outer")}
-                  tier={s.tier ?? "outer"}
-                />
+                useSanctum ? (
+                  <SanctumTurret faction={s.faction} />
+                ) : (
+                  <TowerModel
+                    pack={towerPackForSide(s.faction, s.tier ?? "outer")}
+                    tier={s.tier ?? "outer"}
+                  />
+                )
               ) : (
                 <StructureMesh kind={s.kind} faction={s.faction} />
               )}

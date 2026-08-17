@@ -28,6 +28,7 @@ import { canonicalWeaponsForPrefab } from "./canonicalLoadout";
 import { useMeta } from "./metaProgression";
 import { consumeViewerLaunchBuild, GRUDGE_RACE_TO_KIT } from "@workspace/game-content";
 import { ROSTER_PERSIST_KEY, META_PERSIST_KEY } from "../lib/productionSeason";
+import { abilityPoolForHero, defaultFillSlots, normalizeSlots } from "./abilityLoadout";
 
 /** A partial override layered on top of the selected race's default look. */
 export type LookPatch = Partial<CharacterLook>;
@@ -51,6 +52,8 @@ interface PersistShape {
   laneMeleeHeroId: string;
   laneRangedHeroId: string;
   loadoutLocked: boolean;
+  /** Pre-game 6-slot hotbar (ability ids). Locked in during the match. */
+  abilitySlots: Array<string | null>;
 }
 
 function loadPersisted(): Partial<PersistShape> {
@@ -155,6 +158,10 @@ interface RosterState {
   laneRangedHeroId: string;
   /** True once the player confirms melee + ranged before marching. */
   loadoutLocked: boolean;
+  /** Pre-game 6-slot Danger Room hotbar. */
+  abilitySlots: Array<string | null>;
+  setAbilitySlot: (index: number, abilityId: string | null) => void;
+  refillAbilitySlots: () => void;
   setFaction: (id: GrudgeFactionId) => void;
   setEnemyFaction: (id: GrudgeFactionId) => void;
   setRace: (id: PrefabRaceId) => void;
@@ -221,6 +228,7 @@ export const useRoster = create<RosterState>((set, get) => ({
   laneMeleeHeroId: validLaneMelee,
   laneRangedHeroId: validLaneRanged,
   loadoutLocked: persisted.loadoutLocked ?? false,
+  abilitySlots: normalizeSlots(persisted.abilitySlots),
 
   setFaction: (factionId) => {
     // Production: faction is locked after onboarding — only allow if not locked yet
@@ -293,6 +301,7 @@ export const useRoster = create<RosterState>((set, get) => ({
       gearTier: tier,
       loadoutLocked: false,
     });
+    queueMicrotask(() => get().refillAbilitySlots());
   },
 
   setPrefab: (prefabId) => {
@@ -312,6 +321,7 @@ export const useRoster = create<RosterState>((set, get) => ({
       custom: {},
       loadoutLocked: false,
     });
+    queueMicrotask(() => get().refillAbilitySlots());
   },
 
   setGrudgeHandoff: (search) => {
@@ -349,8 +359,14 @@ export const useRoster = create<RosterState>((set, get) => ({
       return { equipment: next };
     }),
   setGearTier: (tier) => set({ gearTier: Math.max(1, Math.min(8, Math.round(tier))) }),
-  setMelee: (id) => set({ meleeId: id, loadoutLocked: false }),
-  setRanged: (id) => set({ rangedId: id, loadoutLocked: false }),
+  setMelee: (id) => {
+    set({ meleeId: id, loadoutLocked: false });
+    queueMicrotask(() => get().refillAbilitySlots());
+  },
+  setRanged: (id) => {
+    set({ rangedId: id, loadoutLocked: false });
+    queueMicrotask(() => get().refillAbilitySlots());
+  },
   setLaneMeleeHero: (typeId) => {
     if (!factionMeleeIds(get().factionId).includes(typeId)) return;
     set({ laneMeleeHeroId: typeId, loadoutLocked: false });
@@ -360,6 +376,31 @@ export const useRoster = create<RosterState>((set, get) => ({
     set({ laneRangedHeroId: typeId, loadoutLocked: false });
   },
   lockLoadout: () => set({ loadoutLocked: true }),
+
+  setAbilitySlot: (index, abilityId) => {
+    if (index < 0 || index > 5) return;
+    const slots = normalizeSlots(get().abilitySlots);
+    if (abilityId) {
+      const dup = slots.indexOf(abilityId);
+      if (dup >= 0 && dup !== index) slots[dup] = null;
+    }
+    slots[index] = abilityId;
+    set({ abilitySlots: slots, loadoutLocked: false });
+  },
+
+  refillAbilitySlots: () => {
+    const s = get();
+    const cardLevel = useMeta.getState().characterLevel(s.prefabId);
+    const pool = abilityPoolForHero({
+      classId: s.classId,
+      meleeId: s.meleeId,
+      rangedId: s.rangedId,
+      cardLevel: Math.max(1, cardLevel),
+    });
+    set({
+      abilitySlots: defaultFillSlots(s.abilitySlots, pool, Math.max(1, cardLevel)),
+    });
+  },
 }));
 
 useRoster.subscribe((s) =>
@@ -379,6 +420,7 @@ useRoster.subscribe((s) =>
     laneMeleeHeroId: s.laneMeleeHeroId,
     laneRangedHeroId: s.laneRangedHeroId,
     loadoutLocked: s.loadoutLocked,
+    abilitySlots: s.abilitySlots,
   }),
 );
 

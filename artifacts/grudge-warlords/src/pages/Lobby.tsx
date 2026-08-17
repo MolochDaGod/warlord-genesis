@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useGame } from "../game/store";
 import { DIFFICULTY, DIFFICULTY_ORDER } from "../game/config";
-import { meleeDisplayName, offhandDisplayName, rangedDisplayName } from "../game/canonicalLoadout";
+import { meleeDisplayName, rangedDisplayName } from "../game/canonicalLoadout";
 import { useUI } from "../game/ui";
 import { useSession } from "../game/session";
 import { CharacterSelect } from "../components/ui/CharacterSelect";
@@ -22,6 +22,7 @@ import { getStudioToken } from "../lib/grudgeStudio";
 import { ensureWarcampReady, prepareAndStartMatch } from "../lib/ensureWarcampReady";
 import { markDeployDone } from "./Deploy";
 import { PreMatchLaneDeploy } from "../components/ui/PreMatchLaneDeploy";
+import { AbilityLoadout } from "../components/ui/AbilityLoadout";
 import "../components/ui/collection.css";
 
 type LobbyTab = "warcamp" | "chest" | "codex";
@@ -42,7 +43,6 @@ export function Lobby() {
   const prefabId = useRoster((s) => s.prefabId);
   const meleeId = useRoster((s) => s.meleeId);
   const rangedId = useRoster((s) => s.rangedId);
-  const offhandId = useRoster((s) => s.offhandId);
   const setEnemyFaction = useRoster((s) => s.setEnemyFaction);
   const lockLoadout = useRoster((s) => s.lockLoadout);
   const { ready: warlordReady, blockReason } = useWarcampReady();
@@ -173,12 +173,20 @@ export function Lobby() {
         </button>
       </div>
 
-      <div className="gw-lobby-grid gw-lobby-grid-v2">
-        <div className="gw-lobby-main">
+      <div className="gw-lobby-grid gw-lobby-grid-v2" data-dual-scroll="true">
+        <div
+          className="gw-lobby-main"
+          aria-label="Warcamp content — scroll this column"
+          tabIndex={0}
+        >
           {tab === "warcamp" ? <CharacterSelect /> : tab === "chest" ? <CollectionHub /> : <HeroCodexGrid />}
         </div>
 
-        <aside className="gw-lobby-deploy">
+        <aside
+          className="gw-lobby-deploy"
+          aria-label="March orders — scroll this column"
+          tabIndex={0}
+        >
           <div className="gw-deploy-panel">
             <span className="gw-deploy-head">March Orders</span>
 
@@ -204,10 +212,6 @@ export function Lobby() {
                 <span className="gw-deploy-v">{meleeDisplayName(prefabId, meleeId)}</span>
               </div>
               <div className="gw-deploy-row">
-                <span className="gw-deploy-k">Off-hand</span>
-                <span className="gw-deploy-v">{offhandDisplayName(offhandId)}</span>
-              </div>
-              <div className="gw-deploy-row">
                 <span className="gw-deploy-k">Ranged</span>
                 <span className="gw-deploy-v">{rangedDisplayName(rangedId)}</span>
               </div>
@@ -218,17 +222,27 @@ export function Lobby() {
               <div className="gw-mapsize-toggle">
                 <button
                   type="button"
+                  className={`gw-btn gw-btn-ghost gw-btn-mini${mapSize === "skirmish" ? " gw-active" : ""}`}
+                  onClick={() => setMapSize("skirmish")}
+                  title="1v1 Arena — 1vs1_high_poly.glb"
+                >
+                  1V1
+                </button>
+                <button
+                  type="button"
                   className={`gw-btn gw-btn-ghost gw-btn-mini${mapSize === "standard" ? " gw-active" : ""}`}
                   onClick={() => setMapSize("standard")}
+                  title="Sanctum Island — 3 lanes + jungle"
                 >
-                  STANDARD
+                  SANCTUM
                 </button>
                 <button
                   type="button"
                   className={`gw-btn gw-btn-ghost gw-btn-mini${mapSize === "large" ? " gw-active" : ""}`}
                   onClick={() => setMapSize("large")}
+                  title="Sanctum Large — more jungle camps"
                 >
-                  LARGE
+                  SANCTUM+
                 </button>
               </div>
             </div>
@@ -248,6 +262,8 @@ export function Lobby() {
                 ))}
               </div>
             </div>
+
+            <AbilityLoadout />
 
             <PreMatchLaneDeploy compact />
 
@@ -382,7 +398,7 @@ export function Lobby() {
             <span className="gw-deploy-head">Visual Pipeline</span>
             <ul className="gw-pipeline-list">
               <li><strong>You + lane guards</strong> — GRUDGE6 Bip001 (viewer)</li>
-              <li><strong>Lane creeps</strong> — KayKit faction mobs</li>
+              <li><strong>Lane creeps</strong> — defaultcreeps pack (blue/red)</li>
               <li><strong>Enemy warlord</strong> — GRUDGE6 worge mesh</li>
             </ul>
           </div>

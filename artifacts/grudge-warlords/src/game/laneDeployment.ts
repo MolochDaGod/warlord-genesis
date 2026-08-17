@@ -1,6 +1,6 @@
 /**
  * Lane deployment — game-start GRUDGE6 hero guards (1 melee + 1 ranged) and per-lane
- * wave creep picks (3 melee + 2 ranged KayKit mob waves per faction).
+ * wave creep picks (3 melee + 2 ranged defaultcreeps per faction).
  */
 
 import { FACTION_BY_ID, type PrefabRaceId } from "@workspace/game-content";

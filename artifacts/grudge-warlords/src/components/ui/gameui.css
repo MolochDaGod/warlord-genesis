@@ -604,21 +604,104 @@
 .gw-shop-cost { font-size: 13px; color: var(--gk-accent-2); font-weight: 700; }
 .gw-shop-cost.gw-cost-cant { color: #e0584a; }
 
-/* Lane deployment (Warlord / command mode) */
+/* ── Command-mode side rails: BOTH scroll (left + right) ── */
+.gw-cmd-rail {
+  position: absolute;
+  top: 72px;
+  bottom: 148px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 0;
+  max-height: calc(100dvh - 220px);
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto !important;
+  scrollbar-gutter: stable;
+  padding-right: 2px;
+}
+.gw-cmd-rail-left {
+  left: 12px;
+  width: min(300px, 28vw);
+}
+.gw-cmd-rail-right {
+  right: 12px;
+  width: min(300px, 28vw);
+}
+.gw-cmd-rail::-webkit-scrollbar {
+  width: 8px;
+}
+.gw-cmd-rail::-webkit-scrollbar-thumb {
+  background: rgba(224, 178, 82, 0.4);
+  border-radius: 4px;
+}
+.gw-cmd-rail::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.25);
+  border-radius: 4px;
+}
+/* Panels inside rails are flow children — not absolute */
+.gw-cmd-rail .gw-hero-upgrades,
+.gw-cmd-rail .gw-prod-panel,
+.gw-cmd-rail .gw-lane-deploy {
+  position: relative !important;
+  top: auto !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: 100% !important;
+  max-height: none !important;
+  overflow: visible !important;
+  flex-shrink: 0;
+}
+
+/* Lane deployment (Warlord / command mode) — denser, less “form dump” */
 .gw-lane-deploy {
   position: absolute;
-  top: 88px;
-  right: 18px;
-  width: min(420px, 38vw);
-  max-height: calc(100vh - 200px);
+  top: 72px;
+  right: 12px;
+  width: min(300px, 28vw);
+  max-height: calc(100dvh - 220px);
   overflow-y: auto;
-  padding: 14px 16px 16px;
-  background: linear-gradient(180deg, rgba(32, 18, 16, 0.94), rgba(18, 10, 9, 0.96));
-  border: 1px solid var(--gk-line);
-  border-radius: 10px;
-  pointer-events: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px 12px 12px;
+  background:
+    linear-gradient(165deg, rgba(42, 28, 18, 0.92) 0%, rgba(14, 10, 8, 0.96) 100%);
+  border: 1px solid rgba(224, 178, 82, 0.28);
+  border-radius: 8px;
+  pointer-events: auto !important;
   z-index: 12;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 220, 160, 0.06);
+  backdrop-filter: blur(8px);
+  scrollbar-gutter: stable;
+}
+.gw-lane-deploy::-webkit-scrollbar {
+  width: 8px;
+}
+.gw-lane-deploy::-webkit-scrollbar-thumb {
+  background: rgba(224, 178, 82, 0.4);
+  border-radius: 4px;
+}
+.gw-lane-deploy-sub {
+  opacity: 0.65;
+  font-size: 11px;
+}
+.gw-buildbar-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  image-rendering: auto;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.6));
+  margin: 2px 0;
+}
+.gw-buildbar-glyph {
+  display: none; /* real icons replace emoji */
 }
 .gw-lane-deploy-pulse {
   border-color: var(--gk-accent-2);
@@ -1357,30 +1440,59 @@ kbd {
 .gw-intro-cta { margin-top: 4px; padding: 16px 56px; font-size: 18px; }
 .gw-intro-cta-secondary { margin-top: 0; }
 
-/* ===== Lobby page ===== */
+/* ===== Lobby page =====
+   CRITICAL: nested overflow:hidden without a real flex height chain
+   was clipping half the Warcamp. Layout rules:
+   - Shell = 100dvh column
+   - Header + tabs = fixed height (no shrink)
+   - Body grid = flex:1 min-height:0
+   - BOTH columns scroll independently with visible scrollbars
+*/
 .gw-lobby {
   display: block;
   padding: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
   min-height: 100%;
   height: 100%;
+  box-sizing: border-box;
 }
 .gw-lobby-v2 {
-  align-items: stretch;
-  justify-content: flex-start;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  height: 100dvh !important;
+  max-height: 100dvh !important;
+  width: 100%;
+  overflow: hidden !important;
+  box-sizing: border-box;
 }
-/* Warlord 3D preview — fixed viewport so R3F canvas always has size */
+.gw-lobby-v2 .gw-lobby-tabs {
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  padding: 0 var(--wg-page-gutter, 24px);
+  margin: 0 0 0 !important;
+  z-index: 4;
+  background: rgba(22, 13, 11, 0.92);
+  border-bottom: 1px solid rgba(224, 178, 82, 0.12);
+}
+.gw-lobby-v2 .gw-lobby-top {
+  flex: 0 0 auto !important;
+  flex-shrink: 0 !important;
+  position: relative !important; /* not sticky inside clipped shell */
+}
+/* Warlord 3D preview — smaller so roster below is reachable without hunting */
 .gw-warlord-preview {
   position: relative;
   width: 100%;
-  height: var(--wg-preview-h, clamp(200px, 32vh, 340px));
-  min-height: 180px;
-  max-height: 360px;
+  height: var(--wg-preview-h, clamp(160px, 22vh, 240px));
+  min-height: 140px;
+  max-height: 260px;
   border-radius: var(--wg-card-radius, 12px);
   overflow: hidden;
   border: 1px solid rgba(224, 178, 82, 0.22);
   background: #0e0a08;
+  flex-shrink: 0;
 }
 .gw-warlord-preview canvas {
   display: block;
@@ -1442,10 +1554,22 @@ kbd {
   width: 100%;
   max-width: 100%;
   align-items: stretch;
+  /* never clip children — parent .gw-lobby-main scrolls */
+  overflow: visible !important;
+  height: auto !important;
+  max-height: none !important;
+}
+.gw-cs,
+.gw-cs-v2 .gw-cs-body,
+.gw-cs-v2 .gw-cs-roster,
+.gw-cs-v2 .gw-cs-lane-guards,
+.gw-cs-v2 .gw-lo {
+  overflow: visible !important;
+  max-height: none !important;
 }
 .gw-cs-body {
   display: grid;
-  grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+  grid-template-columns: minmax(200px, 260px) minmax(0, 1fr);
   gap: 16px;
   width: 100%;
 }
@@ -1511,7 +1635,7 @@ kbd {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
   gap: var(--wg-section-gap, 20px);
-  align-items: start;
+  align-items: stretch;
   padding: var(--wg-section-gap, 20px) var(--wg-page-gutter, 24px);
   max-width: var(--wg-page-max, 1440px);
   margin: 0 auto;
@@ -1519,10 +1643,19 @@ kbd {
   box-sizing: border-box;
 }
 .gw-lobby-grid-v2 {
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  width: 100%;
   max-width: var(--wg-page-max, 1440px);
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px);
-  gap: var(--wg-section-gap, 20px);
-  padding: var(--wg-section-gap, 20px) var(--wg-page-gutter, 24px) var(--wg-space-6, 32px);
+  margin: 0 auto;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px);
+  gap: var(--wg-section-gap, 16px);
+  padding: 12px var(--wg-page-gutter, 24px) 16px;
+  overflow: hidden !important;
+  align-items: stretch !important;
+  box-sizing: border-box;
 }
 .gw-deploy-summary {
   display: flex;
@@ -1562,13 +1695,59 @@ kbd {
   color: var(--gk-ink);
   font-weight: 600;
 }
-.gw-lobby-main { min-width: 0; }
+/* Left column: FULL warcamp content — MUST scroll (roster, guards, loadout) */
+.gw-lobby-main {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important; /* always show track so users know it scrolls */
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 10px 96px 0 !important; /* bottom pad = last cards not clipped */
+  scrollbar-gutter: stable;
+  pointer-events: auto !important;
+  box-sizing: border-box;
+}
+.gw-lobby-main::-webkit-scrollbar {
+  width: 10px;
+}
+.gw-lobby-main::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 5px;
+}
+.gw-lobby-main::-webkit-scrollbar-thumb {
+  background: rgba(224, 178, 82, 0.55);
+  border-radius: 5px;
+}
+/* Right column: March Orders — independent scroll */
 .gw-lobby-deploy {
-  display: flex;
+  display: flex !important;
   flex-direction: column;
-  gap: 18px;
-  position: sticky;
-  top: 96px;
+  gap: 14px;
+  position: relative !important;
+  top: auto !important;
+  align-self: stretch !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 4px 96px 0 !important;
+  scrollbar-gutter: stable;
+  pointer-events: auto !important;
+  box-sizing: border-box;
+}
+.gw-lobby-deploy::-webkit-scrollbar {
+  width: 8px;
+}
+.gw-lobby-deploy::-webkit-scrollbar-thumb {
+  background: rgba(224, 178, 82, 0.35);
+  border-radius: 4px;
 }
 .gw-deploy-panel {
   position: relative;
@@ -1579,6 +1758,7 @@ kbd {
   display: flex;
   flex-direction: column;
   gap: 16px;
+  flex-shrink: 0;
 }
 .gw-deploy-panel::before {
   content: "";
@@ -1626,8 +1806,32 @@ kbd {
 }
 
 @media (max-width: 900px) {
-  .gw-lobby-grid { grid-template-columns: 1fr; }
-  .gw-lobby-deploy { position: static; }
+  .gw-lobby-v2 {
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    overflow: hidden !important;
+  }
+  .gw-lobby-grid,
+  .gw-lobby-grid-v2 {
+    grid-template-columns: 1fr !important;
+    /* stack: single scroll area for main, deploy after */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    flex: 1 1 0% !important;
+    min-height: 0 !important;
+  }
+  .gw-lobby-main,
+  .gw-lobby-deploy,
+  .gw-lobby-v2 .gw-lobby-deploy {
+    position: static !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow: visible !important;
+    padding-bottom: 24px !important;
+  }
+  .gw-cmd-rail {
+    max-height: min(40vh, 320px);
+  }
 }
 
 /* ===== Play engage prompt (pointer-lock target) ===== */
@@ -1943,12 +2147,17 @@ kbd {
   top: 88px;
   left: 18px;
   width: min(380px, 34vw);
-  pointer-events: auto;
+  max-height: min(48vh, calc(100dvh - 280px));
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto !important;
   z-index: 12;
   background: linear-gradient(180deg, rgba(32, 18, 16, 0.94), rgba(18, 10, 9, 0.96));
   border: 1px solid var(--gk-line);
   border-radius: 10px;
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  scrollbar-gutter: stable;
 }
 .gw-hero-upgrades-collapsed .gw-hero-upgrades-body { display: none; }
 .gw-hero-upgrades-head {
@@ -2081,17 +2290,25 @@ kbd {
 /* ===== Production buildings (barracks / archery) ===== */
 .gw-prod-panel {
   position: absolute;
-  left: 18px;
-  bottom: 200px;
-  width: min(340px, 32vw);
-  max-height: calc(100vh - 320px);
+  left: 12px;
+  bottom: 168px;
+  width: min(280px, 26vw);
+  max-height: min(42vh, calc(100dvh - 280px));
   overflow-y: auto;
-  pointer-events: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  pointer-events: auto !important;
   z-index: 12;
-  background: linear-gradient(180deg, rgba(32, 18, 16, 0.94), rgba(18, 10, 9, 0.96));
-  border: 1px solid var(--gk-line);
-  border-radius: 10px;
-  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
+  scrollbar-gutter: stable;
+  background:
+    linear-gradient(165deg, rgba(42, 28, 18, 0.92) 0%, rgba(14, 10, 8, 0.96) 100%);
+  border: 1px solid rgba(224, 178, 82, 0.28);
+  border-radius: 8px;
+  box-shadow:
+    0 0 0 1px rgba(0, 0, 0, 0.5),
+    0 16px 40px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 220, 160, 0.06);
+  backdrop-filter: blur(8px);
 }
 .gw-prod-panel-collapsed .gw-prod-panel-body { display: none; }
 .gw-prod-panel-head {
@@ -2350,15 +2567,21 @@ kbd {
 }
 .gw-hud.gk-combat-hud button,
 .gw-hud.gk-combat-hud input,
+.gw-hud.gk-combat-hud select,
 .gw-hud.gk-combat-hud .gw-selection,
 .gw-hud.gk-combat-hud .gw-skilltree-overlay,
 .gw-hud.gk-combat-hud .gw-shop,
 .gw-hud.gk-combat-hud .gw-lane-deploy,
 .gw-hud.gk-combat-hud .gw-build-bar,
 .gw-hud.gk-combat-hud .gw-production,
+.gw-hud.gk-combat-hud .gw-prod-panel,
 .gw-hud.gk-combat-hud .gw-hero-upgrade,
+.gw-hud.gk-combat-hud .gw-hero-upgrades,
+.gw-hud.gk-combat-hud .gw-cmd-rail,
+.gw-hud.gk-combat-hud .gw-cmd-rail-left,
+.gw-hud.gk-combat-hud .gw-cmd-rail-right,
 .gw-hud.gk-combat-hud .gw-tuner {
-  pointer-events: auto;
+  pointer-events: auto !important;
 }
 
 .gw-top {
@@ -2662,25 +2885,58 @@ body{
   white-space: nowrap;
 }
 
-/* Main lobby content container */
+/* Main lobby body — BOTH columns scroll independently (never only one side) */
 .gw-lobby-grid,
 .gw-lobby-grid-v2{
-  flex: 1 1 auto;
-  min-height: 0;
+  flex: 1 1 0% !important;
+  min-height: 0 !important;
   width: min(100%, var(--wg-page-max));
   margin: 0 auto;
   padding:
-    var(--wg-section-gap)
+    10px
     max(var(--wg-page-gutter), var(--wg-safe-r))
-    max(var(--wg-space-5), var(--wg-safe-b))
+    12px
     max(var(--wg-page-gutter), var(--wg-safe-l)) !important;
   display: grid !important;
-  grid-template-columns: minmax(0, 1fr) minmax(260px, 300px) !important;
-  gap: var(--wg-section-gap) !important;
-  align-items: start;
-  overflow-y: auto;
-  overflow-x: hidden;
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 340px) !important;
+  gap: 12px !important;
+  align-items: stretch !important; /* equal height columns so both can scroll */
+  overflow: hidden !important; /* children scroll, not the grid alone */
   overscroll-behavior: contain;
+}
+/* LEFT — warcamp / chest / codex */
+.gw-lobby-v2 .gw-lobby-main {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  align-self: stretch !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 12px 10px 80px 12px !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  top: auto !important;
+}
+/* RIGHT — march orders */
+.gw-lobby-v2 .gw-lobby-deploy {
+  min-width: 0 !important;
+  min-height: 0 !important;
+  height: auto !important;
+  max-height: 100% !important;
+  align-self: stretch !important;
+  overflow-x: hidden !important;
+  overflow-y: scroll !important;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
+  padding: 0 6px 80px 4px !important;
+  pointer-events: auto !important;
+  position: relative !important;
+  top: auto !important;
+  display: flex !important;
+  flex-direction: column;
 }
 
 /* Character select shell */
@@ -2977,19 +3233,95 @@ html,body,#root{height:100%;margin:0;background:var(--gw-bg);color:var(--gw-text
 .gw-btn-ghost:hover{border-color:rgba(120,150,200,.45);background:rgba(24,34,52,.9)}
 .gw-btn-mini{padding:7px 12px;font-size:11px;letter-spacing:.1em}
 .gw-btn-icon{width:16px!important;height:16px!important;max-width:16px!important;max-height:16px!important;object-fit:contain!important;image-rendering:auto!important;vertical-align:middle;margin-right:6px}
-/* Lobby — readable warcamp */
-.gw-lobby,.gw-lobby-v2{display:flex;flex-direction:column;min-height:100dvh;max-height:100dvh;overflow:hidden;background:linear-gradient(180deg,#0c121c 0%,#080c14 100%)}
-.gw-lobby-top{display:flex;flex-wrap:wrap;align-items:center;gap:12px;padding:12px clamp(12px,3vw,24px);border-bottom:1px solid var(--gw-line);background:rgba(6,9,14,.92);position:sticky;top:0;z-index:8}
+/* Lobby — BOTH panes navigable (final cascade wins) */
+.gw-lobby,
+.gw-lobby-v2{
+  display:flex !important;
+  flex-direction:column !important;
+  height:100dvh !important;
+  max-height:100dvh !important;
+  min-height:0 !important;
+  overflow:hidden !important;
+  background:linear-gradient(180deg,#0c121c 0%,#080c14 100%);
+}
+.gw-lobby-top{
+  flex:0 0 auto !important;
+  display:flex;
+  flex-wrap:wrap;
+  align-items:center;
+  gap:12px;
+  padding:12px clamp(12px,3vw,24px);
+  border-bottom:1px solid var(--gw-line);
+  background:rgba(6,9,14,.95);
+  position:relative !important;
+  z-index:8;
+}
 .gw-lobby-title{font-family:Cinzel,serif;letter-spacing:.18em;text-transform:uppercase;color:#f0e6d0;font-size:15px}
 .gw-lobby-tagline{color:var(--gw-muted);font-size:12px}
 .gw-lobby-top-actions{display:flex;flex-wrap:wrap;gap:8px;margin-left:auto;align-items:center}
-.gw-lobby-tabs{display:flex;gap:6px;padding:10px clamp(12px,3vw,24px) 0}
+.gw-lobby-tabs{display:flex;flex:0 0 auto !important;gap:6px;padding:8px clamp(12px,3vw,24px) 0;flex-wrap:wrap}
 .gw-lobby-tab{flex:0 0 auto;padding:8px 14px;border-radius:8px 8px 0 0;border:1px solid transparent;background:transparent;color:var(--gw-muted);cursor:pointer;font-weight:700;letter-spacing:.08em;font-size:12px}
 .gw-lobby-tab.is-active{color:#f0e6d0;border-color:var(--gw-line);border-bottom-color:transparent;background:var(--gw-panel-solid)}
-.gw-lobby-grid,.gw-lobby-grid-v2{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1.4fr) minmax(280px,360px);gap:14px;padding:12px clamp(12px,3vw,24px) 18px;overflow:hidden}
-.gw-lobby-main{min-width:0;overflow:auto;border:1px solid var(--gw-line);border-radius:14px;background:var(--gw-panel);padding:12px}
-.gw-lobby-deploy{min-width:0;overflow:auto}
-.gw-deploy-panel{border:1px solid rgba(212,168,75,.28);border-radius:14px;background:linear-gradient(180deg,#16120c,#10141c);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 40px rgba(0,0,0,.35)}
+.gw-lobby-grid,
+.gw-lobby-grid-v2{
+  flex:1 1 0% !important;
+  min-height:0 !important;
+  display:grid !important;
+  grid-template-columns:minmax(0,1.35fr) minmax(280px,360px) !important;
+  gap:14px;
+  padding:10px clamp(12px,3vw,24px) 14px;
+  overflow:hidden !important;
+  align-items:stretch !important;
+}
+/* LEFT + RIGHT: independent scroll — both always navigable */
+.gw-lobby-main,
+.gw-lobby-v2 .gw-lobby-main,
+.gw-lobby .gw-lobby-main{
+  min-width:0 !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  height:100% !important;
+  align-self:stretch !important;
+  overflow-x:hidden !important;
+  overflow-y:scroll !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  border:1px solid var(--gw-line);
+  border-radius:14px;
+  background:var(--gw-panel);
+  padding:12px 12px 72px !important;
+  pointer-events:auto !important;
+  position:relative !important;
+  top:auto !important;
+  box-sizing:border-box;
+}
+.gw-lobby-deploy,
+.gw-lobby-v2 .gw-lobby-deploy,
+.gw-lobby .gw-lobby-deploy{
+  min-width:0 !important;
+  min-height:0 !important;
+  max-height:100% !important;
+  height:100% !important;
+  align-self:stretch !important;
+  overflow-x:hidden !important;
+  overflow-y:scroll !important;
+  -webkit-overflow-scrolling:touch;
+  overscroll-behavior:contain;
+  padding:0 4px 72px !important;
+  pointer-events:auto !important;
+  position:relative !important;
+  top:auto !important;
+  display:flex !important;
+  flex-direction:column;
+  box-sizing:border-box;
+}
+.gw-lobby-main::-webkit-scrollbar,
+.gw-lobby-deploy::-webkit-scrollbar{width:10px}
+.gw-lobby-main::-webkit-scrollbar-thumb,
+.gw-lobby-deploy::-webkit-scrollbar-thumb{background:rgba(212,168,75,.5);border-radius:5px}
+.gw-lobby-main::-webkit-scrollbar-track,
+.gw-lobby-deploy::-webkit-scrollbar-track{background:rgba(0,0,0,.3);border-radius:5px}
+.gw-deploy-panel{border:1px solid rgba(212,168,75,.28);border-radius:14px;background:linear-gradient(180deg,#16120c,#10141c);padding:14px;display:flex;flex-direction:column;gap:12px;box-shadow:0 16px 40px rgba(0,0,0,.35);flex-shrink:0}
 .gw-deploy-head{font-family:Cinzel,serif;letter-spacing:.16em;text-transform:uppercase;color:var(--gw-gold);font-size:12px}
 .gw-deploy-summary{display:flex;flex-direction:column;gap:6px}
 .gw-deploy-row{display:flex;justify-content:space-between;gap:10px;font-size:12px}
@@ -3002,8 +3334,21 @@ html,body,#root{height:100%;margin:0;background:var(--gw-bg);color:var(--gw-text
 /* Hide noisy fleet diagnostics by default on warcamp side */
 .gw-deploy-panel .gw-deploy-summary + .gw-mapsize + .gw-mapsize + .gw-prematch-lane + .gw-mapsize + .gw-deploy-summary{display:none}
 @media(max-width:960px){
-  .gw-lobby-grid,.gw-lobby-grid-v2{grid-template-columns:1fr;overflow:auto}
-  .gw-lobby-deploy{order: -1}
+  /* Still two-pane when possible; below narrow stack with BOTH scrollable in sequence via grid scroll */
+  .gw-lobby-grid,.gw-lobby-grid-v2{
+    grid-template-columns:1fr !important;
+    overflow-y:auto !important;
+    overflow-x:hidden !important;
+  }
+  .gw-lobby-main,
+  .gw-lobby-deploy,
+  .gw-lobby-v2 .gw-lobby-main,
+  .gw-lobby-v2 .gw-lobby-deploy{
+    height:auto !important;
+    max-height:none !important;
+    overflow:visible !important;
+  }
+  .gw-lobby-deploy{order:0}
 }
 /* Character select stage */
 .gw-cs-stage-name,.gw-cs-hero-name{color:#f1e6cf!important}

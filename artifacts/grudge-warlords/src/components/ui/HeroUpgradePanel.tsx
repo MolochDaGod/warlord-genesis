@@ -1,26 +1,15 @@
 import { useState } from "react";
 import { useGame } from "../../game/store";
 import { useRoster } from "../../game/roster";
-import {
-  MAX_HERO_LEVEL,
-  PICK_LEVELS,
-  xpBar,
-  startingSkillId,
-} from "../../game/heroSkillTree";
-import { CLASS_BY_ID, classSkillById } from "@workspace/game-content";
+import { MAX_HERO_LEVEL, xpBar } from "../../game/heroSkillTree";
+import { CLASS_BY_ID } from "@workspace/game-content";
 import { ICONS } from "./icons";
-
-/** Skill id held at a given hero level (1 = auto-grant, 2/4/6/8/10 = picks). */
-function skillForLevel(heroSkillPicks: string[], level: number): string | null {
-  if (level === 1) return heroSkillPicks[0] ?? null;
-  const pickIdx = PICK_LEVELS.indexOf(level as (typeof PICK_LEVELS)[number]);
-  if (pickIdx < 0) return null;
-  return heroSkillPicks[pickIdx + 1] ?? null;
-}
-
-function isPickLevel(level: number): boolean {
-  return level === 1 || (PICK_LEVELS as readonly number[]).includes(level);
-}
+import {
+  abilityPoolForHero,
+  resolveAbility,
+  slotHotkey,
+} from "../../game/abilityLoadout";
+import { useMeta } from "../../game/metaProgression";
 
 /**
  * Persistent L1–10 hero progression track using Grudge unit-frame styling.
@@ -30,17 +19,25 @@ export function HeroUpgradePanel() {
   const phase = useGame((s) => s.phase);
   const heroLevel = useGame((s) => s.heroLevel);
   const heroXp = useGame((s) => s.heroXp);
-  const heroSkillPicks = useGame((s) => s.heroSkillPicks);
-  const pending = useGame((s) => s.pendingSkillPick);
   const classId = useRoster((s) => s.classId);
+  const meleeId = useRoster((s) => s.meleeId);
+  const rangedId = useRoster((s) => s.rangedId);
+  const prefabId = useRoster((s) => s.prefabId);
+  const slots = useRoster((s) => s.abilitySlots);
+  const cardLevel = useMeta((s) => s.characterLevel(prefabId));
   const [collapsed, setCollapsed] = useState(false);
 
   if (phase !== "battle") return null;
 
   const cls = CLASS_BY_ID[classId];
   const xp = xpBar(heroLevel, heroXp);
-  const open = !collapsed || !!pending;
-  const startId = startingSkillId(classId);
+  const open = !collapsed;
+  const pool = abilityPoolForHero({
+    classId,
+    meleeId,
+    rangedId,
+    cardLevel: Math.max(1, cardLevel),
+  });
 
   return (
     <div className={`gw-hero-upgrades${open ? "" : " gw-hero-upgrades-collapsed"}`}>
@@ -48,14 +45,13 @@ export function HeroUpgradePanel() {
         type="button"
         className="gw-hero-upgrades-head"
         onClick={() => setCollapsed((c) => !c)}
-        title="Hero progression (levels 1–10)"
+        title="Warcamp abilities (keys 1–6)"
       >
         <img className="gw-title-icon" src={ICONS.cup} alt="" draggable={false} />
-        <span className="gw-hero-upgrades-title">Champion Path</span>
+        <span className="gw-hero-upgrades-title">Warcamp Loadout</span>
         <span className="gw-hero-upgrades-lvl" style={{ color: cls.color }}>
           Lv {heroLevel}/{MAX_HERO_LEVEL}
         </span>
-        {pending && <span className="gw-hero-upgrades-pending">Pick!</span>}
         <span className="gw-hero-upgrades-chevron">{open ? "▾" : "▸"}</span>
       </button>
 
@@ -74,70 +70,27 @@ export function HeroUpgradePanel() {
           </div>
 
           <div className="gw-hero-level-track">
-            {Array.from({ length: MAX_HERO_LEVEL }, (_, i) => {
-              const level = i + 1;
-              const reached = heroLevel >= level;
-              const isPick = isPickLevel(level);
-              const skillId = skillForLevel(heroSkillPicks, level);
-              const skill = skillId ? classSkillById(skillId) : null;
-              const isPending = pending?.level === level;
-              const isPassive = !isPick;
-
-              let nodeLabel = "—";
-              let nodeIcon = "·";
-              if (level === 1 && !skill) {
-                const start = classSkillById(startId);
-                nodeLabel = start?.label ?? "Start";
-                nodeIcon = start?.icon ?? "◆";
-              } else if (skill) {
-                nodeLabel = skill.label;
-                nodeIcon = skill.icon ?? "◆";
-              } else if (isPending) {
-                nodeLabel = "Choose";
-                nodeIcon = "?";
-              } else if (isPassive && reached) {
-                nodeLabel = "+Stats";
-                nodeIcon = "↑";
-              } else if (isPick && !reached) {
-                nodeLabel = "Locked";
-                nodeIcon = "◇";
-              }
-
+            {slots.map((id, i) => {
+              const ab = resolveAbility(id, pool);
               return (
                 <div
-                  key={level}
-                  className={[
-                    "gw-hero-lvl-node",
-                    reached ? "is-reached" : "",
-                    isPick ? "is-pick" : "is-passive",
-                    isPending ? "is-pending" : "",
-                    skill ? "is-filled" : "",
-                  ]
-                    .filter(Boolean)
-                    .join(" ")}
-                  title={
-                    skill
-                      ? `${skill.label} — ${skill.description}`
-                      : isPassive
-                        ? `Level ${level} — passive stat growth`
-                        : `Level ${level} skill pick`
-                  }
+                  key={i}
+                  className={`gw-hero-lvl-node is-pick${ab ? " is-filled is-reached" : ""}`}
+                  title={ab ? `${ab.label} — ${ab.description}` : `Slot ${i + 1} empty`}
                 >
-                  <span className="gw-hero-lvl-num">{level}</span>
+                  <span className="gw-hero-lvl-num">{slotHotkey(i)}</span>
                   <span className="gw-hero-lvl-icon" style={{ color: cls.color }}>
-                    {nodeIcon}
+                    {ab?.icon ?? "·"}
                   </span>
-                  <span className="gw-hero-lvl-name">{nodeLabel}</span>
+                  <span className="gw-hero-lvl-name">{ab?.label ?? "—"}</span>
                 </div>
               );
             })}
           </div>
 
-          {pending && (
-            <p className="gw-hero-upgrades-hint">
-              Level {pending.level} ready — choose a skill in the overlay.
-            </p>
-          )}
+          <p className="gw-hero-upgrades-hint">
+            Abilities were chosen in the warcamp. Levels here only add stats.
+          </p>
         </div>
       )}
     </div>

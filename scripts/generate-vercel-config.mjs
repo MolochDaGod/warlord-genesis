@@ -172,6 +172,7 @@ rewrites.push(
   // Game profiles / matches for this title ΓÇö NOT grudge-studio.com (retro ROM catalog).
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
   { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
+  { source: "/api/mp/health", destination: "/mp-health.json" },
   // Unknown fleet APIs ΓåÆ grudge-api (account/characters already rewritten above).
   // Never proxy to grudge-studio.com ΓÇö that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
@@ -194,7 +195,7 @@ rewrites.push(
   { source: "/warlord", destination: "/index.html" },
   // SPA fallback — must exclude static asset dirs so /models/*.glb is never HTML
   {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html).*)",
+    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
     destination: "/index.html",
   },
 );

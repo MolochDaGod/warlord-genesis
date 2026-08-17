@@ -22,6 +22,8 @@ export interface WarlordWeaponSkill {
   label: string;
   /** Baked clip path (no `.json`) on assets.grudge-studio.com. */
   baked: string;
+  /** Catalog anim key — used to match clips that shipped on the mesh file. */
+  animKey?: string;
   description: string;
   cooldown: number;
   damage: number;
@@ -75,6 +77,7 @@ function nodeToSkill(node: WeaponSkillNode, baseDamage: number, slotIndex: numbe
     id: node.id,
     label: node.label,
     baked: def.baked,
+    animKey: node.animKey,
     description: node.description,
     cooldown: node.cooldown ?? 0,
     damage: weaponSkillDamage(baseDamage, node),

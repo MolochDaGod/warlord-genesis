@@ -30,7 +30,7 @@ export function PreMatchLaneDeploy({ compact }: { compact?: boolean }) {
         )}
       </div>
       <p className="gw-cs-lane-hint">
-        Each lane auto-spawns <strong>3 melee + 2 ranged</strong> KayKit creeps every wave. Guards{" "}
+        Each lane auto-spawns <strong>3 melee + 2 ranged</strong> creeps every wave. Guards{" "}
         {unitLabel(laneMeleeHeroId)} + {unitLabel(laneRangedHeroId)} march all lanes.
       </p>
       <LaneWaveGrid

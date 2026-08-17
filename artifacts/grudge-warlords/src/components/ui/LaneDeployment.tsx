@@ -40,8 +40,9 @@ export function LaneDeployment() {
         {allyTech > 0 && <span className="gw-lane-tech-tag">Army T{allyTech}</span>}
       </div>
       <p className="gw-lane-deploy-blurb">
-        Lane guards: {unitLabel(laneMeleeHeroId)} + {unitLabel(laneRangedHeroId)} (GRUDGE6 heroes
-        from lobby). Auto waves spawn 3 melee + 2 ranged KayKit faction mobs on every lane.
+        Guards: <strong>{unitLabel(laneMeleeHeroId)}</strong> ·{" "}
+        <strong>{unitLabel(laneRangedHeroId)}</strong>
+        <span className="gw-lane-deploy-sub"> · 3 melee + 2 ranged per wave</span>
       </p>
       <LaneWaveGrid
         lanes={laneDeployment.lanes}

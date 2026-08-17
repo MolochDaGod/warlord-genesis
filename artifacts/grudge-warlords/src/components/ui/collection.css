@@ -289,7 +289,10 @@
 .gw-lobby-tabs {
   display: flex;
   gap: 0.35rem;
-  margin-bottom: 0.75rem;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  min-height: 44px;
 }
 
 .gw-lobby-tab {
@@ -759,53 +762,292 @@
   to { transform: scale(1); opacity: 1; }
 }
 
-.gw-codex-roster {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 0.75rem;
-  margin-top: 1rem;
-}
-
-.gw-codex-card {
+/* ═══ Hero Codex — faction halls + horizontal carousels ═══ */
+.gw-codex {
   display: flex;
   flex-direction: column;
-  text-align: left;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 10px;
-  overflow: hidden;
-  background: linear-gradient(160deg, rgba(255, 255, 255, 0.04), rgba(0, 0, 0, 0.4));
-  color: inherit;
-  cursor: pointer;
-  transition: border-color 0.15s, transform 0.15s;
-}
-
-.gw-codex-card:hover {
-  border-color: #c9a227;
-  transform: translateY(-2px);
-}
-
-.gw-codex-card-art {
+  gap: 14px;
   width: 100%;
-  height: 140px;
-  object-fit: cover;
-  object-position: top center;
+  min-width: 0;
+  padding-bottom: 24px;
+  box-sizing: border-box;
 }
-
-.gw-codex-card-body {
-  padding: 0.55rem 0.65rem 0.7rem;
+.gw-codex-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+}
+.gw-codex-kicker {
+  margin: 0;
+  font-size: 10px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: rgba(212, 168, 75, 0.75);
+}
+.gw-codex-title {
+  margin: 4px 0 6px;
+  font-family: "Cinzel Decorative", Cinzel, serif;
+  font-size: clamp(1.25rem, 2.5vw, 1.6rem);
+  letter-spacing: 0.06em;
+  color: #f1e6cf;
+}
+.gw-codex-sub {
+  margin: 0;
+  max-width: 40rem;
+  font-size: 0.82rem;
+  line-height: 1.45;
+  color: rgba(200, 190, 170, 0.8);
+}
+.gw-codex-search-wrap {
   display: flex;
   flex-direction: column;
-  gap: 0.15rem;
+  gap: 4px;
+  min-width: min(100%, 220px);
 }
-
-.gw-codex-card-class {
-  font-size: 0.58rem;
-  letter-spacing: 0.1em;
+.gw-codex-search-label {
+  font-size: 10px;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
   opacity: 0.55;
 }
+.gw-codex-search {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(120, 150, 200, 0.25);
+  background: rgba(0, 0, 0, 0.4);
+  color: inherit;
+  font-size: 13px;
+}
 
-.gw-codex-card-title {
-  font-size: 0.72rem;
-  opacity: 0.75;
+/* Faction tab bar */
+.gw-codex-factions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.gw-codex-ftab {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(120, 150, 200, 0.22);
+  background: rgba(10, 14, 22, 0.75);
+  color: #a8b8d0;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: border-color 0.12s, color 0.12s, background 0.12s;
+}
+.gw-codex-ftab:hover {
+  border-color: var(--ftab-color, #c9a227);
+  color: #eef2f8;
+}
+.gw-codex-ftab.is-active {
+  border-color: var(--ftab-color, #c9a227);
+  color: #f3e6c4;
+  background: linear-gradient(180deg, rgba(40, 32, 18, 0.9), rgba(16, 14, 12, 0.95));
+  box-shadow: 0 0 0 1px rgba(212, 168, 75, 0.25);
+}
+.gw-codex-ftab-n {
+  font-size: 10px;
+  opacity: 0.65;
+  font-weight: 600;
+}
+
+/* Hall + carousel */
+.gw-codex-halls {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  min-width: 0;
+}
+.gw-codex-hall {
+  min-width: 0;
+  border: 1px solid color-mix(in srgb, var(--hall-accent, #c9a227) 35%, transparent);
+  border-radius: 14px;
+  background:
+    linear-gradient(135deg, color-mix(in srgb, var(--hall-accent, #c9a227) 12%, transparent), transparent 55%),
+    linear-gradient(180deg, rgba(18, 16, 14, 0.92), rgba(8, 10, 16, 0.96));
+  padding: 12px 12px 14px;
+  box-sizing: border-box;
+}
+.gw-codex-hall-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 10px;
+  padding: 0 4px;
+}
+.gw-codex-hall-name {
+  margin: 0;
+  font-family: Cinzel, "Cinzel Decorative", serif;
+  font-size: 15px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--hall-accent, #e0b252);
+}
+.gw-codex-hall-blurb {
+  margin: 4px 0 0;
+  font-size: 12px;
+  line-height: 1.4;
+  color: rgba(180, 190, 210, 0.75);
+  max-width: 36rem;
+}
+.gw-codex-hall-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.gw-codex-hall-count {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(160, 170, 190, 0.7);
+  margin-right: 4px;
+}
+.gw-codex-nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  border: 1px solid rgba(212, 168, 75, 0.35);
+  background: rgba(0, 0, 0, 0.45);
+  color: #f0e6d0;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+.gw-codex-nav-btn:hover {
+  border-color: var(--hall-accent, #e0b252);
+  background: rgba(40, 30, 16, 0.8);
+}
+
+.gw-codex-rail-wrap {
+  min-width: 0;
+  position: relative;
+}
+.gw-codex-rail {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-padding: 4px;
+  padding: 4px 4px 10px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(212, 168, 75, 0.5) rgba(0, 0, 0, 0.3);
+}
+.gw-codex-rail::-webkit-scrollbar {
+  height: 8px;
+}
+.gw-codex-rail::-webkit-scrollbar-thumb {
+  background: rgba(212, 168, 75, 0.45);
+  border-radius: 4px;
+}
+
+/* Fixed-width tiles so many fit in the rail (never 1 full-width column) */
+.gw-codex-tile {
+  flex: 0 0 168px;
+  width: 168px;
+  scroll-snap-align: start;
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  overflow: hidden;
+  background: linear-gradient(165deg, rgba(255, 255, 255, 0.05), rgba(0, 0, 0, 0.45));
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.15s, transform 0.15s, box-shadow 0.15s;
+}
+.gw-codex-tile:hover {
+  border-color: var(--hall-accent, #c9a227);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.4);
+}
+.gw-codex-tile-art-wrap {
+  position: relative;
+  width: 100%;
+  height: 150px;
+  background: #0a0c12;
+}
+.gw-codex-tile-art {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: top center;
+  display: block;
+}
+.gw-codex-tile-class {
+  position: absolute;
+  left: 8px;
+  bottom: 8px;
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  padding: 3px 7px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  color: #e8e0d0;
+}
+.gw-codex-tile-body {
+  padding: 8px 10px 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+}
+.gw-codex-tile-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: #f3ebe0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gw-codex-tile-title {
+  font-size: 11px;
+  color: rgba(180, 190, 210, 0.75);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gw-codex-tile-race {
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: capitalize;
+  color: var(--hall-accent, #c9a227);
+  opacity: 0.85;
+  margin-top: 2px;
+}
+.gw-codex-empty {
+  margin: 2rem 0;
+  text-align: center;
+  opacity: 0.7;
+  font-size: 14px;
+}
+
+/* legacy aliases if anything still points at old classes */
+.gw-codex-roster {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 12px;
+  overflow-x: auto;
+}
+.gw-codex-card {
+  flex: 0 0 168px;
 }

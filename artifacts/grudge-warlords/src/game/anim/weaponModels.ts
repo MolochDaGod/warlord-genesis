@@ -1,6 +1,8 @@
 import * as THREE from "three";
 import { FBXLoader } from "three/examples/jsm/loaders/FBXLoader.js";
 import { WARLORD_MANIFEST } from "../../engine/warlordManifest";
+import { verifyLoadedAsset } from "../../engine/assetVerify";
+import { clipsFromLoadedFile } from "../../engine/sourceClips";
 
 /**
  * Real voxel weapon models (KayKit-style) mounted in the hero's hand in place of
@@ -114,6 +116,14 @@ export function loadWeaponModel(key: WeaponModelKey): Promise<THREE.Group> {
     const def = WEAPON_MODEL_DEFS[key];
     cached = fbxLoader.loadAsync(`${BASE}models/weapons/${def.file}.fbx`).then((raw) => {
       const proto = prepareModel(raw, def);
+      verifyLoadedAsset({
+        url: `${BASE}models/weapons/${def.file}.fbx`,
+        kind: "weapon",
+        root: proto,
+        clips: clipsFromLoadedFile(raw as THREE.Group),
+        requireClips: false,
+        requireTextures: true,
+      });
       protoReady.set(key, proto);
       return proto;
     });

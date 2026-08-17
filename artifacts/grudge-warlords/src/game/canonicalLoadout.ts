@@ -84,3 +84,12 @@ export function meleeDisplayName(prefabId: string, meleeId: MeleeWeaponId): stri
 export function rangedDisplayName(rangedId: RangedWeaponId): string {
   return RANGED_WEAPONS[rangedId]?.name ?? rangedId;
 }
+
+/** Lobby label for off-hand / shield / tome (string id from roster when present). */
+export function offhandDisplayName(offhandId: string | null | undefined): string {
+  if (!offhandId) return "—";
+  // Pretty-print id (shield-kite → Shield Kite)
+  return offhandId
+    .replace(/[-_]+/g, " ")
+    .replace(/\b\w/g, (c) => c.toUpperCase());
+}

@@ -289,3 +289,18 @@ export async function restoreGrudgeStudio(): Promise<GrudgeUser | null> {
 export function logoutGrudgeStudio(): void {
   clearStudioToken();
 }
+
+/** Full-page SSO (no popup) — use when popups are blocked. */
+export function loginWithRedirect(returnPath = "/"): void {
+  if (typeof window === "undefined") return;
+  const origin = window.location.origin;
+  const returnTo = new URL(returnPath, origin).href;
+  const params = new URLSearchParams({
+    redirect_uri: returnTo,
+    redirect: returnTo,
+    return: returnTo,
+    origin,
+    app: "warlord-genesis",
+  });
+  window.location.assign(`${AUTH_ORIGIN}/login?${params.toString()}`);
+}

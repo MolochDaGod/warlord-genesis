@@ -141,14 +141,41 @@ function WarlordModel({
   useFrame((_, dt) => {
     const p = preparedRef.current;
     if (!p) return;
-    p.director.update(dt);
+    // Cap dt so tab-background stalls don't explode AnimationMixer
+    const d = Math.min(0.05, Math.max(0, dt));
+    p.director.update(d);
+    // Keep sole on ground after idle pose settles (bind plant ≠ posed plant)
+    if (groupRef.current && p.root) {
+      plantLobbyFeet(p.root);
+    }
     // Slow turntable so gear/textures read clearly in the warcamp
     if (groupRef.current) {
-      groupRef.current.rotation.y += dt * 0.28;
+      groupRef.current.rotation.y += d * 0.28;
     }
   });
 
   return <group ref={groupRef} position={[0, 0, 0]} />;
+}
+
+/** Plant soles on y=0 using posed foot bones (not bind-pose mesh AABB). */
+const _footPos = new THREE.Vector3();
+const FOOT_RE = /Bip001[_\s]?[LR][_\s]?Foot|mixamorig(Left|Right)Foot/i;
+
+function plantLobbyFeet(root: THREE.Object3D): void {
+  root.updateWorldMatrix(true, true);
+  let minFoot = Infinity;
+  root.traverse((obj) => {
+    if (!(obj as THREE.Bone).isBone) return;
+    if (!FOOT_RE.test(obj.name || "")) return;
+    obj.getWorldPosition(_footPos);
+    if (_footPos.y < minFoot) minFoot = _footPos.y;
+  });
+  if (!Number.isFinite(minFoot) || minFoot > 5) return;
+  // Ankle ≈ sole + 0.05 m
+  const soleY = minFoot - 0.05;
+  if (Math.abs(soleY) > 0.003 && Math.abs(soleY) < 2.5) {
+    root.position.y -= soleY;
+  }
 }
 
 function PreviewScene({

@@ -24,7 +24,7 @@ Grudox brand PNGs at site root: `favicon.png`, `favicon-32.png`, `favicon-192.pn
 | Games / profile / matches | `/api/games/*` → warlord-genesis-api |
 | Leaderboards | `/api/games/grudge-warlords/leaderboards/:board` |
 | Fleet JSON | `/api/grudge/fleet` |
-| PvP health | `/api/mp/health` → `WARLORD_MP_URL` or `warlord-mp.up.railway.app` |
+| PvP health | `/api/mp/health` → soft `/mp-health.json` while `warlord-mp` Railway is offline |
 | Auth | `/login`, `/auth/*`, `/api/auth/*` |
 
 ## Leaderboard boards
@@ -35,6 +35,8 @@ Grudox brand PNGs at site root: `favicon.png`, `favicon-32.png`, `favicon-192.pn
 - `warlord_score`
 
 Match POST `/api/games/grudge-warlords/matches` with `{ won, kills, score, rewardGbux }` updates ranks when authenticated.
+
+Terrain, instancing, bake, and ship rules: `docs/TERRAIN_PERF_DEPLOY.md`.
 
 ## Deploy
 

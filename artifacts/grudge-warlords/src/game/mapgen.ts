@@ -68,55 +68,58 @@ export interface MapSizeDef {
   campScale?: number;
 }
 
-/** Linear scale vs the original 80×130 / 200×325 MOBA sizes (3× = Dota-scale jungle). */
-export const WORLD_SCALE = 3;
+/**
+ * World scale tuned so authored GLBs + ~2 m heroes match.
+ * Sanctum island raw ≈ 190×190; 1v1 arena raw ≈ 56×50.
+ * Pathing still uses these logical sizes; AuthoredMap fits the GLB to them.
+ */
+export const WORLD_SCALE = 1;
 
 export const MAP_SIZES: Record<MapSize, MapSizeDef> = {
-  /** Compact Open entry — three parallel lanes, quick to load on web. */
+  /** Compact 1v1 — visual: models/maps/arena_1v1.glb (1vs1_high_poly). */
   skirmish: {
-    label: "Skirmish",
-    width: 52 * WORLD_SCALE,
-    length: 88 * WORLD_SCALE,
+    label: "1v1 Arena",
+    width: 56,
+    length: 50,
     cutthroughPairs: 0,
     corner: false,
-    campScale: 0.55,
+    campScale: 0,
   },
+  /** Sanctum Island 3-lane — visual: models/maps/sanctum_island.glb */
   standard: {
-    label: "Standard",
-    width: 80 * WORLD_SCALE,
-    length: 130 * WORLD_SCALE,
-    cutthroughPairs: 0,
+    label: "Sanctum Island",
+    width: 190,
+    length: 190,
+    cutthroughPairs: 2,
     corner: false,
     campScale: 1,
   },
+  /** Larger Sanctum footprint + more jungle camps. */
   large: {
-    label: "Large",
-    width: 200 * WORLD_SCALE,
-    length: 325 * WORLD_SCALE,
-    cutthroughPairs: 5,
+    label: "Sanctum Large",
+    width: 200,
+    length: 200,
+    cutthroughPairs: 4,
     corner: true,
-    campScale: 1.15,
+    campScale: 1.2,
   },
-  /**
-   * Clash Royale arena proportions — shorter dual-push field.
-   * Visual: `models/maps/arena3.glb`. Towers: king (core) + 2 princess (outer L/R).
-   */
+  /** Same small 1v1 art, slightly tighter bounds. */
   royale: {
-    label: "Royale Arena",
-    width: 40 * WORLD_SCALE,
-    length: 68 * WORLD_SCALE,
+    label: "1v1 Compact",
+    width: 48,
+    length: 44,
     cutthroughPairs: 0,
     corner: false,
     campScale: 0,
   },
 };
 
-export const MAP_SIZE_ORDER: MapSize[] = ["royale", "skirmish", "standard", "large"];
+export const MAP_SIZE_ORDER: MapSize[] = ["skirmish", "royale", "standard", "large"];
 
-/** Arena 3 GLB (Clash-style level art). */
+/** @deprecated use mapAssets.MAP_GLB */
 export const ARENA3_MAP_PATHS = [
-  "models/maps/arena3.glb",
-  "/models/maps/arena3.glb",
+  "models/maps/arena_1v1.glb",
+  "/models/maps/arena_1v1.glb",
 ] as const;
 
 // Terrain shaping constants (world units). Spatial offsets scale with WORLD_SCALE;
@@ -540,46 +543,37 @@ export function generateMap(seed: number, size: MapSize): GameMap {
   const flowToEnemyCore = new FlowField(grid, enemyCore.x, enemyCore.z);
   const flowToAllyCore = new FlowField(grid, allyCore.x, allyCore.z);
 
-  // Per-lane creep steering fields. On the corner layout the three lanes share
-  // endpoints, so a single whole-map field would funnel every creep down the
-  // shortest (diagonal) route. Build one masked grid per lane — only that lane's
-  // corridor plus both base clearings — so each lane's flow keeps its creeps in
-  // lane. The end-to-end layout's lanes are already separated by ridges, so it
-  // simply aliases the shared fields (identical to the original behaviour).
-  let laneFlowToEnemy: FlowField[];
-  let laneFlowToAlly: FlowField[];
-  if (corner) {
-    laneFlowToEnemy = [];
-    laneFlowToAlly = [];
-    for (const lane of laneDefs) {
-      const segs: Seg[] = [];
-      for (let i = 0; i < lane.pts2.length - 1; i++) {
-        segs.push({
-          ax: lane.pts2[i][0],
-          az: lane.pts2[i][1],
-          bx: lane.pts2[i + 1][0],
-          bz: lane.pts2[i + 1][1],
-        });
-      }
-      const laneWalk = (x: number, z: number): boolean => {
-        let d = Math.min(
-          Math.hypot(x - allyCore.x, z - allyCore.z) - BASE_RADIUS,
-          Math.hypot(x - enemyCore.x, z - enemyCore.z) - BASE_RADIUS,
-        );
-        if (d < 0) d = 0;
-        for (const s of segs) {
-          const sd = distToSeg(x, z, s.ax, s.az, s.bx, s.bz);
-          if (sd < d) d = sd;
-        }
-        return d <= CORRIDOR_HALF + WALK_PAD;
-      };
-      const lg = new WalkGrid(width, length, HM_CELL, laneWalk);
-      laneFlowToEnemy.push(new FlowField(lg, enemyCore.x, enemyCore.z));
-      laneFlowToAlly.push(new FlowField(lg, allyCore.x, allyCore.z));
+  // ALWAYS build per-lane flow fields (all map sizes). A single shared field
+  // funnels every creep down the shortest route (usually mid) — players saw
+  // three groups spawn then all run center. Mask each field to that lane's
+  // corridor + both base clearings so west/mid/east stay disciplined.
+  const laneFlowToEnemy: FlowField[] = [];
+  const laneFlowToAlly: FlowField[] = [];
+  for (const lane of laneDefs) {
+    const segs: Seg[] = [];
+    for (let i = 0; i < lane.pts2.length - 1; i++) {
+      segs.push({
+        ax: lane.pts2[i][0],
+        az: lane.pts2[i][1],
+        bx: lane.pts2[i + 1][0],
+        bz: lane.pts2[i + 1][1],
+      });
     }
-  } else {
-    laneFlowToEnemy = laneDefs.map(() => flowToEnemyCore);
-    laneFlowToAlly = laneDefs.map(() => flowToAllyCore);
+    const laneWalk = (x: number, z: number): boolean => {
+      let d = Math.min(
+        Math.hypot(x - allyCore.x, z - allyCore.z) - BASE_RADIUS,
+        Math.hypot(x - enemyCore.x, z - enemyCore.z) - BASE_RADIUS,
+      );
+      if (d < 0) d = 0;
+      for (const s of segs) {
+        const sd = distToSeg(x, z, s.ax, s.az, s.bx, s.bz);
+        if (sd < d) d = sd;
+      }
+      return d <= CORRIDOR_HALF + WALK_PAD;
+    };
+    const lg = new WalkGrid(width, length, HM_CELL, laneWalk);
+    laneFlowToEnemy.push(new FlowField(lg, enemyCore.x, enemyCore.z));
+    laneFlowToAlly.push(new FlowField(lg, allyCore.x, allyCore.z));
   }
 
   // Resolve lane polylines at terrain height.

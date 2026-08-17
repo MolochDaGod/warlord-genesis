@@ -6,8 +6,6 @@ import { Physics } from "@react-three/rapier";
 import { keyMap } from "./controls";
 import { Arena } from "./Arena";
 import { Player } from "./Player";
-import { Trees } from "./Trees";
-import { Grass } from "./Grass";
 import { Units } from "./Units";
 import { EnemyHero } from "./EnemyHero";
 import { Structures } from "./Structures";
@@ -19,7 +17,6 @@ import { Projectiles } from "./Projectiles";
 import { WeaponTrail } from "../../engine/vfx/WeaponTrail";
 import { CommandLayer, SelectionRings } from "./Command";
 import { MatchDirector } from "./MatchDirector";
-import { MapMoat } from "./MapMoat";
 import { CanvasErrorBoundary, WebGLFallback } from "./CanvasFallback";
 import { detectWebGL } from "../../lib/webgl";
 import {
@@ -31,23 +28,23 @@ import {
 function SceneContent() {
   return (
     <>
-      <Sky sunPosition={[-30, 14, -40]} turbidity={8} rayleigh={0.8} mieCoefficient={0.004} distance={450000} />
-      <fog attach="fog" args={["#6e5240", 140, 420]} />
-      <MapMoat />
-      <hemisphereLight args={["#ffd9a8", "#2a1c14", 0.6]} />
+      {/* Sky far above the deck (deck is y≈0). Fog starts past the island. */}
+      <Sky sunPosition={[60, 80, 20]} turbidity={2.8} rayleigh={0.75} mieCoefficient={0.002} distance={450000} />
+      <fog attach="fog" args={["#5a7a9a", 120, 380]} />
+      <hemisphereLight args={["#d8e8ff", "#2a3a28", 0.7]} />
       <directionalLight
-        position={[-20, 36, -10]}
+        position={[50, 90, 30]}
         intensity={1.7}
-        color="#ffd9a8"
+        color="#fff4e0"
         castShadow
         shadow-mapSize={[2048, 2048]}
-        shadow-camera-left={-160}
-        shadow-camera-right={160}
-        shadow-camera-top={170}
-        shadow-camera-bottom={-170}
-        shadow-camera-far={420}
+        shadow-camera-left={-140}
+        shadow-camera-right={140}
+        shadow-camera-top={140}
+        shadow-camera-bottom={-140}
+        shadow-camera-far={400}
       />
-      <ambientLight intensity={0.4} />
+      <ambientLight intensity={0.5} />
 
       {/*
         Rapier best practices (warcamp /play):
@@ -61,10 +58,10 @@ function SceneContent() {
       <Physics gravity={[0, -22, 0]} timeStep={1 / 60} interpolate>
         <Arena />
         <Player />
-        <Trees />
+        {/* Procedural Trees off — Sanctum / 1v1 GLBs already include vegetation */}
       </Physics>
 
-      <Grass />
+      {/* Procedural Grass off — authored maps carry ground cover */}
       <Structures />
       <Relic />
       <CampMarkers />
@@ -100,10 +97,9 @@ export function Game() {
             onCreated: handleCreated,
           })}
         >
-          <color attach="background" args={["#5c4636"]} />
-          {/* Smooth DPR — avoid pixelated adaptive for cleaner third-person look */}
+          <color attach="background" args={["#3d5a78"]} />
           <AdaptiveDpr />
-          <Suspense fallback={null}>
+          <Suspense fallback={<hemisphereLight args={["#fff", "#222", 1]} />}>
             <SceneContent />
           </Suspense>
         </Canvas>

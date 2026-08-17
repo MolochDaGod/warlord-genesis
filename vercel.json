@@ -6,17 +6,17 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b19",
+      "destination": "/assets/gw-core-20260713.js?h=b21",
       "permanent": true
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b19",
+      "destination": "/assets/gw-core-20260713.js?h=b21",
       "permanent": true
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/gw-core-20260713.js?h=b19",
+      "destination": "/assets/gw-core-20260713.js?h=b21",
       "permanent": true
     }
   ],
@@ -150,7 +150,7 @@
     },
     {
       "source": "/models/heroes/grudge6/:file",
-      "destination": "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file"
+      "destination": "https://objectstore.grudge-studio.com/models/grudge6/:file"
     },
     {
       "source": "/textures/grudge6/:race/:file",
@@ -490,7 +490,7 @@
     },
     {
       "source": "/api/mp/health",
-      "destination": "https://warlord-mp.up.railway.app/health"
+      "destination": "/mp-health.json"
     },
     {
       "source": "/api/:path*",
@@ -505,7 +505,7 @@
       "destination": "/edit.html"
     },
     {
-      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap).*)",
+      "source": "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
       "destination": "/index.html"
     }
   ]

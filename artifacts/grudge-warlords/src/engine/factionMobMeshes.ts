@@ -1,6 +1,9 @@
 /**
- * Faction lane-creep visuals — two KayKit mob assets per faction (melee + ranged).
- * These are walking MOBA minions only; lane guards use GRUDGE6 Bip001 heroes.
+ * Faction lane-creep visual roles → defaultcreeps pack (blue ally / red enemy).
+ * Heroes / lane guards use GRUDGE6 Bip001 — never this table.
+ *
+ * Mesh kind is only a role hint (melee / ranged / siege); UnitMesh maps it
+ * through meshToCreepRole() + faction color.
  */
 
 import type { UnitMeshKind } from "../game/config";
@@ -11,11 +14,11 @@ export interface FactionMobPair {
   ranged: UnitMeshKind;
 }
 
-/** KayKit mob GLB id per faction line. */
+/** All factions share defaultcreeps roles — team color is ally=blue / enemy=red. */
 export const FACTION_MOB_MESHES: Record<GrudgeFactionId, FactionMobPair> = {
-  crusade: { melee: "kaykit_barbarian", ranged: "kaykit_rogue_hooded" },
-  fabled: { melee: "kaykit_knight", ranged: "kaykit_ranger" },
-  legion: { melee: "skeleton_warrior", ranged: "skeleton_mage" },
+  crusade: { melee: "footman", ranged: "archer" },
+  fabled: { melee: "footman", ranged: "archer" },
+  legion: { melee: "footman", ranged: "archer" },
 };
 
 export function factionMobMesh(factionId: GrudgeFactionId, ranged: boolean): UnitMeshKind {

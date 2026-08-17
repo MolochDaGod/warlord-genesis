@@ -11,10 +11,13 @@ import {
 } from "../game/cameraOcclusion";
 import type { WarlordWeaponSkill } from "../game/warlordWeaponSkills";
 import {
+  GRUDGE6_FACE_YAW,
   loadBakedClipByRel,
-  loadGrudge6Character,
+  loadGrudge6CharacterInstance,
   type PreparedGrudge6Character,
 } from "./grudge6Character";
+import { findNativeClip } from "./sourceClips";
+export { GRUDGE6_FACE_YAW };
 import { resolveHandBoneName } from "./mixamoRetarget";
 import {
   enemyWarlordTypeId,
@@ -52,8 +55,18 @@ export function weaponClassToAnimPack(wc: WeaponClass): AnimPackId {
 /** Minimal character facade so Player can call recolor / mounts without voxel rig. */
 class Grudge6CharacterFacade {
   constructor(private rig: Grudge6HeroRig) {}
-  recolor(_look: unknown): void {
-    /* GRUDGE6 body atlas is fixed per race — lobby tint not applied yet. */
+  recolor(look: unknown): void {
+    // Only armor/cloth — skin + weapons keep real atlas colors
+    const hex =
+      look && typeof look === "object" && look !== null && "color" in look
+        ? String((look as { color?: string }).color ?? "")
+        : typeof look === "string"
+          ? look
+          : "";
+    if (!hex) return;
+    void import("./grudge6Character").then(({ applyFactionGearColors }) => {
+      applyFactionGearColors(this.rig.root, hex);
+    });
   }
   lowestSoleWorldY(): number {
     return this.rig.lowestSoleWorldY();
@@ -75,8 +88,14 @@ export class Grudge6HeroRig {
   private skillClips = new Map<string, THREE.AnimationClip>();
   private skillLoadGen = 0;
 
-  private constructor(prepared: PreparedGrudge6Character) {
+  private disposePrepared: (() => void) | null = null;
+
+  private constructor(
+    prepared: PreparedGrudge6Character,
+    disposePrepared?: () => void,
+  ) {
     this.prepared = prepared;
+    this.disposePrepared = disposePrepared ?? null;
     this.root = prepared.root;
     this.root.userData[CAMERA_OCCLUDE_SKIP] = true;
     this.character = new Grudge6CharacterFacade(this);
@@ -91,13 +110,14 @@ export class Grudge6HeroRig {
     tint?: string;
     animPack?: AnimPackId;
   }): Promise<Grudge6HeroRig> {
-    const prepared = await loadGrudge6Character(opts.typeId, {
+    // Independent instance — never mount the shared cache root (stolen mesh / T-pose).
+    const prepared = await loadGrudge6CharacterInstance(opts.typeId, {
       // ~1.85 m humanoid — matches PLAYER capsule + grudge6 TARGET height
       fitHeight: opts.fitHeight ?? 1.85,
       tint: opts.tint,
       animPack: opts.animPack,
     });
-    const rig = new Grudge6HeroRig(prepared);
+    const rig = new Grudge6HeroRig(prepared, prepared.dispose);
     try {
       prepared.director.setGaitTarget(false, false);
       const idle = prepared.actions.idle ?? prepared.actions.walk;
@@ -180,27 +200,52 @@ export class Grudge6HeroRig {
     void this.setWeapon(animClass);
   }
 
-  attack(): void {
-    this.prepared.director.requestOneShot(this.prepared.attackClip, { fade: 0.1 });
+  /** Rooted / moving melee — returns clip duration (seconds) for combat lock. */
+  attack(): number {
+    const clip = this.prepared.attackClip;
+    const dur = Math.max(0.35, clip?.duration ?? 0.55);
+    this.prepared.director.requestOneShot(clip, { fade: 0.08, timeScale: 1 });
+    return dur;
   }
 
-  /** Preload baked skill clips for the active weapon hotbar (CDN, rotation-only). */
+  /** World yaw offset so kit +X faces movement (+Z at yaw 0). */
+  get faceYawOffset(): number {
+    return GRUDGE6_FACE_YAW;
+  }
+
+  /** Preload skill clips — native file clips first, baked JSON only as fill. */
   async preloadWeaponSkills(skills: WarlordWeaponSkill[]): Promise<void> {
     const gen = ++this.skillLoadGen;
+    const native = this.prepared.sourceClips ?? [];
     await Promise.all(
       skills.map(async (sk) => {
-        if (this.skillClips.has(sk.baked)) return;
+        const key = sk.baked || sk.id;
+        if (this.skillClips.has(key)) return;
+        const fromFile = findNativeClip(native, sk.animKey, sk.label, sk.id, key);
+        if (fromFile) {
+          this.skillClips.set(key, fromFile);
+          this.skillClips.set(sk.id, fromFile);
+          return;
+        }
+        if (!sk.baked) return;
         const clip = await loadBakedClipByRel(sk.baked, this.root);
-        if (clip && gen === this.skillLoadGen) this.skillClips.set(sk.baked, clip);
+        if (clip && gen === this.skillLoadGen) {
+          this.skillClips.set(key, clip);
+          this.skillClips.set(sk.id, clip);
+        }
       }),
     );
   }
 
-  /** Play a weapon-skill baked clip through the AnimationDirector overlay channel. */
+  /** Play a skill clip through the AnimationDirector overlay channel. */
   castWeaponSkill(skill: WarlordWeaponSkill): boolean {
-    const clip = this.skillClips.get(skill.baked);
+    const clip =
+      this.skillClips.get(skill.baked) ??
+      this.skillClips.get(skill.id) ??
+      findNativeClip(this.prepared.sourceClips ?? [], skill.animKey, skill.label, skill.id) ??
+      this.prepared.attackClip;
     if (!clip) return false;
-    this.prepared.director.requestOneShot(clip, { fade: 0.1, blend: skill.blend });
+    this.prepared.director.requestOneShot(clip, { fade: 0.1, blend: skill.blend ?? 0.92 });
     return true;
   }
 
@@ -236,7 +281,20 @@ export class Grudge6HeroRig {
   /** Legacy voxel weapon tuner — gear weapons are on the Bip001 preset meshes. */
   retuneWeapon(_tuning: unknown): void {}
   dispose(): void {
-    this.prepared.director.dispose();
+    if (this.disposePrepared) {
+      try {
+        this.disposePrepared();
+      } catch {
+        /* ignore */
+      }
+      this.disposePrepared = null;
+      return;
+    }
+    try {
+      this.prepared.director.dispose();
+    } catch {
+      /* ignore */
+    }
     this.prepared.mixer.stopAllAction();
   }
 }
