@@ -160,6 +160,8 @@ Desktop/warlord-genesis  (source of truth)
   → Heavy / optional meshes → objectstore.grudge-studio.com
 ```
 
+**Vercel ships only the static game** (`.vercelignore` drops `artifacts/`, `attached_assets/`, `lib/`, `src/`, old `index-warlord-fix*.js`). Pin is `index.html` → `assets/gw-core-20260713.js` + `assets/index-BNWYZMT1.css`. Patch source `assets/index-warlord-fix2.js` stays in git for `scripts/patch-bundle.mjs` but is not uploaded.
+
 **Must be same-origin 200 (not CDN HTML):**
 
 - `/anims/baked/{pack}/…json` (unarmed idle/walk/run now in git)

@@ -1,3 +1,5 @@
+# Static host must not upload the monorepo source or scratch blobs.
+# Build still runs from scripts/ (not ignored). Runtime is index.html + /assets + /models + /anims.
 node_modules
 **/node_modules
 .local
@@ -7,3 +9,36 @@ dist
 .git
 .env
 .env.*
+
+# TypeScript / packages — not served
+/artifacts
+/attached_assets
+/lib
+/src
+/docs
+/api
+/.agents
+/cloudflared
+/data
+
+# Stale / duplicate bundles (index.html pins gw-core-20260713 + BNWYZMT1.css)
+/index-warlord-*.js
+/index.live.html
+/assets/index-warlord-fix2.js
+/assets/index-warlord-fix3.js
+/assets/index-warlord-fix95.js
+/assets/gw-core-20260712.js
+/assets/index-6j0oIJT4.js
+/assets/index-DPcBLl7t.js
+/assets/index-DHz6m5dU.css
+/assets/index-DXiNT7LA.css
+
+# Unused kit copies (game uses defaultcreeps + grudge6 + authored maps)
+/models/kaykit
+/models/units/defaultcreeps/_zip
+/public
+/icons
+
+# Dev-only
+replit.md
+*.tsbuildinfo

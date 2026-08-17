@@ -47,8 +47,21 @@ SYMBOL_MAP.json
 
 # Stale root-level bundle duplicate (canonical ship path is assets/gw-core-*.js)
 /gw-core-*.js
+/index-warlord-*.js
+/index.live.html
 
-# Bundle experiments (production is index-warlord-fix3.js; fix2 is patch source)
+# Leftover Vite content-hash bundles (never commit; production pin is gw-core + BNWYZMT1)
+assets/index-????????.js
+assets/index-????????.css
+!assets/index-BNWYZMT1.css
+
+# Local duplicate of /models (do not commit a second 100MB map copy)
+/public/
+
+# Scratch icon dump
+/icons/
+
+# Bundle experiments (fix2 is the only patch source; do not add more hashes)
 assets/index-warlord-fix3-live.js
 assets/index-warlord-hybrid.js
 assets/test-inject.js

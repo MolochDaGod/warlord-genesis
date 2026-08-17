@@ -37,7 +37,7 @@ Client façade: `artifacts/grudge-warlords/src/game/flareIslandContent.ts`
 
 - Units: `dark_elf_raider`, `dark_elf_assassin`, `dark_elf_sorceress`, `dark_elf_matriarch`
 - Visuals: Elf Free GLBs + purple/void **tint** (no Meshy)
-- Also registered in `src/grudge-warlords/engine/unitCatalog.ts` as `DARK_ELF_UNITS`
+- Also registered in `lib/world-content/src/flarePort/darkElves.ts` as `DARK_ELF_UNITS`
 
 ## Whisps
 
