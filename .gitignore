@@ -16,6 +16,10 @@ dist/
 .DS_Store
 Thumbs.db
 
+# Agent-generated concepts (Gemini / Tripo) — never ship keys or raw dumps
+/assets/concepts/
+/concepts/
+
 # Scratch / agent probes (never ship)
 .tmp-*
 tmp-*
