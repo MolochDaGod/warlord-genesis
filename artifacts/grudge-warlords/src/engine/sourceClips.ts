@@ -5,6 +5,7 @@
 import * as THREE from "three";
 import type { LocoClips } from "../game/animDirector";
 import { isPlayableClip } from "./assetVerify";
+import { classifyConceptClips } from "./threeAnim/conceptClips";
 
 export interface ClassifiedClips {
   idle: THREE.AnimationClip | null;
@@ -17,11 +18,6 @@ export interface ClassifiedClips {
 
 function norm(name: string): string {
   return name.toLowerCase().replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-}
-
-function hits(name: string, keys: string[]): boolean {
-  const n = norm(name);
-  return keys.some((k) => n.includes(k));
 }
 
 /** Pull playable clips off a loaded FBX/GLTF root (Three attaches them as `.animations`). */
@@ -46,39 +42,19 @@ export function clipsFromLoadedFile(
 }
 
 export function classifyNativeClips(clips: THREE.AnimationClip[]): ClassifiedClips {
-  const playable = clips.filter(isPlayableClip);
-  const used = new Set<THREE.AnimationClip>();
-
-  const take = (keys: string[]): THREE.AnimationClip | null => {
-    const hit = playable.find((c) => !used.has(c) && hits(c.name, keys));
-    if (hit) used.add(hit);
-    return hit ?? null;
-  };
-
-  const idle = take(["idle", "stand", "fight idle", "breath"]);
-  const walk = take(["walk", "walking"]);
-  const run = take(["run", "running", "jog"]);
-  const sprint = take(["sprint", "run fast", "charge"]);
-  const attack = take([
-    "attack",
-    "slash",
-    "strike",
-    "swing",
-    "punch",
-    "combo",
-    "cast",
-    "shoot",
-    "fire",
-    "shot",
-  ]);
-
+  const concept = classifyConceptClips(clips);
+  const used = new Set(
+    [concept.idle, concept.walk, concept.run, concept.sprint, concept.slash, concept.kick, concept.attack].filter(
+      Boolean,
+    ) as THREE.AnimationClip[],
+  );
   return {
-    idle,
-    walk,
-    run,
-    sprint,
-    attack,
-    extras: playable.filter((c) => !used.has(c)),
+    idle: concept.idle ?? null,
+    walk: concept.walk ?? null,
+    run: concept.run ?? null,
+    sprint: concept.sprint ?? null,
+    attack: concept.slash ?? concept.kick ?? concept.attack ?? null,
+    extras: clips.filter((c) => isPlayableClip(c) && !used.has(c)),
   };
 }
 

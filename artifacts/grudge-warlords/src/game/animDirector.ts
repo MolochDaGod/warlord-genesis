@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { lockGaitPhase, strideTimeScale } from "../engine/threeAnim/phaseLock";
 
 // ── Animation director ────────────────────────────────────────────────────────
 //
@@ -350,6 +351,16 @@ export class AnimationDirector {
       this.loco.sprint.setEffectiveWeight(w.sprint * locoScale);
     }
     if (this.overlay) this.overlay.setEffectiveWeight(this.overlayInf);
+
+    // Samurai Locomotion: walk is master gait; run/sprint share its phase.
+    // timeScale tracks implied ground speed so feet do not skate.
+    const toRun = THREE.MathUtils.clamp((this.gait - 0.34) / 0.66, 0, 1);
+    const stride = strideTimeScale(this.gait * 4.4, toRun);
+    this.loco.walk.timeScale = stride;
+    this.loco.run.timeScale = stride;
+    this.loco.sprint.timeScale = stride;
+    lockGaitPhase(this.loco.walk, this.loco.run);
+    lockGaitPhase(this.loco.walk, this.loco.sprint);
 
     this.mixer.update(delta);
   }

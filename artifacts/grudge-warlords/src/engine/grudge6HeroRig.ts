@@ -17,6 +17,7 @@ import {
   type PreparedGrudge6Character,
 } from "./grudge6Character";
 import { findNativeClip } from "./sourceClips";
+import { conceptClip, type ConceptId } from "./threeAnim";
 export { GRUDGE6_FACE_YAW };
 import { resolveHandBoneName } from "./mixamoRetarget";
 import {
@@ -200,8 +201,15 @@ export class Grudge6HeroRig {
     void this.setWeapon(animClass);
   }
 
-  /** Rooted / moving melee — returns clip duration (seconds) for combat lock. */
+  /** Rooted / moving melee — concept slash/kick first, then pack attack clip. */
   attack(): number {
+    if (this.playConcept("slash") || this.playConcept("kick") || this.playConcept("attack")) {
+      const c =
+        this.prepared.conceptClips?.slash ??
+        this.prepared.conceptClips?.kick ??
+        this.prepared.attackClip;
+      return Math.max(0.35, c?.duration ?? 0.55);
+    }
     const clip = this.prepared.attackClip;
     const dur = Math.max(0.35, clip?.duration ?? 0.55);
     this.prepared.director.requestOneShot(clip, { fade: 0.08, timeScale: 1 });
@@ -235,6 +243,19 @@ export class Grudge6HeroRig {
         }
       }),
     );
+  }
+
+  /**
+   * Play a named concept clip (slash / kick / jump / land) if the file has it.
+   * Samurai template: one-shot overlay, loco keeps blending underneath.
+   */
+  playConcept(id: ConceptId, blend = 0.92): boolean {
+    const clip =
+      this.prepared.conceptClips?.[id] ??
+      conceptClip(this.prepared.sourceClips ?? [], id);
+    if (!clip) return false;
+    this.prepared.director.requestOneShot(clip, { fade: 0.1, blend });
+    return true;
   }
 
   /** Play a skill clip through the AnimationDirector overlay channel. */

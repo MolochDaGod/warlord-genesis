@@ -27,6 +27,7 @@ import {
   clipsFromLoadedFile,
   locoFromNativeClips,
 } from "./sourceClips";
+import { classifyConceptClips, freezeHipsTravel } from "./threeAnim";
 
 const fbxLoader = new FBXLoader();
 const gltfLoader = new GLTFLoader();
@@ -600,6 +601,8 @@ export interface PreparedGrudge6Character {
   attackClip: THREE.AnimationClip;
   /** Clips that shipped on the GLB/FBX — bind these, do not invent empties. */
   sourceClips: THREE.AnimationClip[];
+  /** Samurai/Mixamo concept map (slash, kick, jump…) from the same file. */
+  conceptClips?: Partial<Record<string, THREE.AnimationClip>>;
   sourceUrl?: string;
   verify?: AssetVerifyReport;
   /** @deprecated Use `director` — kept for lane-guard fallback crossfades. */
@@ -648,12 +651,13 @@ async function loadPackBundle(
   // Native file clips first — they already target this skeleton.
   const nativeLoco = locoFromNativeClips(nativeClips);
   const nativeAtk = attackFromNativeClips(nativeClips);
+  const plant = (c: THREE.AnimationClip | null) => (c ? freezeHipsTravel(c, root) : null);
 
-  let idleClip = nativeLoco?.idle ?? null;
-  let walkClip = nativeLoco?.walk ?? null;
-  let runClip = nativeLoco?.run ?? null;
-  let sprintClip = nativeLoco?.sprint ?? null;
-  let attackClip = nativeAtk;
+  let idleClip = plant(nativeLoco?.idle ?? null);
+  let walkClip = plant(nativeLoco?.walk ?? null);
+  let runClip = plant(nativeLoco?.run ?? null);
+  let sprintClip = plant(nativeLoco?.sprint ?? null);
+  let attackClip = plant(nativeAtk);
 
   if (!nativeLoco) {
     const loco = LOCO_BAKED_BY_PACK[pack];
@@ -762,6 +766,7 @@ export async function loadGrudge6CharacterInstance(
     director: bundle.director,
     attackClip: bundle.attackClip,
     sourceClips,
+    conceptClips: shared.conceptClips ?? classifyConceptClips(sourceClips),
     sourceUrl: shared.sourceUrl,
     verify: shared.verify,
     actions: bundle.actions,
@@ -843,6 +848,7 @@ async function prepareFromGltfRoot(
     director: bundle.director,
     attackClip: bundle.attackClip,
     sourceClips,
+    conceptClips: classifyConceptClips(sourceClips),
     sourceUrl: opts.sourceUrl,
     verify,
     actions: bundle.actions,
@@ -983,6 +989,7 @@ async function buildCharacter(
     director: bundle.director,
     attackClip: bundle.attackClip,
     sourceClips,
+    conceptClips: classifyConceptClips(sourceClips),
     sourceUrl: fbxFile.url,
     verify,
     actions: bundle.actions,
