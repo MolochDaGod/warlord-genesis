@@ -111,6 +111,7 @@ export async function fetchUserFromToken(token: string): Promise<GrudgeUser> {
   const res = await fetch("/api/grudge/auth/me", {
     credentials: "same-origin",
     headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
   });
   if (res.ok) {
     const me = (await res.json()) as Record<string, unknown>;
@@ -121,6 +122,7 @@ export async function fetchUserFromToken(token: string): Promise<GrudgeUser> {
   const fleet = await fetch("/api/auth/me", {
     credentials: "same-origin",
     headers: { Authorization: `Bearer ${token}` },
+    cache: "no-store",
   });
   if (fleet.ok) {
     const me = (await fleet.json()) as Record<string, unknown>;
