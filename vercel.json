@@ -6,18 +6,18 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b21",
-      "permanent": true
+      "destination": "/assets/gw-core-20260713.js?h=b26",
+      "permanent": false
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/gw-core-20260713.js?h=b21",
-      "permanent": true
+      "destination": "/assets/gw-core-20260713.js?h=b26",
+      "permanent": false
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/gw-core-20260713.js?h=b21",
-      "permanent": true
+      "destination": "/assets/gw-core-20260713.js?h=b26",
+      "permanent": false
     }
   ],
   "headers": [
@@ -27,6 +27,10 @@
         {
           "key": "Cache-Control",
           "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
         },
         {
           "key": "Pragma",
@@ -42,8 +46,25 @@
           "value": "no-store, no-cache, must-revalidate, max-age=0"
         },
         {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        },
+        {
           "key": "Pragma",
           "value": "no-cache"
+        }
+      ]
+    },
+    {
+      "source": "/play",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
         }
       ]
     },
@@ -53,6 +74,10 @@
         {
           "key": "Cache-Control",
           "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
         }
       ]
     },
@@ -83,6 +108,84 @@
         {
           "key": "Pragma",
           "value": "no-cache"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/assets/index-BNWYZMT1.css",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/grudge-game-bootstrap.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/sdk/grudge-sdk.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/assets/index-warlord-fix3.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/index-warlord-fix3.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
+        },
+        {
+          "key": "CDN-Cache-Control",
+          "value": "no-store"
+        }
+      ]
+    },
+    {
+      "source": "/assets/index-warlord-fix95.js",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store, no-cache, must-revalidate, max-age=0"
         },
         {
           "key": "CDN-Cache-Control",

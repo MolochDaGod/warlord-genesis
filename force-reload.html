@@ -27,13 +27,12 @@
             var keys = await caches.keys();
             await Promise.all(keys.map(function (k) { return caches.delete(k); }));
           }
-          // Try to evict the dead module from HTTP cache by fetching the new core.
-          await fetch("/assets/gw-core-20260713.js?h=b21", { cache: "reload" }).catch(function () {});
+          await fetch("/assets/gw-core-20260713.js?h=b26", { cache: "reload" }).catch(function () {});
           s.textContent = "Redirecting…";
         } catch (e) {
           s.textContent = "Redirecting…";
         }
-        location.replace("/?fresh=" + Date.now());
+        location.replace("/play?h=b26");
       })();
     </script>
   </body>
