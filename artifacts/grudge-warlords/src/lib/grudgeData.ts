@@ -132,7 +132,7 @@ export async function loadDataset(key: DatasetKey): Promise<GrudgeDataset> {
   let lastErr: Error | null = null;
   for (const base of DATA_BASES) {
     try {
-      const res = await fetch(`${base}/${key}.json`, { credentials: "omit" });
+      const res = await fetch(`${base}/${key}.json`, { credentials: "omit", cache: "no-store" });
       if (!res.ok) {
         lastErr = new Error(`Failed to load ${key} from ${base} (${res.status})`);
         continue;

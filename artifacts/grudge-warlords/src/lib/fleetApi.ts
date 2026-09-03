@@ -19,6 +19,7 @@ export async function fleetGet<T = unknown>(path: string): Promise<{ ok: boolean
     const res = await fetch(path.startsWith("/") ? path : `/${path}`, {
       headers: fleetAuthHeaders(),
       credentials: "include",
+      cache: "no-store",
     });
     const data = (await res.json().catch(() => null)) as T | null;
     if (!res.ok) {
@@ -43,6 +44,7 @@ export async function fleetPost<T = unknown>(
       method: "POST",
       headers: fleetAuthHeaders({ "Content-Type": "application/json" }),
       credentials: "include",
+      cache: "no-store",
       body: body !== undefined ? JSON.stringify(body) : undefined,
     });
     const data = (await res.json().catch(() => null)) as T | null;
