@@ -3,7 +3,7 @@
   "site": "https://warlord-genesis.vercel.app",
   "buildMode": "gw-core",
   "bundleVersion": 20260718,
-  "bundleCacheHash": "b21",
+  "bundleCacheHash": "b26",
   "bundleFile": "assets/gw-core-20260713.js",
   "bundleChecks": [
     {
@@ -118,8 +118,6 @@
     "favicon.svg",
     "vercel.json",
     "assets/gw-core-20260713.js",
-    "assets/index-warlord-fix95.js",
-    "assets/index-warlord-fix3.js",
     "assets/index-BNWYZMT1.css",
     "textures/ground_diff.jpg",
     "textures/ground_nor.jpg",
@@ -728,8 +726,8 @@
     }
   ],
   "lastBuilt": "2026-07-19T07:31:41.339Z",
-  "bundleBytes": 4148392,
-  "bundleSha256": "b667cc7ea0a89733",
+  "bundleBytes": 4144701,
+  "bundleSha256": "33296519e5e27941",
   "sites": [
     "https://warlord-genesis.vercel.app",
     "https://warstrat.grudge-studio.com"
