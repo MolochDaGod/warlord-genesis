@@ -1,0 +1,162 @@
+{
+  "ok": true,
+  "service": "warlord-genesis-play-kit",
+  "generatedAt": "2026-08-27T00:31:21.528Z",
+  "toon": {
+    "cdn": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters",
+    "races": {
+      "human": {
+        "ok": true,
+        "status": 200,
+        "bytes": 869196
+      },
+      "barbarian": {
+        "ok": true,
+        "status": 200,
+        "bytes": 1022160
+      },
+      "elf": {
+        "ok": true,
+        "status": 200,
+        "bytes": 1117044
+      },
+      "dwarf": {
+        "ok": true,
+        "status": 200,
+        "bytes": 964580
+      },
+      "orc": {
+        "ok": true,
+        "status": 200,
+        "bytes": 977564
+      },
+      "undead": {
+        "ok": true,
+        "status": 200,
+        "bytes": 1025524
+      }
+    }
+  },
+  "hud": {
+    "kit": "/assets/ui-kit/craftpix",
+    "ok": true,
+    "files": [
+      {
+        "path": "/assets/ui-kit/craftpix/Action%20Bar/ActionBar_Main_Background.png",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "path": "/assets/ui-kit/craftpix/Action%20Bar/Slots/ActionBar_Slot_Background.png",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "path": "/assets/ui-kit/craftpix/Action%20Bar/Globes/ActionBar_Globe_Background.png",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "path": "/assets/ui-kit/craftpix/Action%20Bar/XP%20Bar/ActionBar_XP_Fill.png",
+        "ok": true,
+        "status": 200
+      },
+      {
+        "path": "/assets/ui-kit/craftpix/Minimap/Minimap_Overlay.png",
+        "ok": true,
+        "status": 200
+      }
+    ]
+  },
+  "anims": {
+    "idle": "https://open.grudge-studio.com/anims/baked/greatsword_samurai/gs_samurai_idle_sword.json",
+    "ok": true,
+    "status": 200
+  },
+  "checks": [
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/human.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 931,
+      "bytes": 869196
+    },
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/barbarian.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 459,
+      "bytes": 1022160
+    },
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/elf.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 451,
+      "bytes": 1117044
+    },
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/dwarf.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 459,
+      "bytes": 964580
+    },
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/orc.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 459,
+      "bytes": 977564
+    },
+    {
+      "url": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/undead.glb",
+      "ok": true,
+      "status": 200,
+      "ms": 454,
+      "bytes": 1025524
+    },
+    {
+      "url": "https://warlord-genesis.vercel.app/assets/ui-kit/craftpix/Action%20Bar/ActionBar_Main_Background.png",
+      "ok": true,
+      "status": 200,
+      "ms": 411,
+      "bytes": 28475
+    },
+    {
+      "url": "https://warlord-genesis.vercel.app/assets/ui-kit/craftpix/Action%20Bar/Slots/ActionBar_Slot_Background.png",
+      "ok": true,
+      "status": 200,
+      "ms": 400,
+      "bytes": 16800
+    },
+    {
+      "url": "https://warlord-genesis.vercel.app/assets/ui-kit/craftpix/Action%20Bar/Globes/ActionBar_Globe_Background.png",
+      "ok": true,
+      "status": 200,
+      "ms": 412,
+      "bytes": 87517
+    },
+    {
+      "url": "https://warlord-genesis.vercel.app/assets/ui-kit/craftpix/Action%20Bar/XP%20Bar/ActionBar_XP_Fill.png",
+      "ok": true,
+      "status": 200,
+      "ms": 414,
+      "bytes": 21281
+    },
+    {
+      "url": "https://warlord-genesis.vercel.app/assets/ui-kit/craftpix/Minimap/Minimap_Overlay.png",
+      "ok": true,
+      "status": 200,
+      "ms": 392,
+      "bytes": 79938
+    },
+    {
+      "url": "https://open.grudge-studio.com/anims/baked/greatsword_samurai/gs_samurai_idle_sword.json",
+      "ok": true,
+      "status": 200,
+      "ms": 546,
+      "bytes": null
+    }
+  ]
+}

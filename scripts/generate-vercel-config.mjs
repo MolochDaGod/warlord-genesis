@@ -82,6 +82,14 @@ const OBJECTSTORE_MODEL_PREFIXES = [
 const ASSET_CDN = "https://client.grudge-studio.com";
 
 const rewrites = [
+  // Destination MUST NOT start with /api — fleet catch-all /api/:path* would
+  // send /api/v1/play-kit.json to Railway (Express 404). Static catalog lives at /v1/.
+  { source: "/api/v1/play-kit", destination: "/v1/play-kit.json" },
+  { source: "/api/v1/play-kit.json", destination: "/v1/play-kit.json" },
+  { source: "/api/v1/health", destination: "/v1/health.json" },
+  { source: "/api/v1/health.json", destination: "/v1/health.json" },
+  // Genesis API health lives at /api/health — not /api/grudge/health.
+  { source: "/api/grudge/health", destination: `${WARLORD_API}/api/health` },
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
   // Fixed tower GLBs ship from this deploy ΓÇö CDN copies are Assimp/non-standard and crash GLTFLoader.
   {
@@ -195,7 +203,7 @@ rewrites.push(
   { source: "/warlord", destination: "/index.html" },
   // SPA fallback — must exclude static asset dirs so /models/*.glb is never HTML
   {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
+    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|v1/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
     destination: "/index.html",
   },
 );
@@ -261,6 +269,20 @@ const config = {
         { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
         { key: "Pragma", value: "no-cache" },
         { key: "CDN-Cache-Control", value: "no-store" },
+      ],
+    },
+    {
+      source: "/api/v1/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
+      ],
+    },
+    {
+      source: "/v1/(.*)",
+      headers: [
+        { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
+        { key: "Content-Type", value: "application/json; charset=utf-8" },
       ],
     },
     {

@@ -28,7 +28,7 @@ export function TreatyPanel() {
   const [loading, setLoading] = useState(false);
 
   const load = useCallback(async () => {
-    if (!user || user.role === "guest") return;
+    if (!user) return;
     setLoading(true);
     setErr(null);
     const [soc, ch] = await Promise.all([
@@ -49,7 +49,7 @@ export function TreatyPanel() {
   }, [user, slug]);
 
   const loadMessages = useCallback(async () => {
-    if (!slug || !user || user.role === "guest") return;
+    if (!slug || !user) return;
     const res = await fleetGet<{ messages?: Message[] }>(
       `/api/treaty/servers/${encodeURIComponent(slug)}/messages?limit=40`,
     );
@@ -85,17 +85,6 @@ export function TreatyPanel() {
           <strong>Treaty</strong> is account-level friends, DMs, and fleet chat (Railway Postgres).
           Sign in with Grudge ID — same social graph in every game.
         </p>
-      </div>
-    );
-  }
-
-  if (user.role === "guest") {
-    return (
-      <div className="gw-hub-body">
-        <p className="gw-account-hint">Guests cannot use Treaty. Sign in to join fleet server chat.</p>
-        <a className="gw-btn gw-btn-ghost" href={studioHubUrl("treaty")} target="_blank" rel="noreferrer">
-          Open studio Treaty →
-        </a>
       </div>
     );
   }

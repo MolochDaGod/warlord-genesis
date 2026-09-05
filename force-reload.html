@@ -27,12 +27,13 @@
             var keys = await caches.keys();
             await Promise.all(keys.map(function (k) { return caches.delete(k); }));
           }
-          await fetch("/assets/gw-core-20260713.js?h=b26", { cache: "reload" }).catch(function () {});
+          await fetch("/assets/gw-core-20260713.js?h=b29", { cache: "reload" }).catch(function () {});
+          await fetch("/v1/play-kit.json", { cache: "reload" }).catch(function () {});
           s.textContent = "Redirecting…";
         } catch (e) {
           s.textContent = "Redirecting…";
         }
-        location.replace("/play?h=b26");
+        location.replace("/play?h=b29");
       })();
     </script>
   </body>

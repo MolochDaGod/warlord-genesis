@@ -26,7 +26,11 @@ type GrudgeStudioSDKCtor = new (opts: { token: string }) => GrudgeStudioSDK;
 
 export function getStudioToken(): string | null {
   try {
-    return localStorage.getItem(TOKEN_KEY);
+    return (
+      localStorage.getItem(TOKEN_KEY) ||
+      localStorage.getItem("sso_token") ||
+      localStorage.getItem("grudge_session_token")
+    );
   } catch {
     return null;
   }
@@ -35,8 +39,8 @@ export function getStudioToken(): string | null {
 export function setStudioToken(token: string): void {
   try {
     localStorage.setItem(TOKEN_KEY, token);
-    // Fleet aliases so other tabs / bootstrap scripts see the same session
     localStorage.setItem("sso_token", token);
+    localStorage.setItem("grudge_session_token", token);
   } catch {
     // Storage unavailable — token lives only for this tab session.
   }
@@ -46,6 +50,7 @@ function clearStudioToken(): void {
   try {
     localStorage.removeItem(TOKEN_KEY);
     localStorage.removeItem("sso_token");
+    localStorage.removeItem("grudge_session_token");
   } catch {
     // ignore
   }
@@ -139,7 +144,7 @@ export async function fetchUserFromToken(token: string): Promise<GrudgeUser> {
     return await fetchStudioUserViaSdk(token);
   } catch {
     throw new Error(
-      `Could not load profile (${res.status}). Sign in again or continue as guest.`,
+      `Could not load profile (${res.status}). Sign in with Grudge ID.`,
     );
   }
 }

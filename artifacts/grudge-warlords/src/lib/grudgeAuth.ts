@@ -1,7 +1,5 @@
-// Grudge account client. The primary login is Grudge Studio SSO (see
-// `grudgeStudio.ts`). This module keeps the guest path (server-owned, signed
-// cookie) plus the shared GrudgeUser shape and the server `getMe`/`logout`
-// helpers used to restore/close a guest session.
+// Grudge account client. Login is Grudge Studio SSO only (`grudgeStudio.ts`).
+// getMe/logout restore or close a signed Railway session — no guest mint.
 
 const AUTH_BASE = "/api/grudge/auth";
 
@@ -15,62 +13,15 @@ export interface GrudgeUser {
   role: string;
   needsProfile?: boolean;
   isNew?: boolean;
-  /** Present on guest/puter responses — persist for fleet hydrate */
   token?: string;
 }
 
-async function post(path: string, body?: unknown): Promise<GrudgeUser> {
-  const res = await fetch(`${AUTH_BASE}${path}`, {
-    method: "POST",
-    // X-Grudge-Client marks this as a first-party request; the server rejects
-    // auth-mutating POSTs that lack it (CSRF / session-forcing defense).
-    headers: { "Content-Type": "application/json", "X-Grudge-Client": "web" },
-    body: body ? JSON.stringify(body) : "{}",
-    credentials: "same-origin",
-  });
-  const data = (await res.json()) as GrudgeUser & { error?: string };
-  if (!res.ok) throw new Error(data.error || `Request failed (${res.status})`);
-  // Persist JWT so /api/characters + restore work across reloads
-  if (data.token) {
-    try {
-      localStorage.setItem("grudge_auth_token", data.token);
-      localStorage.setItem("sso_token", data.token);
-    } catch {
-      /* ignore */
-    }
-  }
-  return data;
-}
-
-let deviceId = "";
-function getDeviceId(): string {
-  if (deviceId) return deviceId;
-  try {
-    const stored =
-      localStorage.getItem("grudge_device_id") ||
-      localStorage.getItem("gw_device_id");
-    if (stored) {
-      deviceId = stored;
-      return deviceId;
-    }
-    deviceId = `gw-${crypto.randomUUID()}`;
-    localStorage.setItem("grudge_device_id", deviceId);
-    localStorage.setItem("gw_device_id", deviceId);
-  } catch {
-    deviceId = `gw-${Math.random().toString(36).slice(2)}`;
-  }
-  return deviceId;
-}
-
-export function loginGuest(): Promise<GrudgeUser> {
-  return post("/guest", { deviceId: getDeviceId() });
-}
-
 export async function getMe(): Promise<GrudgeUser | null> {
-  // Prefer Studio JWT when present so SSO restores without a guest cookie.
   let token: string | null = null;
   try {
-    token = localStorage.getItem("grudge_auth_token");
+    token =
+      localStorage.getItem("grudge_auth_token") ||
+      localStorage.getItem("sso_token");
   } catch {
     /* ignore */
   }
@@ -81,7 +32,7 @@ export async function getMe(): Promise<GrudgeUser | null> {
     credentials: "same-origin",
     headers,
   });
-  // 401 = not signed in (expected for guests) — do not throw
+  // 401 = not signed in — do not throw
   if (!res.ok) return null;
   return (await res.json()) as GrudgeUser;
 }

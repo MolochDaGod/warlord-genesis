@@ -1,8 +1,10 @@
 import cors from "cors";
 import express from "express";
+import { existsSync, readFileSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   canonicalActiveCharacter,
-  canonicalGuest,
   canonicalMe,
   canonicalPuterLogin,
   mapActiveCharacter,
@@ -15,6 +17,7 @@ const PORT = Number(process.env.PORT) || 8787;
 
 const allowedOrigins = [
   "https://warlord-genesis.vercel.app",
+  "https://genesis.grudge.studio",
   "https://warstrat.grudge-studio.com",
   "https://www.warstrat.grudge-studio.com",
   "https://grudgewarlords.com",
@@ -54,38 +57,42 @@ function setAuthCookie(res, token) {
   );
 }
 
-app.get("/api/health", (_req, res) => {
+function readPlayKitFile() {
+  try {
+    const p = join(dirname(fileURLToPath(import.meta.url)), "..", "v1", "play-kit.json");
+    if (existsSync(p)) return JSON.parse(readFileSync(p, "utf8"));
+  } catch {
+    /* pipeline JSON optional on Railway */
+  }
+  return null;
+}
+
+function sendGenesisHealth(_req, res) {
+  const kit = readPlayKitFile();
   res.json({
     ok: true,
     service: "warlord-genesis-api",
     database: Boolean(process.env.DATABASE_URL),
     canonical: process.env.GRUDGE_API_URL || "grudge-api-production",
+    playKit: kit ? Boolean(kit.ok) : null,
+    generatedAt: kit?.generatedAt,
   });
+}
+
+app.get(["/api/health", "/api/v1/health", "/api/grudge/health"], sendGenesisHealth);
+
+app.get("/api/v1/play-kit", (_req, res) => {
+  const kit = readPlayKitFile();
+  if (!kit) {
+    return res.status(503).json({ ok: false, error: "play-kit catalog missing — run assets:pipeline" });
+  }
+  res.json(kit);
 });
 
-/** Auth adapter — bundle expects flat user objects */
-app.post("/api/grudge/auth/guest", async (req, res) => {
-  try {
-    const deviceId = req.body?.deviceId || null;
-    const canonical = await canonicalGuest(req, deviceId);
-    const token = canonical.token || canonical.sessionToken;
-    if (token) setAuthCookie(res, token);
-
-    const user = mapBundleUser(canonical, "guest");
-    if (token) user.token = token;
-    if (deviceId) {
-      await upsertPlayerSave({
-        grudgeId: user.grudgeId,
-        userId: canonical.userId || canonical.user?.id,
-        deviceId,
-        role: "guest",
-        save: {},
-      });
-    }
-    res.json(user);
-  } catch (err) {
-    res.status(500).json({ error: err.message || "Guest auth failed" });
-  }
+app.post("/api/grudge/auth/guest", (_req, res) => {
+  res.status(410).json({
+    error: "Guest login removed. Sign in with Grudge ID (id.grudge-studio.com).",
+  });
 });
 
 app.post("/api/grudge/auth/puter", async (req, res) => {
@@ -396,6 +403,7 @@ app.get("/api/grudge/fleet", (_req, res) => {
     production: true,
     origins: [
       "https://warlord-genesis.vercel.app",
+      "https://genesis.grudge.studio",
       "https://warstrat.grudge-studio.com",
     ],
     connections: {

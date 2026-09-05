@@ -19,6 +19,7 @@ import {
   runCapabilityPreflight,
   type CapabilityReport,
 } from "../lib/capabilities";
+import { fleetGet } from "../lib/fleetApi";
 import "../components/ui/collection.css";
 
 type BootState = "checking" | "ready" | "blocked";
@@ -147,6 +148,7 @@ export function Play() {
   const [boot, setBoot] = useState<BootState>("checking");
   const [gateErr, setGateErr] = useState("");
   const [caps, setCaps] = useState<CapabilityReport | null>(null);
+  const [kitLine, setKitLine] = useState("play kit · Toon RTS · CraftPix");
   const bootAttempted = useRef(false);
 
   const quick =
@@ -158,6 +160,21 @@ export function Play() {
 
   useEffect(() => {
     void bootEngine();
+    void fleetGet<{ ok?: boolean; toon?: { races?: Record<string, { ok?: boolean }> } }>(
+      "/v1/play-kit.json",
+    ).then((r) => {
+      if (!r.ok || !r.data) {
+        setKitLine("play kit unreachable · using local kit");
+        return;
+      }
+      const races = r.data.toon?.races || {};
+      const n = Object.values(races).filter((x) => x?.ok).length;
+      setKitLine(
+        r.data.ok
+          ? `play kit ready · ${n}/6 Toon GLBs`
+          : "play kit degraded · Toon/HUD HEAD failed",
+      );
+    });
   }, []);
 
   useEffect(() => {
@@ -239,6 +256,9 @@ export function Play() {
         <div className="gw-play-boot-inner">
           <span className="gw-play-boot-spinner" aria-hidden />
           <span className="gw-hint">Arming warcamp · entering the field…</span>
+          <span className="gw-hint" style={{ opacity: 0.7, marginTop: 8, fontSize: 12 }}>
+            {kitLine}
+          </span>
           {caps && (
             <span className="gw-hint" style={{ opacity: 0.65, marginTop: 8, fontSize: 12 }}>
               WebGL {caps.webgl.ok ? "ok" : "fail"} · WebGPU {caps.webgpu ? "available" : "n/a"}

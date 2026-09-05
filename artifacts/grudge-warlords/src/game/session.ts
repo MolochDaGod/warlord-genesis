@@ -2,7 +2,6 @@ import { create } from "zustand";
 import {
   type GrudgeUser,
   getMe,
-  loginGuest,
   logout as apiLogout,
 } from "../lib/grudgeAuth";
 import {
@@ -19,7 +18,6 @@ interface SessionState {
   error: string | null;
 
   restore: () => Promise<void>;
-  guest: () => Promise<void>;
   signInWithStudio: () => Promise<void>;
   signOut: () => Promise<void>;
   clearError: () => void;
@@ -66,7 +64,6 @@ export const useSession = create<SessionState>((set) => ({
   restore: async () => {
     set({ loading: true });
     try {
-      // Prefer a stored Grudge Studio session; fall back to a server guest cookie.
       const studio = await restoreGrudgeStudio();
       if (studio) {
         await hydrateMetaFromServer();
@@ -94,7 +91,6 @@ export const useSession = create<SessionState>((set) => ({
       set({ user: null, loading: false });
     }
   },
-  guest: () => run(set, loginGuest),
   signInWithStudio: () => run(set, loginWithGrudgeStudio),
   signOut: async () => {
     logoutGrudgeStudio();

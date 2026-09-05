@@ -36,7 +36,6 @@ export function Intro() {
   const loading = useSession((s) => s.loading);
   const error = useSession((s) => s.error);
   const signInWithStudio = useSession((s) => s.signInWithStudio);
-  const guest = useSession((s) => s.guest);
   const restore = useSession((s) => s.restore);
   const clearError = useSession((s) => s.clearError);
   const [booting, setBooting] = useState(true);
@@ -75,17 +74,6 @@ export function Intro() {
   const onRedirectLogin = () => {
     clearError();
     loginWithRedirect("/auth/callback");
-  };
-
-  const onGuest = async () => {
-    clearError();
-    setBusy(true);
-    try {
-      await guest();
-      afterAuth();
-    } finally {
-      setBusy(false);
-    }
   };
 
   const onContinue = () => {
@@ -179,14 +167,6 @@ export function Intro() {
                 onClick={onRedirectLogin}
               >
                 Full-page sign-in
-              </button>
-              <button
-                type="button"
-                className="gw-btn gw-btn-ghost gw-btn-mini"
-                disabled={busy}
-                onClick={() => void onGuest()}
-              >
-                Guest (local season)
               </button>
             </>
           )}

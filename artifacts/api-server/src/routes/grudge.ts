@@ -124,39 +124,10 @@ router.post("/grudge/auth/puter", requireFirstParty, async (req, res) => {
   }
 });
 
-// Lightweight guest accounts, keyed by a client-generated device id.
-router.post("/grudge/auth/guest", requireFirstParty, async (req, res) => {
-  const body = (req.body ?? {}) as Record<string, unknown>;
-  const deviceId =
-    typeof body["deviceId"] === "string" && body["deviceId"].length > 0
-      ? body["deviceId"]
-      : `gw-${randomUUID()}`;
-
-  try {
-    const grudgeId = deriveGrudgeId(`guest:${deviceId}`);
-    const upserted = await db
-      .insert(grudgeUsersTable)
-      .values({
-        deviceId,
-        grudgeId,
-        displayName: `Warlord ${grudgeId.slice(-4)}`,
-        gbuxBalance: STARTING_GBUX_GUEST,
-        role: "guest",
-      })
-      .onConflictDoUpdate({
-        target: grudgeUsersTable.deviceId,
-        set: { updatedAt: new Date() },
-      })
-      .returning();
-    const row = upserted[0]!;
-    const isNew = row.createdAt.getTime() === row.updatedAt.getTime();
-
-    setSessionCookie(res, row.id);
-    res.json(toGrudgeUser(row, isNew));
-  } catch (err) {
-    req.log.error({ err }, "Guest sign-in failed");
-    res.status(500).json({ error: "Could not start a guest session" });
-  }
+router.post("/grudge/auth/guest", requireFirstParty, (_req, res) => {
+  res.status(410).json({
+    error: "Guest login removed. Sign in with Grudge ID.",
+  });
 });
 
 router.get("/grudge/auth/me", async (req, res) => {

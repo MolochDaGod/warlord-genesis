@@ -18,7 +18,7 @@ export function WalletPanel() {
   const [msg, setMsg] = useState<string | null>(null);
 
   const refresh = useCallback(async () => {
-    if (!user || user.role === "guest") {
+    if (!user) {
       setStatus(null);
       setResources(null);
       setErr(null);
@@ -74,20 +74,6 @@ export function WalletPanel() {
           Sign in with <strong>Grudge ID</strong> to open your account-scope wallet (GBUX, Solana).
           Player SSOT is Railway Postgres — same bag across Warlords, crafting, and this warcamp.
         </p>
-      </div>
-    );
-  }
-
-  if (user.role === "guest") {
-    return (
-      <div className="gw-hub-body">
-        <p className="gw-account-hint">
-          Guests have no fleet wallet. Sign in with Grudge ID to use Railway{" "}
-          <code>/api/wallet</code> and shared GBUX.
-        </p>
-        <a className="gw-btn gw-btn-ghost" href={studioHubUrl("wallet")} target="_blank" rel="noreferrer">
-          Open studio hub wallet →
-        </a>
       </div>
     );
   }

@@ -9,7 +9,7 @@
     <meta property="og:title" content="Warlord Genesis MOBA - Grudge Studio" />
     <meta property="og:description" content="Enter the warcamp. Pick your champion. Siege three lanes. Production fleet live." />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://warstrat.grudge-studio.com" />
+    <meta property="og:url" content="https://warlord-genesis.vercel.app" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content="Warlord Genesis MOBA" />
     <meta name="twitter:description" content="Three-lane RTS warcamp - Grudge Studio production" />
@@ -25,10 +25,12 @@
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <!-- h=b26: cache purge + boot splash + smooth load fix -->
+    <!-- h=b29: play-kit static /v1 · Grudge ID only -->
     <link rel="preconnect" href="https://assets.grudge-studio.com" crossorigin />
-    <link rel="preload" as="style" href="/assets/index-BNWYZMT1.css?h=b26" />
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b26" />
+    <link rel="preload" as="style" href="/assets/index-BNWYZMT1.css?h=b29" />
+    <link rel="preload" as="script" href="/assets/gw-core-20260713.js?h=b29" />
+    <link rel="preload" as="image" href="/assets/ui-kit/craftpix/Action%20Bar/ActionBar_Main_Background.png" />
+    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b29" />
     <style>
       #gw-boot{position:fixed;inset:0;z-index:1;display:grid;place-items:center;background:#080c14;color:#e8eef8;font-family:Cinzel,Georgia,serif;text-align:center;padding:24px}
       #gw-boot .spin{width:36px;height:36px;margin:0 auto 16px;border:2px solid #2a3548;border-top-color:#e0b252;border-radius:50%;animation:gwboot .7s linear infinite}
@@ -102,7 +104,7 @@
     </script>
     <script>
       (function () {
-        fetch("/api/v1/play-kit", { cache: "no-store" })
+        fetch("/v1/play-kit.json")
           .then(function (r) { return r.json(); })
           .then(function (d) {
             var el = document.getElementById("gw-boot-sub");
@@ -115,8 +117,8 @@
       })();
     </script>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="/grudge-game-bootstrap.js?h=b26"></script>
-    <link rel="modulepreload" href="/sdk/grudge-sdk.js?h=b26" />
-    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b26"></script>
+    <script src="/grudge-game-bootstrap.js?h=b29"></script>
+    <link rel="modulepreload" href="/sdk/grudge-sdk.js?h=b29" />
+    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b29"></script>
   </body>
 </html>

@@ -1,7 +1,7 @@
 import { useSession } from "../../game/session";
 
 export function AuthPanel() {
-  const { user, loading, error, guest, signInWithStudio, signOut } =
+  const { user, loading, error, signInWithStudio, signOut } =
     useSession();
 
   if (user) {
@@ -26,12 +26,6 @@ export function AuthPanel() {
               </span>
             </div>
           </div>
-          {user.role === "guest" && (
-            <p className="gw-account-hint">
-              Guest progress stays on this device. Sign in with Grudge Studio to
-              keep characters and unlocks across games.
-            </p>
-          )}
           <button
             type="button"
             className="gw-btn gw-btn-ghost"
@@ -71,19 +65,6 @@ export function AuthPanel() {
       </button>
       <p className="gw-account-hint" style={{ marginTop: 8 }}>
         Opens id.grudge-studio.com. Allow popups, or use full-page redirect if blocked.
-      </p>
-
-      <div className="gw-or">or</div>
-      <button
-        type="button"
-        className="gw-btn gw-btn-ghost"
-        onClick={guest}
-        disabled={loading}
-      >
-        Continue as guest
-      </button>
-      <p className="gw-account-hint" style={{ marginTop: 6 }}>
-        Guest saves progress on this device (JWT stored) — enough for warcamp &amp; skirmish.
       </p>
     </div>
   );
