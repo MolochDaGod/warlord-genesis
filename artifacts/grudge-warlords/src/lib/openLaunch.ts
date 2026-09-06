@@ -18,9 +18,22 @@ export interface OpenLaunchState {
   active: boolean;
 }
 
+const OPEN_ALIASES: Record<string, string[]> = {
+  [KEYS.characterId]: ["grudge.open.selectedCharacterId", "grudge.open.characterId"],
+  [KEYS.raceId]: ["grudge.open.raceId"],
+  [KEYS.baseId]: ["grudge.open.baseId"],
+  [KEYS.flag]: ["grudge.open.launch"],
+};
+
 function read(key: string): string | null {
   try {
-    return sessionStorage.getItem(key) || localStorage.getItem(key);
+    const direct = sessionStorage.getItem(key) || localStorage.getItem(key);
+    if (direct) return direct;
+    for (const alt of OPEN_ALIASES[key] || []) {
+      const v = sessionStorage.getItem(alt) || localStorage.getItem(alt);
+      if (v) return v;
+    }
+    return null;
   } catch {
     return null;
   }
@@ -38,10 +51,20 @@ export function captureOpenLaunchQuery(): void {
     if (cid) {
       sessionStorage.setItem(KEYS.characterId, cid);
       localStorage.setItem(KEYS.characterId, cid);
+      sessionStorage.setItem("grudge.open.selectedCharacterId", cid);
     }
-    if (race) sessionStorage.setItem(KEYS.raceId, race);
-    if (base) sessionStorage.setItem(KEYS.baseId, base);
-    if (fromOpen || cid) sessionStorage.setItem(KEYS.flag, "1");
+    if (race) {
+      sessionStorage.setItem(KEYS.raceId, race);
+      sessionStorage.setItem("grudge.open.raceId", race);
+    }
+    if (base) {
+      sessionStorage.setItem(KEYS.baseId, base);
+      sessionStorage.setItem("grudge.open.baseId", base);
+    }
+    if (fromOpen || cid) {
+      sessionStorage.setItem(KEYS.flag, "1");
+      sessionStorage.setItem("grudge.open.launch", "1");
+    }
   } catch {
     /* ignore */
   }

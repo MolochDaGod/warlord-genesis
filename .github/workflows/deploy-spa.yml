@@ -1,0 +1,62 @@
+# Build artifacts/grudge-warlords (Vite) and deploy prebuilt static SPA.
+# Vercel git auto-build is skipped (ignoreCommand). Same pattern as Forge.
+name: Deploy Genesis SPA
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-genesis-spa
+  cancel-in-progress: true
+
+jobs:
+  build-and-deploy:
+    name: Vite · pin · Vercel prod
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    permissions:
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.9
+          run_install: false
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          cache-dependency-path: pnpm-lock.yaml
+
+      - name: Install play SPA graph
+        run: pnpm install --no-frozen-lockfile --filter "@workspace/grudge-warlords..."
+
+      - name: Vite build + pin root index
+        env:
+          NODE_OPTIONS: --max-old-space-size=8192
+        run: node scripts/ship-vite-spa.mjs
+
+      - name: Install Vercel CLI
+        run: npm i -g vercel@latest
+
+      - name: Deploy production (prebuilt static)
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+        run: |
+          if [ -z "$VERCEL_TOKEN" ] || [ -z "$VERCEL_ORG_ID" ] || [ -z "$VERCEL_PROJECT_ID" ]; then
+            echo "::error::Missing VERCEL_TOKEN / VERCEL_ORG_ID / VERCEL_PROJECT_ID"
+            exit 1
+          fi
+          node scripts/vercel-deploy.mjs deploy --prod --yes --force --token="$VERCEL_TOKEN" --scope grudgenexus
+
+      - name: Live smoke
+        if: success()
+        continue-on-error: true
+        run: node scripts/verify-deploy.mjs --live --url=https://warlord-genesis.vercel.app

@@ -11,8 +11,12 @@ const MANIFEST_PATH = join(ROOT, "deploy-manifest.json");
 const manifest = existsSync(MANIFEST_PATH)
   ? JSON.parse(readFileSync(MANIFEST_PATH, "utf8"))
   : {};
-const GW_CORE_FILE = (manifest.bundleFile ?? "assets/gw-core-20260713.js").replace(/^\//, "");
-const GW_CORE_PIN = `/${GW_CORE_FILE}?h=${manifest.bundleCacheHash ?? "b6"}`;
+const VITE_MODE = manifest.buildMode === "vite";
+const BUNDLE_FILE = (manifest.bundleFile ?? "assets/gw-core-20260713.js").replace(/^\//, "");
+const BUNDLE_PIN = VITE_MODE
+  ? `/${BUNDLE_FILE}?v=${manifest.bundleVersion ?? Date.now()}`
+  : `/${BUNDLE_FILE}?h=${manifest.bundleCacheHash ?? "b6"}`;
+const GW_CORE_PIN = BUNDLE_PIN;
 const GAME_DATA =
   process.env.GRUDGE_API_URL?.replace(/\/$/, "") ||
   "https://grudge-api-production-0d46.up.railway.app";
@@ -212,6 +216,7 @@ rewrites.push(
 const CI_BUILD = "node scripts/ci-build.mjs";
 
 const config = {
+  ignoreCommand: "node scripts/vercel-ignore-build.mjs",
   buildCommand: CI_BUILD,
   installCommand: "",
   outputDirectory: ".",
@@ -220,18 +225,28 @@ const config = {
   redirects: [
     {
       source: "/assets/index-warlord-fix3.js",
-      destination: GW_CORE_PIN,
+      destination: BUNDLE_PIN,
       permanent: true,
     },
     {
       source: "/index-warlord-fix3.js",
-      destination: GW_CORE_PIN,
+      destination: BUNDLE_PIN,
       permanent: true,
     },
     {
       source: "/assets/index-warlord-fix95.js",
-      destination: GW_CORE_PIN,
+      destination: BUNDLE_PIN,
       permanent: true,
+    },
+    {
+      source: "/assets/gw-core-20260713.js",
+      destination: BUNDLE_PIN,
+      permanent: true,
+    },
+    {
+      source: "/assets/gw-core-:rest*",
+      destination: BUNDLE_PIN,
+      permanent: false,
     },
   ],
   headers: [

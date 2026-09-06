@@ -13,7 +13,7 @@
   <body>
     <div class="box">
       <h1 style="font-size:1.1rem;margin:0 0 .5rem">Updating Warlords…</h1>
-      <p id="s">Clearing caches and loading <code>gw-core-20260713.js</code>.</p>
+      <p id="s">Clearing caches and loading Vite SPA <code>index-wxMW2eZ1.js</code>.</p>
     </div>
     <script>
       (async function () {
@@ -27,13 +27,13 @@
             var keys = await caches.keys();
             await Promise.all(keys.map(function (k) { return caches.delete(k); }));
           }
-          await fetch("/assets/gw-core-20260713.js?h=b29", { cache: "reload" }).catch(function () {});
+          await fetch("/assets/index-wxMW2eZ1.js?v=20260906", { cache: "reload" }).catch(function () {});
           await fetch("/v1/play-kit.json", { cache: "reload" }).catch(function () {});
           s.textContent = "Redirecting…";
         } catch (e) {
           s.textContent = "Redirecting…";
         }
-        location.replace("/play?h=b29");
+        location.replace("/play?v=20260906");
       })();
     </script>
   </body>

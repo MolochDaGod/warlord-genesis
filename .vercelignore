@@ -21,7 +21,7 @@ dist
 /cloudflared
 /data
 
-# Stale / duplicate bundles (index.html pins gw-core-20260713 + BNWYZMT1.css)
+# Stale IIFE dumps (live pin is Vite /assets/index-*.js from artifacts/grudge-warlords)
 /index-warlord-*.js
 /index.live.html
 /assets/index-warlord-fix2.js

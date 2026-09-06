@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate" />
     <title>Warlord Genesis MOBA - Grudge Studio</title>
     <meta name="description" content="Warlord Genesis MOBA — three-lane RTS warcamp by Grudge Studio. Production fleet, PvP, leaderboards." />
     <meta name="robots" content="index, follow" />
@@ -11,46 +12,24 @@
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://warlord-genesis.vercel.app" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="Warlord Genesis MOBA" />
-    <meta name="twitter:description" content="Three-lane RTS warcamp - Grudge Studio production" />
+    <meta name="theme-color" content="#0a0a0c" />
     <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png" />
     <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-    <link rel="shortcut icon" href="/favicon.png" />
-    <meta name="theme-color" content="#0a0a0c" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="preconnect" href="https://assets.grudge-studio.com" crossorigin />
+    <link rel="preconnect" href="https://id.grudge-studio.com" />
     <link
       href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Cinzel:wght@500;700&family=Cinzel+Decorative:wght@700;900&family=EB+Garamond:wght@400;500&display=swap"
       rel="stylesheet"
     />
-    <!-- h=b29: play-kit static /v1 · Grudge ID only -->
-    <link rel="preconnect" href="https://assets.grudge-studio.com" crossorigin />
-    <link rel="preload" as="style" href="/assets/index-BNWYZMT1.css?h=b29" />
-    <link rel="preload" as="script" href="/assets/gw-core-20260713.js?h=b29" />
-    <link rel="preload" as="image" href="/assets/ui-kit/craftpix/Action%20Bar/ActionBar_Main_Background.png" />
-    <link rel="stylesheet" crossorigin href="/assets/index-BNWYZMT1.css?h=b29" />
-    <style>
-      #gw-boot{position:fixed;inset:0;z-index:1;display:grid;place-items:center;background:#080c14;color:#e8eef8;font-family:Cinzel,Georgia,serif;text-align:center;padding:24px}
-      #gw-boot .spin{width:36px;height:36px;margin:0 auto 16px;border:2px solid #2a3548;border-top-color:#e0b252;border-radius:50%;animation:gwboot .7s linear infinite}
-      #gw-boot p{margin:6px 0;letter-spacing:.12em;text-transform:uppercase;font-size:12px;color:#8fa3c4}
-      #gw-boot strong{display:block;font-size:18px;letter-spacing:.18em;color:#f0e6d0;margin-bottom:8px}
-      @keyframes gwboot{to{transform:rotate(360deg)}}
-    </style>
+    <!-- v=20260906 Vite SPA from artifacts/grudge-warlords -->
+    <link rel="stylesheet" crossorigin href="/assets/index-BEaAkFRw.css?v=20260906" />
   </head>
   <body>
-    <!-- #root MUST exist before gw-core createRoot (classic scripts are not deferred) -->
-    <div id="root">
-      <div id="gw-boot" aria-live="polite">
-        <div>
-          <div class="spin" aria-hidden="true"></div>
-          <strong>Warlord Genesis</strong>
-          <p id="gw-boot-msg">Loading warcamp…</p>
-          <p id="gw-boot-sub">Toon RTS · CraftPix HUD · play kit</p>
-        </div>
-      </div>
-    </div>
+    <div id="root"></div>
     <script>
       (function () {
         try {
@@ -71,16 +50,18 @@
           };
           var race = map[String(raceId || "").toLowerCase()] || raceId || "human";
           sessionStorage.setItem("grudge.open.launch", "1");
-          if (q.get("characterId"))
+          sessionStorage.setItem("gw_open_launch", "1");
+          if (q.get("characterId")) {
             sessionStorage.setItem("grudge.open.selectedCharacterId", q.get("characterId"));
-          if (raceId) sessionStorage.setItem("grudge.open.raceId", raceId);
-          if (q.get("baseId")) sessionStorage.setItem("grudge.open.baseId", q.get("baseId"));
-          if (q.get("characterName"))
-            sessionStorage.setItem("grudge.open.characterName", q.get("characterName"));
-          if (!q.get("race") && race) {
-            var u = new URL(location.href);
-            u.searchParams.set("race", race);
-            history.replaceState(null, "", u);
+            sessionStorage.setItem("gw_open_character_id", q.get("characterId"));
+          }
+          if (raceId) {
+            sessionStorage.setItem("grudge.open.raceId", raceId);
+            sessionStorage.setItem("gw_open_race_id", race);
+          }
+          if (q.get("baseId")) {
+            sessionStorage.setItem("grudge.open.baseId", q.get("baseId"));
+            sessionStorage.setItem("gw_open_base_id", q.get("baseId"));
           }
         } catch (e) {}
       })();
@@ -88,8 +69,6 @@
     <script>
       (async function () {
         try {
-          var msg = document.getElementById("gw-boot-msg");
-          if (msg) msg.textContent = "Purging old caches…";
           if (navigator.serviceWorker) {
             var regs = await navigator.serviceWorker.getRegistrations();
             await Promise.all(regs.map(function (r) { return r.unregister(); }));
@@ -98,27 +77,10 @@
             var keys = await caches.keys();
             await Promise.all(keys.map(function (k) { return caches.delete(k); }));
           }
-          if (msg) msg.textContent = "Loading warcamp…";
         } catch (e) {}
       })();
     </script>
-    <script>
-      (function () {
-        fetch("/v1/play-kit.json")
-          .then(function (r) { return r.json(); })
-          .then(function (d) {
-            var el = document.getElementById("gw-boot-sub");
-            if (!el || !d) return;
-            el.textContent = d.ok
-              ? "play kit ready · Toon RTS · CraftPix"
-              : "play kit degraded · loading anyway";
-          })
-          .catch(function () {});
-      })();
-    </script>
     <script src="https://js.puter.com/v2/"></script>
-    <script src="/grudge-game-bootstrap.js?h=b29"></script>
-    <link rel="modulepreload" href="/sdk/grudge-sdk.js?h=b29" />
-    <script type="module" crossorigin src="/assets/gw-core-20260713.js?h=b29"></script>
+    <script type="module" crossorigin src="/assets/index-wxMW2eZ1.js?v=20260906"></script>
   </body>
 </html>

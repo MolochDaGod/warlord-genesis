@@ -19,6 +19,7 @@
     "verify:live": "node scripts/verify-deploy.mjs --live",
     "syntax": "node scripts/check-esbuild.mjs",
     "deploy": "node scripts/deploy.mjs",
+    "deploy:spa": "node scripts/ship-vite-spa.mjs && node scripts/vercel-deploy.mjs deploy --prod --yes --force",
     "deploy:vercel": "node scripts/vercel-deploy.mjs deploy --prod --yes",
     "tunnel": "cloudflared tunnel --config cloudflared/config.yml run warstrat",
     "tunnel:dns": "cloudflared tunnel route dns --overwrite-dns warstrat warstrat.grudge-studio.com",

@@ -18,10 +18,12 @@ function run(cmd) {
 }
 
 if (!skipBuild) {
+  run("node scripts/ship-vite-spa.mjs");
+} else {
   run("node scripts/ci-build.mjs");
 }
 
-run("node scripts/vercel-deploy.mjs");
+run("node scripts/vercel-deploy.mjs deploy --prod --yes --force");
 
 if (!skipLive) {
   run("node scripts/verify-deploy.mjs --live");
