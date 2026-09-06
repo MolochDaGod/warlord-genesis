@@ -17,6 +17,9 @@ import { Projectiles } from "./Projectiles";
 import { WeaponTrail } from "../../engine/vfx/WeaponTrail";
 import { CommandLayer, SelectionRings } from "./Command";
 import { MatchDirector } from "./MatchDirector";
+import { Trees } from "./Trees";
+import { useGame } from "../../game/store";
+import { EM } from "../../game/entities";
 import { CanvasErrorBoundary, WebGLFallback } from "./CanvasFallback";
 import { detectWebGL } from "../../lib/webgl";
 import {
@@ -26,6 +29,8 @@ import {
 } from "@workspace/r3f-fleet";
 
 function SceneContent() {
+  const mapVersion = useGame((s) => s.mapVersion);
+  const st = EM.map?.relief === "super-terrain";
   return (
     <>
       {/* Sky far above the deck (deck is y≈0). Fog starts past the island. */}
@@ -58,10 +63,8 @@ function SceneContent() {
       <Physics gravity={[0, -22, 0]} timeStep={1 / 60} interpolate>
         <Arena />
         <Player />
-        {/* Procedural Trees off — Sanctum / 1v1 GLBs already include vegetation */}
+        {st ? <Trees key={`trees-${mapVersion}`} /> : null}
       </Physics>
-
-      {/* Procedural Grass off — authored maps carry ground cover */}
       <Structures />
       <Relic />
       <CampMarkers />

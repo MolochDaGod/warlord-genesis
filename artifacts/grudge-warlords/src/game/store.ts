@@ -23,6 +23,7 @@ import { useMeta } from "./metaProgression";
 import { configureMatchFactions } from "../engine/grudge6";
 import { computeLoadoutStats } from "./equipment";
 import type { MapSize } from "./mapgen";
+import { overlaySuperTerrain } from "../engine/superTerrainMoba";
 import {
   DEFAULT_PRODUCTION_SPECS,
   type ProductionSpecs,
@@ -329,6 +330,12 @@ export const useGame = create<GameState>((set, get) => ({
     // Generate a fresh procedural battlefield at the chosen size.
     const size = get().mapSize;
     EM.newMatch(size);
+    void overlaySuperTerrain(EM.map).then((ok) => {
+      if (!ok) return;
+      const p = EM.playerPos;
+      p.y = EM.map.heightAt(p.x, p.z) + 1.15;
+      set({ mapVersion: get().mapVersion + 1 });
+    });
     // Start every deployment in combat mode with a clean selection so the
     // pointer-lock engage prompt reliably appears.
     useCommand.getState().resetCommand();

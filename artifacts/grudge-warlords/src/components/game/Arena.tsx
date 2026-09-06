@@ -1,16 +1,18 @@
 import { useMemo } from "react";
 import { HeightfieldCollider, RigidBody } from "@react-three/rapier";
+import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { EM } from "../../game/entities";
 import { useGame } from "../../game/store";
 import { AuthoredMapVisual } from "./AuthoredMap";
 import { authoredMapForSize } from "../../engine/mapAssets";
+import { stAlbedoUrl } from "../../engine/superTerrainMoba";
 
 /**
  * Battlefield:
- *  - Visual: authored GLB deck planted at y≈0 (Sanctum / 1v1) — NOT on mesh min.y
- *  - Collider: flat-ish heightfield at mapgen heights (near y=0 once deck is planted)
- *  Units must stand ON the MOBA deck, never under the island in the sky void.
+ *  - Super Terrain (fleet alpine-mesh bake): 3D heightfield visual + collider; lanes stay low.
+ *  - Fallback: authored Sanctum / 1v1 GLB deck at y≈0 + clamped heightfield.
+ * Player TPS + combat crosshair live in Player.tsx / HUD — not replaced here.
  */
 export function Arena() {
   const mapVersion = useGame((s) => s.mapVersion);
@@ -24,11 +26,12 @@ export function Arena() {
     const ncols = Math.max(1, cols - 1);
     // Clamp heightfield to a thin band around y=0 so it matches the planted deck
     // (authored map ray-plants deck to y=0; old full ridge heights lifted feet into sky).
+    const relief = m.relief === "super-terrain";
     const hfHeights = new Array<number>(cols * rows);
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const h = heights[r * cols + c] ?? 0;
-        hfHeights[c * rows + r] = THREE.MathUtils.clamp(h, -0.5, 2.5);
+        hfHeights[c * rows + r] = relief ? h : THREE.MathUtils.clamp(h, -0.5, 2.5);
       }
     }
     return {
@@ -41,14 +44,29 @@ export function Arena() {
   }, [mapVersion]);
 
   const m = EM.map;
-  // Markers sit on the deck (y≈0), not ridge peaks
-  const allyY = Math.min(2, Math.max(0, m.heightAt(m.allyCore.x, m.allyCore.z)));
-  const enemyY = Math.min(2, Math.max(0, m.heightAt(m.enemyCore.x, m.enemyCore.z)));
+  const st = m.relief === "super-terrain";
+  const allyY = st
+    ? m.heightAt(m.allyCore.x, m.allyCore.z)
+    : Math.min(2, Math.max(0, m.heightAt(m.allyCore.x, m.allyCore.z)));
+  const enemyY = st
+    ? m.heightAt(m.enemyCore.x, m.enemyCore.z)
+    : Math.min(2, Math.max(0, m.heightAt(m.enemyCore.x, m.enemyCore.z)));
 
   return (
     <group>
-      {/* Real map art — deck aligned to y=0 */}
-      <AuthoredMapVisual key={`map-${authored.id}-${mapVersion}`} />
+      {st ? (
+        <SuperTerrainVisual
+          key={`st-${mapVersion}`}
+          cols={m.hmCols}
+          rows={m.hmRows}
+          heights={m.heights}
+          width={m.width}
+          length={m.length}
+          albedo={m.stAlbedo || stAlbedoUrl()}
+        />
+      ) : (
+        <AuthoredMapVisual key={`map-${authored.id}-${mapVersion}`} />
+      )}
 
       {/* Invisible heightfield coplanar with deck for hero/unit feet */}
       <RigidBody
@@ -80,5 +98,60 @@ export function Arena() {
         <meshStandardMaterial color="#c0392b" roughness={1} transparent opacity={0.12} depthWrite={false} />
       </mesh>
     </group>
+  );
+}
+
+function SuperTerrainVisual({
+  cols,
+  rows,
+  heights,
+  width,
+  length,
+  albedo,
+}: {
+  cols: number;
+  rows: number;
+  heights: Float32Array;
+  width: number;
+  length: number;
+  albedo: string;
+}) {
+  const map = useTexture(albedo);
+  map.colorSpace = THREE.SRGBColorSpace;
+  map.wrapS = THREE.RepeatWrapping;
+  map.wrapT = THREE.RepeatWrapping;
+  map.repeat.set(8, 8);
+  const geom = useMemo(() => {
+    const g = new THREE.PlaneGeometry(width, length, Math.max(1, cols - 1), Math.max(1, rows - 1));
+    g.rotateX(-Math.PI / 2);
+    const pos = g.attributes.position;
+    if (!pos) return g;
+    const halfW = width / 2;
+    const halfL = length / 2;
+    for (let i = 0; i < pos.count; i++) {
+      const x = pos.getX(i);
+      const z = pos.getZ(i);
+      const fx = ((x + halfW) / width) * (cols - 1);
+      const fz = ((z + halfL) / length) * (rows - 1);
+      const c0 = Math.max(0, Math.min(cols - 1, Math.floor(fx)));
+      const r0 = Math.max(0, Math.min(rows - 1, Math.floor(fz)));
+      const c1 = Math.min(cols - 1, c0 + 1);
+      const r1 = Math.min(rows - 1, r0 + 1);
+      const tx = fx - c0;
+      const tz = fz - r0;
+      const h00 = heights[r0 * cols + c0] ?? 0;
+      const h10 = heights[r0 * cols + c1] ?? 0;
+      const h01 = heights[r1 * cols + c0] ?? 0;
+      const h11 = heights[r1 * cols + c1] ?? 0;
+      pos.setY(i, h00 + (h10 - h00) * tx + (h01 - h00 + (h11 - h10 - h01 + h00) * tx) * tz);
+    }
+    g.computeVertexNormals();
+    g.computeBoundingSphere();
+    return g;
+  }, [cols, rows, heights, width, length]);
+  return (
+    <mesh geometry={geom} receiveShadow castShadow>
+      <meshStandardMaterial map={map} roughness={0.88} metalness={0.04} vertexColors={false} />
+    </mesh>
   );
 }

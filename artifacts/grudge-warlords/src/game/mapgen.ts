@@ -187,6 +187,11 @@ export interface GameMap {
   hmCols: number;
   hmRows: number;
   heights: Float32Array; // row-major, hmCols * hmRows
+  /** Fleet Super Terrain overlay (lanes stay walkable). */
+  relief?: "lanes" | "super-terrain";
+  stKind?: string;
+  stAlbedo?: string;
+  stEngine?: string;
 
   lanes: LanePathData[];
   allyCore: { x: number; z: number };
