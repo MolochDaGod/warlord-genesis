@@ -1,3 +1,10 @@
+/**
+ * Input SSOT — modes do not share keys.
+ *
+ * Combat (TPS): WASD · Space · Shift · R reload · Q swap · C dash · G slam · Digit1–6 skills · ` toggle
+ * Command (RTS): ` toggle · 1–5 fortify · F1 attack-move · F2 hold · F3 stop · F4 follow · F5 defend citadel
+ * Alt+V/B/F/G/T/C = VFX sandbox only (not F1–F5, not fortify).
+ */
 export enum Controls {
   forward = "forward",
   back = "back",

@@ -139,24 +139,16 @@ function DefaultCreepUnit({
       if (!clip?.name) continue;
       actions[clip.name] = mixer.clipAction(clip);
     }
-    // Nameless / first clip fallback (your "Motion" clip case)
-    if (animations[0] && !actions[animations[0].name]) {
-      const c = animations[0];
-      const key = c.name || "Motion";
-      actions[key] = mixer.clipAction(c);
-    }
     actionsRef.current = actions;
 
-    // Play idle (or first clip) immediately — never leave bind pose
     const names = Object.keys(actions);
-    const idle =
-      pickClip(names, ["fight_idle", "idle", "stand", "motion"]) ?? names[0];
+    const idle = pickClip(names, ["fight_idle", "idle", "stand"]);
     if (idle && actions[idle]) {
       actions[idle].reset().setLoop(THREE.LoopRepeat, Infinity).play();
       activeRef.current = idle;
       mixer.update(1 / 30);
-    } else if (animations.length === 0) {
-      console.warn("[UnitMesh] no animations in", url);
+    } else {
+      console.error("[UnitMesh] no idle clip in", url, names);
     }
 
     return r;

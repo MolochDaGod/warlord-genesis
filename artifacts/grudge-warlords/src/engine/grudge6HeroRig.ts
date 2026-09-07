@@ -121,7 +121,8 @@ export class Grudge6HeroRig {
     const rig = new Grudge6HeroRig(prepared, prepared.dispose);
     try {
       prepared.director.setGaitTarget(false, false);
-      const idle = prepared.actions.idle ?? prepared.actions.walk;
+      const idle = prepared.actions.idle;
+      if (!idle) console.error("[grudge6HeroRig] missing idle action");
       idle?.reset?.().setEffectiveWeight?.(1).fadeIn?.(0.12).play?.();
     } catch {
       /* ignore */

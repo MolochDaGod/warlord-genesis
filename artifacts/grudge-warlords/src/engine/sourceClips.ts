@@ -58,21 +58,20 @@ export function classifyNativeClips(clips: THREE.AnimationClip[]): ClassifiedCli
   };
 }
 
-/** Build a loco set from native clips. One real clip is enough — reuse it. Never empty. */
+/** Native loco only if idle+walk+run exist. Missing names → null so Bip001 baked pack loads. */
 export function locoFromNativeClips(clips: THREE.AnimationClip[]): LocoClips | null {
   const c = classifyNativeClips(clips);
-  const fallback = c.idle ?? c.walk ?? c.run ?? clips.find(isPlayableClip) ?? null;
-  if (!fallback) return null;
+  if (!c.idle || !c.walk || !c.run) return null;
   return {
-    idle: c.idle ?? fallback,
-    walk: c.walk ?? c.run ?? fallback,
-    run: c.run ?? c.walk ?? fallback,
-    sprint: c.sprint ?? c.run ?? fallback,
+    idle: c.idle,
+    walk: c.walk,
+    run: c.run,
+    sprint: c.sprint ?? c.run,
   };
 }
 
 export function attackFromNativeClips(clips: THREE.AnimationClip[]): THREE.AnimationClip | null {
-  return classifyNativeClips(clips).attack ?? clips.find(isPlayableClip) ?? null;
+  return classifyNativeClips(clips).attack;
 }
 
 /** Find a native clip whose name matches a skill / anim key. */

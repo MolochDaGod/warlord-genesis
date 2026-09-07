@@ -1,8 +1,7 @@
-import { Component, Suspense, useEffect, useMemo, useState, type ErrorInfo, type ReactNode } from "react";
+import { Component, Suspense, useMemo, type ErrorInfo, type ReactNode } from "react";
 import * as THREE from "three";
 import { useGLTF, useTexture } from "@react-three/drei";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
-import { bootEngine, getEngine } from "../../engine/boot";
 import {
   towerAtlasUrl,
   towerModelUrl,
@@ -12,30 +11,6 @@ import {
 
 /** Normalized world height for lane towers (matches prior procedural scale). */
 const TOWER_FIT_HEIGHT = 7.2;
-
-/** Procedural fallback when a GLB fails to load/parse (keeps /play playable). */
-function ProceduralTower({ pack }: { pack: TowerPack }) {
-  const color =
-    pack === "elven" ? "#4a7a55" : pack === "orc" ? "#5a4a28" : pack === "ruins" ? "#4a4238" : "#5a4636";
-  const accent =
-    pack === "elven" ? "#8fd4a0" : pack === "orc" ? "#c07030" : pack === "ruins" ? "#8a7a60" : "#e0b252";
-  return (
-    <group>
-      <mesh position={[0, 2.4, 0]} castShadow receiveShadow>
-        <cylinderGeometry args={[1.6, 2.1, 4.8, 8]} />
-        <meshStandardMaterial color={color} roughness={0.88} />
-      </mesh>
-      <mesh position={[0, 5.1, 0]} castShadow>
-        <cylinderGeometry args={[1.9, 1.7, 0.7, 8]} />
-        <meshStandardMaterial color={accent} roughness={0.55} metalness={0.15} />
-      </mesh>
-      <mesh position={[0, 5.8, 0]} castShadow>
-        <boxGeometry args={[0.55, 1.1, 0.55]} />
-        <meshStandardMaterial color={accent} emissive={accent} emissiveIntensity={0.25} />
-      </mesh>
-    </group>
-  );
-}
 
 class TowerLoadBoundary extends Component<
   { pack: TowerPack; children: ReactNode },
@@ -48,11 +23,11 @@ class TowerLoadBoundary extends Component<
   }
 
   componentDidCatch(error: Error, info: ErrorInfo) {
-    console.warn("[warlord] tower GLB failed — using procedural fallback", error.message, info.componentStack);
+    console.error("[warlord] tower GLB failed — no procedural stand-in", error.message, info.componentStack);
   }
 
   render() {
-    if (this.state.failed) return <ProceduralTower pack={this.props.pack} />;
+    if (this.state.failed) return null;
     return this.props.children;
   }
 }
@@ -119,20 +94,13 @@ function TowerMesh({ modelUrl, atlasUrl }: { modelUrl: string; atlasUrl: string 
 }
 
 export function TowerModel({ pack, tier }: { pack: TowerPack; tier: TowerTier }) {
-  const [cdnOk, setCdnOk] = useState(() => getEngine().cdnReachable);
-  useEffect(() => {
-    bootEngine()
-      .then((s) => setCdnOk(s.cdnReachable))
-      .catch(() => setCdnOk(false));
-  }, []);
-
-  const modelUrl = towerModelUrl(pack, tier, cdnOk);
-  const atlasUrl = towerAtlasUrl(pack, cdnOk);
+  const modelUrl = towerModelUrl(pack, tier);
+  const atlasUrl = towerAtlasUrl(pack);
 
   return (
     <TowerLoadBoundary pack={pack}>
-      <Suspense fallback={<ProceduralTower pack={pack} />}>
-        <TowerMesh key={`${pack}-${tier}-${cdnOk}`} modelUrl={modelUrl} atlasUrl={atlasUrl} />
+      <Suspense fallback={null}>
+        <TowerMesh key={`${pack}-${tier}`} modelUrl={modelUrl} atlasUrl={atlasUrl} />
       </Suspense>
     </TowerLoadBoundary>
   );
