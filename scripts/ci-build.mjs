@@ -44,5 +44,6 @@ if (!vite) {
 
 console.log("[ci-build] Vite SPA pin — verify only (source is artifacts/grudge-warlords)");
 run("node scripts/generate-vercel-config.mjs", { optional: true });
+run("node scripts/patch-vercel-lfs-maps.mjs", { optional: true });
 run("node scripts/verify-deploy.mjs");
 console.log("[ci-build] done (vite)");
