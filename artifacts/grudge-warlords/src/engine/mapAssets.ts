@@ -7,11 +7,19 @@
  *
  * Gameplay pathing still uses mapgen lanes + WalkGrid; these are the visuals
  * and tower/jungle meshes. Scale is fit so a ~2 m orc hero reads correctly.
+ *
+ * Vercel deploys Git LFS *pointers* (~133 B "version https://git-lfs...") unless
+ * LFS is enabled on the project. Three/GLTFLoader then throws
+ * `Unexpected token 'v', "version ht"... is not valid JSON`.
+ * Resolve binaries from GitHub LFS media (CORS *) — same-origin /models/maps
+ * is redirected there in vercel.json as well.
  */
 
 import type { MapSize } from "../game/mapgen";
 
 const LOCAL = import.meta.env.BASE_URL;
+const LFS_MEDIA =
+  "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main/";
 
 export type AuthoredMapId = "sanctum" | "arena1v1";
 
@@ -20,7 +28,7 @@ export const HERO_REFERENCE_HEIGHT_M = 2.0;
 
 export interface AuthoredMapDef {
   id: AuthoredMapId;
-  /** Public URL (same-origin). */
+  /** Public URL — GitHub LFS media so production is never a pointer file. */
   url: string;
   label: string;
   /**
@@ -35,12 +43,18 @@ export interface AuthoredMapDef {
   useJungleCreatures: boolean;
 }
 
+function lfsGlb(rel: string): string {
+  return `${LFS_MEDIA}${rel.replace(/^\//, "")}`;
+}
+
 export const MAP_GLB = {
-  sanctum: `${LOCAL}models/maps/sanctum_island.glb`,
-  sanctumTurret: `${LOCAL}models/maps/sanctum_turret.glb`,
-  arena1v1: `${LOCAL}models/maps/arena_1v1.glb`,
-  elementalLord: `${LOCAL}models/units/jungle/elemental_lord.glb`,
-  belerick: `${LOCAL}models/units/jungle/belerick.glb`,
+  sanctum: lfsGlb("models/maps/sanctum_island.glb"),
+  sanctumTurret: lfsGlb("models/maps/sanctum_turret.glb"),
+  arena1v1: lfsGlb("models/maps/arena_1v1.glb"),
+  elementalLord: lfsGlb("models/units/jungle/elemental_lord.glb"),
+  belerick: lfsGlb("models/units/jungle/belerick.glb"),
+  /** Same-origin fallback if media is blocked; vercel.json redirects LFS. */
+  sanctumLocal: `${LOCAL}models/maps/sanctum_island.glb`,
 } as const;
 
 /** Sanctum = full 3-lane island; 1v1 = compact duel map. */
