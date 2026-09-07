@@ -28,47 +28,15 @@ const LFS_MEDIA =
   "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main";
 
 const PREFIXES = [
-  "health",
-  "characters",
-  "party",
-  "account",
-  "island",
-  "islands",
-  "inventory",
-  "wallet",
-  "nfts",
-  "professions",
-  "missions",
-  "player",
-  "resources",
-  "sprites",
-  "fleet",
-  "lore",
-  "combat",
-  "rts",
-  "races",
-  "classes",
-  "items",
-  "treaty",
+  "health", "characters", "party", "account", "island", "islands", "inventory",
+  "wallet", "nfts", "professions", "missions", "player", "resources", "sprites",
+  "fleet", "lore", "combat", "rts", "races", "classes", "items", "treaty",
 ];
-
 const AUTH_GATEWAY = "https://id.grudge-studio.com";
 const AUTH_PATHS = [
-  "puter",
-  "puter-sso",
-  "guest",
-  "login",
-  "register",
-  "me",
-  "scoped-profile",
-  "discord/start",
-  "verify",
-  "session/exchange",
-  "popup-token",
-  "grudge-bridge",
-  "wallet",
-  "puter-link",
-  "complete-profile",
+  "puter", "puter-sso", "guest", "login", "register", "me", "scoped-profile",
+  "discord/start", "verify", "session/exchange", "popup-token", "grudge-bridge",
+  "wallet", "puter-link", "complete-profile",
 ];
 const OBJECTSTORE = "https://objectstore.grudge-studio.com";
 const OBJECTSTORE_MODEL_PREFIXES = ["kaykit", "characters", "grudge6", "units", "projectiles", "rts"];
@@ -85,30 +53,17 @@ const rewrites = [
   { source: "/api/assets/grudge-nexus/models/maps/:theme/:file", destination: "/models/towers/:theme/:file" },
   { source: "/api/assets/grudge-nexus/textures/Color_Palette.png", destination: "/models/units/Color_Palette.png" },
   { source: "/api/assets/grudge-nexus/models/rts/units/:file", destination: "/models/units/:file" },
-  {
-    source: "/models/heroes/grudge6/:file",
-    destination: "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file",
-  },
-  {
-    source: "/textures/grudge6/:race/:file",
-    destination: "https://assets.grudge-studio.com/assets/:race/textures/:file",
-  },
-  {
-    source: "/textures/WK_Standard_Units.webp",
-    destination: "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp",
-  },
+  { source: "/models/heroes/grudge6/:file", destination: "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file" },
+  { source: "/textures/grudge6/:race/:file", destination: "https://assets.grudge-studio.com/assets/:race/textures/:file" },
+  { source: "/textures/WK_Standard_Units.webp", destination: "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp" },
   { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
   { source: "/api/objectstore/:path*", destination: `${OBJECTSTORE}/api/:path*` },
   { source: "/assets/skills/:path*", destination: `${OBJECTSTORE}/assets/skills/:path*` },
   { source: "/media/heroes/portraits/:path*", destination: `${OBJECTSTORE}/heroes/portraits/:path*` },
   { source: "/media/heroes/videos/:path*", destination: `${OBJECTSTORE}/heroes/videos/:path*` },
 ];
-
 for (const prefix of OBJECTSTORE_MODEL_PREFIXES) {
-  rewrites.push({
-    source: `/models/${prefix}/:path*`,
-    destination: `${OBJECTSTORE}/models/${prefix}/:path*`,
-  });
+  rewrites.push({ source: `/models/${prefix}/:path*`, destination: `${OBJECTSTORE}/models/${prefix}/:path*` });
 }
 for (const prefix of PREFIXES) {
   rewrites.push(
@@ -117,10 +72,7 @@ for (const prefix of PREFIXES) {
   );
 }
 for (const segment of AUTH_PATHS) {
-  rewrites.push({
-    source: `/api/auth/${segment}`,
-    destination: `${GAME_DATA}/api/auth/${segment}`,
-  });
+  rewrites.push({ source: `/api/auth/${segment}`, destination: `${GAME_DATA}/api/auth/${segment}` });
 }
 rewrites.push(
   { source: "/auth/callback", destination: "/index.html" },
@@ -131,7 +83,7 @@ rewrites.push(
   { source: "/grudge-id-logo.png", destination: `${AUTH_GATEWAY}/grudge-id-logo.png` },
   { source: "/brand/logo.png", destination: `${AUTH_GATEWAY}/brand/logo.png` },
   { source: "/brand/:path*", destination: `${AUTH_GATEWAY}/brand/:path*` },
-  { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*` },
+  { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
   { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
   { source: "/api/mp/health", destination: "/mp-health.json" },
@@ -151,10 +103,7 @@ rewrites.push(
   { source: "/island", destination: "/index.html" },
   { source: "/faction", destination: "/index.html" },
   { source: "/warlord", destination: "/index.html" },
-  {
-    source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|v1/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
-    destination: "/index.html",
-  },
+  { source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|v1/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)", destination: "/index.html" },
 );
 
 const config = {
@@ -181,6 +130,5 @@ const config = {
   ],
   rewrites,
 };
-
 writeFileSync(join(ROOT, "vercel.json"), JSON.stringify(config, null, 2) + "\n");
 console.log("[vercel] wrote vercel.json with", rewrites.length, "rewrites,", config.redirects.length, "redirects");
