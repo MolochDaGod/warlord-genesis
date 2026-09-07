@@ -21,6 +21,21 @@
       "permanent": false
     },
     {
+      "source": "/models/heroes/grudge6/:file",
+      "destination": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/human.glb",
+      "permanent": false
+    },
+    {
+      "source": "/models/characters/races/:file",
+      "destination": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/human.glb",
+      "permanent": false
+    },
+    {
+      "source": "/models/grudge6/races/:file",
+      "destination": "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/human.glb",
+      "permanent": false
+    },
+    {
       "source": "/assets/index-warlord-fix3.js",
       "destination": "/assets/index-CddL9kWW.js?v=20260907",
       "permanent": true
@@ -47,6 +62,18 @@
     }
   ],
   "rewrites": [
+    {
+      "source": "/anims/baked/:path*",
+      "destination": "https://assets.grudge-studio.com/anims/baked/:path*"
+    },
+    {
+      "source": "/api/v1/play-kit",
+      "destination": "/v1/play-kit.json"
+    },
+    {
+      "source": "/api/v1/play-kit.json",
+      "destination": "/v1/play-kit.json"
+    },
     {
       "source": "/api/grudge/:path*",
       "destination": "https://warlord-genesis-api-production-3b5a.up.railway.app/api/grudge/:path*"
