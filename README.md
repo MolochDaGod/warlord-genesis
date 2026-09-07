@@ -1,159 +1,97 @@
 # Warlord Genesis
 
-[![Live](https://img.shields.io/badge/live-warlord--genesis.vercel.app-00c389)](https://warlord-genesis.vercel.app)
-[![Domain](https://img.shields.io/badge/domain-warstrat.grudge--studio.com-7c5cff)](https://warstrat.grudge-studio.com)
+[![Live](https://img.shields.io/badge/live-genesis.grudge.studio-00c389)](https://genesis.grudge.studio)
+[![Vercel](https://img.shields.io/badge/vercel-warlord--genesis-00c389)](https://warlord-genesis.vercel.app)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-3D browser MOBA/RTS warcamp — hero warlord, three lanes, summonable units, turrets, and Grudge6 characters.
+3D browser MOBA — hero warlord, three lanes, summonable units, turrets, Grudge6 / Toon RTS play kits. Combat is third-person + center crosshair. Sanctum ground uses the fleet Super Terrain catalog.
 
 ## Production URLs
 
 | Role | URL |
 |------|-----|
-| **Vercel production** | https://warlord-genesis.vercel.app |
-| **Branded DNS** | https://warstrat.grudge-studio.com |
-| **Play** | `/play` on either host |
-| **Map Edit** | `/edit` — scale + pathfinding routes |
-| **Warcamp** | `/lobby` · march orders `/deploy` |
-| **Repo** | [github.com/MolochDaGod/warlord-genesis](https://github.com/MolochDaGod/warlord-genesis) |
+| **Canonical** | https://genesis.grudge.studio |
+| **Vercel** | https://warlord-genesis.vercel.app |
+| **Alias** | https://warstrat.grudge-studio.com |
+| **Play** | `/play` (faction onboarding → match) |
+| **Warcamp** | `/lobby` · `/deploy` |
+| **Map edit** | `/edit` |
+| **Repo** | [MolochDaGod/warlord-genesis](https://github.com/MolochDaGod/warlord-genesis) |
 
-Both hosts serve the same Vercel project (`warlord-genesis`). DNS for `warstrat` is a CNAME (or Vercel alias) under `grudge-studio.com`.
+Same Vercel project `warlord-genesis` (`prj_FE1mPbTqRv39PbvkyjrxNL5gVrJY`).
 
-## Monorepo stack
+## One SPA (no second bundle)
 
-- `artifacts/grudge-warlords` — React + Vite + R3F + Rapier (source of truth for client)
-- `lib/gw-sim` — Headless PvP simulation
-- `lib/r3f-fleet`, `lib/game-content`, `lib/grudge-engine` — shared engine/content
+| Layer | Owns |
+|-------|------|
+| **Source** | `artifacts/grudge-warlords` (Vite + React + R3F + Rapier) |
+| **Live boot** | `/assets/index-*.js?v=` pinned in root `index.html` |
+| **Identity** | `id.grudge-studio.com` via `/api/auth/*` |
+| **Player SSOT** | Railway `grudge-api` `/api/*` (characters, bag) |
+| **Title API** | Railway `warlord-genesis-api` `/api/games/*` |
+| **Binaries** | `assets.grudge-studio.com` |
+| **Terrain catalog** | `info.grudge-studio.com/api/v1/super-terrain.json` |
 
+`gw-core-*.js`, `index-warlord-fix*.js`, `grudge-game-bootstrap.js`, and `/sdk/grudge-sdk.js` are **dead**. Old `gw-core` URLs **308** to the Vite pin. Do not `patch-bundle.mjs` for production.
 
-## Map Edit Studio (`/edit`)
+## Play
 
-Production map tooling for **terrain / tower / building scales** and **pathfinding routes**.
+- `/play` boots the Vite app → faction onboarding (sign-in required).
+- Combat: TPS camera + HUD crosshair (`` ` `` Combat / Command).
+- Sanctum standard/large: fleet Super Terrain heightfield; lanes stay walkable. 1v1 keeps the authored arena GLB.
+- Play kit: Toon RTS `{race}.glb` + one mixer. Not Meshy / capsule heroes.
 
-| | |
-|--|--|
-| **Live** | https://warlord-genesis.vercel.app/edit |
-| **Alias** | `/map-edit` · `/edit.html` |
-| **Package** | `edit.html` + `assets/map-edit.mjs` (static ship; Three.js via CDN importmap) |
+```bash
+corepack enable
+pnpm install
+pnpm --filter @workspace/grudge-warlords run dev
+```
 
-### Features
+Open `http://localhost:5173/play`.
 
-- Choose **map size** (Standard / Large) and **seed**
-- Scale layers (SI): terrain height, towers, buildings, trees, props, route lift
-- Pathfinding: **Grid A\*** (walk grid) or straight debug line
-- Draw routes from structure **bottom · mid · top** anchors **on the terrain mesh**
-- Prefs in `localStorage` (`wg:map-edit:standalone:v1`)
+## Deploy
 
-### Dependencies (edit package)
+Compile happens **off Vercel’s git builder** (`.vercelignore` drops `/artifacts`). One path:
 
-| Dep | How |
-|-----|-----|
-| **three@0.184** | CDN importmap in `edit.html` (jsDelivr) — no npm install for the static page |
-| Game SPA (gw-core) | Separate; edit ships beside the battle bundle |
+```bash
+pnpm run deploy:spa
+```
 
-React source (future Vite builds): `artifacts/grudge-warlords/src/pages/Edit.tsx`.
+That runs `scripts/ship-vite-spa.mjs` (Vite build → pin `index.html` + hashed `/assets`) then `vercel --prod --force`.
 
-### Verify
+Or push `main`: GHA **Deploy Genesis SPA** (needs repo secrets `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID`). Vercel git auto-build is **skipped** (`ignoreCommand`).
+
+| Do | Do not |
+|----|--------|
+| Edit `artifacts/grudge-warlords/src` | Patch `gw-core` / `index-warlord-fix3.js` |
+| `pnpm run deploy:spa` or GHA | Rely on Vercel git compile |
+| Guest auth 403 | Auto guest login |
+
+## Map edit (`/edit`)
+
+Static `edit.html` + `assets/map-edit.mjs` (Three.js CDN importmap). React source for the in-SPA editor: `artifacts/grudge-warlords/src/pages/Edit.tsx`.
 
 ```bash
 pnpm run verify
 pnpm run edit:verify
 ```
 
-
-## Play defaults (campaign-ready)
-
-On `/play` the client **auto-prepares** a strong first match (no empty paper-doll):
-
-- Starter warlord unlocked at **card level ≥ 3** (gear tier 3)
-- Full **warcamp kit** (blade, shield, plate, jewelry, relic)
-- Canonical melee + ranged for the prefab
-- Seeded lane creep pairs
-- Default difficulty **Skirmish (easy)** for first boot
-- One-time site-data wipe (`gw_site_data_cleared_v68`) so pre-v68 weak saves are not sticky
-
-Capability preflight: WebGL/WebGL2 + WASM required; WebGPU optional. See [docs/PLAY_DEPENDENCIES.md](docs/PLAY_DEPENDENCIES.md).
-
-## Play locally
-
-```bash
-corepack enable
-pnpm install
-BASE_PATH=/ PORT=5173 pnpm --filter @workspace/grudge-warlords run dev
-```
-
-Open `http://localhost:5173/play` or `http://localhost:5173/deploy`.
-
-## Deploy (Vercel)
-
-```bash
-# Build client → ship static root used by CI
-pnpm --filter @workspace/grudge-warlords run build
-# copy dist assets into assets/index-warlord-fix3.js + bump index.html ?v=
-pnpm run deploy:vercel
-# or
-npx vercel --prod --yes --scope grudgenexus
-```
-
-- **Project:** `warlord-genesis` (team `grudgenexus`)
-- **Install:** `pnpm install --frozen-lockfile`
-- **Output (vite):** `artifacts/grudge-warlords/dist/public`
-- **Shipped SPA:** `index.html` + `assets/index-warlord-fix3.js` (static ship mode when present)
-
-### Domains & Cloudflare Tunnel
-
-| Host | Path |
-|------|------|
-| `warlord-genesis.vercel.app` | Native Vercel alias (always on) |
-| `warstrat.grudge-studio.com` | **Cloudflare Tunnel** → Vercel origin |
-
-```bash
-# Tunnel (created once): warstrat / 1e118485-5a41-4788-b4b0-2aa1a22d1e77
-pnpm run tunnel:dns          # CNAME warstrat → tunnel
-pnpm run tunnel              # cloudflared connector (keep running or install as service)
-
-# Env + secrets on Vercel Production
-# Copy fleet secrets into .env.production.local (gitignored), then:
-pnpm run env:attach
-```
-
-Tunnel config: [`cloudflared/config.yml`](cloudflared/config.yml)  
-Proxies `warstrat.grudge-studio.com` → `https://warlord-genesis.vercel.app` with correct `Host` header.
-
-Windows service (optional, elevated):
-
-```powershell
-cloudflared service install
-# or: nssm install warstrat-tunnel "C:\Users\david\Tools\cloudflared.exe" tunnel --config ... run warstrat
-```
-
 ## Architecture
 
-| Layer | Host | Role |
-|-------|------|------|
-| Frontend | Vercel | React+Three.js SPA |
-| Game API | Railway `warlord-genesis-api` | Auth adapter, saves |
-| Canonical DB | Railway `grudge-api` | Grudge ID, characters |
-| Assets | Cloudflare R2 | `assets.grudge-studio.com` |
-| Catalog | ObjectStore | `objectstore.grudge-studio.com` |
-| Identity | Grudge ID | `id.grudge-studio.com` |
-
-## Environment
-
-See `.env.example`. Key Vercel vars: `GRUDGE_API_URL`, `WARLORD_GENESIS_API_URL`.
-
-## Database
-
-```bash
-cd api && npm install && npm run db:migrate
-pnpm run api:migrate
-```
+| Layer | Host |
+|-------|------|
+| Frontend | Vercel static Vite SPA |
+| Game API | Railway `warlord-genesis-api` |
+| Canonical DB | Railway `grudge-api` |
+| Assets | R2 `assets.grudge-studio.com` |
+| Catalog | ObjectStore / `info.grudge-studio.com` |
+| Identity | Grudge ID `id.grudge-studio.com` |
 
 ## Docs
 
-- [docs/PLAY_DEPENDENCIES.md](docs/PLAY_DEPENDENCIES.md) — browser/build deps
-- [docs/GAME_DEFINITIONS.md](docs/GAME_DEFINITIONS.md) — flow, units, accounts
-- [scripts/README.md](scripts/README.md) — bundle patch pipeline
+- [docs/AUTH_AND_FLOW.md](docs/AUTH_AND_FLOW.md) — login, one-SPA law, deploy
+- [docs/PLAY_DEPENDENCIES.md](docs/PLAY_DEPENDENCIES.md) — WebGL / WASM
+- [docs/GAME_DEFINITIONS.md](docs/GAME_DEFINITIONS.md) — flow, units
 
 ## License
 
