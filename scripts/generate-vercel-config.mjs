@@ -1,6 +1,8 @@
-﻿#!/usr/bin/env node
+#!/usr/bin/env node
 /**
  * Generate vercel.json with Grudge fleet API rewrites + warlord-genesis API proxy.
+ * Always emit Git LFS media redirects for map/unit GLBs so Vercel never serves
+ * 133-byte pointers as model/gltf-binary.
  */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -16,13 +18,14 @@ const BUNDLE_FILE = (manifest.bundleFile ?? "assets/gw-core-20260713.js").replac
 const BUNDLE_PIN = VITE_MODE
   ? `/${BUNDLE_FILE}?v=${manifest.bundleVersion ?? Date.now()}`
   : `/${BUNDLE_FILE}?h=${manifest.bundleCacheHash ?? "b6"}`;
-const GW_CORE_PIN = BUNDLE_PIN;
 const GAME_DATA =
   process.env.GRUDGE_API_URL?.replace(/\/$/, "") ||
   "https://grudge-api-production-0d46.up.railway.app";
 const WARLORD_API =
   process.env.WARLORD_GENESIS_API_URL?.replace(/\/$/, "") ||
   "https://warlord-genesis-api-production-3b5a.up.railway.app";
+const LFS_MEDIA =
+  "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main";
 
 const PREFIXES = [
   "health",
@@ -46,12 +49,10 @@ const PREFIXES = [
   "races",
   "classes",
   "items",
-  /** Fleet Treaty ΓÇö friends, DMs, groups, server chat (Railway SSOT) */
   "treaty",
 ];
 
 const AUTH_GATEWAY = "https://id.grudge-studio.com";
-
 const AUTH_PATHS = [
   "puter",
   "puter-sso",
@@ -69,82 +70,38 @@ const AUTH_PATHS = [
   "puter-link",
   "complete-profile",
 ];
-
 const OBJECTSTORE = "https://objectstore.grudge-studio.com";
-
-/** KayKit creeps, GRUDGE6 FBX heroes, projectiles ΓÇö live on ObjectStore, not in this static deploy. */
-const OBJECTSTORE_MODEL_PREFIXES = [
-  "kaykit",
-  "characters",
-  "grudge6",
-  "units",
-  "projectiles",
-  "rts",
-];
-
-/** client.grudge-studio.com mirrors R2 and hosts baked anims + grudge-nexus assets assets.grudge-studio.com lacks. */
+const OBJECTSTORE_MODEL_PREFIXES = ["kaykit", "characters", "grudge6", "units", "projectiles", "rts"];
 const ASSET_CDN = "https://client.grudge-studio.com";
 
 const rewrites = [
-  // Destination MUST NOT start with /api — fleet catch-all /api/:path* would
-  // send /api/v1/play-kit.json to Railway (Express 404). Static catalog lives at /v1/.
   { source: "/api/v1/play-kit", destination: "/v1/play-kit.json" },
   { source: "/api/v1/play-kit.json", destination: "/v1/play-kit.json" },
   { source: "/api/v1/health", destination: "/v1/health.json" },
   { source: "/api/v1/health.json", destination: "/v1/health.json" },
-  // Genesis API health lives at /api/health — not /api/grudge/health.
   { source: "/api/grudge/health", destination: `${WARLORD_API}/api/health` },
   { source: "/api/grudge/:path*", destination: `${WARLORD_API}/api/grudge/:path*` },
-  // Fixed tower GLBs ship from this deploy ΓÇö CDN copies are Assimp/non-standard and crash GLTFLoader.
-  {
-    source: "/api/assets/models/maps/:theme/:file",
-    destination: "/models/towers/:theme/:file",
-  },
-  {
-    source: "/api/assets/grudge-nexus/models/maps/:theme/:file",
-    destination: "/models/towers/:theme/:file",
-  },
-  {
-    source: "/api/assets/grudge-nexus/textures/Color_Palette.png",
-    destination: "/models/units/Color_Palette.png",
-  },
-  {
-    source: "/api/assets/grudge-nexus/models/rts/units/:file",
-    destination: "/models/units/:file",
-  },
-  /** GRUDGE6 faction hero GLBs (~240MB) ΓÇö too large for Vercel static output; proxy from git raw. */
+  { source: "/api/assets/models/maps/:theme/:file", destination: "/models/towers/:theme/:file" },
+  { source: "/api/assets/grudge-nexus/models/maps/:theme/:file", destination: "/models/towers/:theme/:file" },
+  { source: "/api/assets/grudge-nexus/textures/Color_Palette.png", destination: "/models/units/Color_Palette.png" },
+  { source: "/api/assets/grudge-nexus/models/rts/units/:file", destination: "/models/units/:file" },
   {
     source: "/models/heroes/grudge6/:file",
-    destination:
-      "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file",
+    destination: "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file",
   },
-  /** GRUDGE6 race atlases ΓÇö local /textures/grudge6 fallback proxies to canonical R2 CDN. */
   {
     source: "/textures/grudge6/:race/:file",
     destination: "https://assets.grudge-studio.com/assets/:race/textures/:file",
   },
   {
     source: "/textures/WK_Standard_Units.webp",
-    destination:
-      "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp",
+    destination: "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp",
   },
   { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
-  {
-    source: "/api/objectstore/:path*",
-    destination: `${OBJECTSTORE}/api/:path*`,
-  },
-  {
-    source: "/assets/skills/:path*",
-    destination: `${OBJECTSTORE}/assets/skills/:path*`,
-  },
-  {
-    source: "/media/heroes/portraits/:path*",
-    destination: `${OBJECTSTORE}/heroes/portraits/:path*`,
-  },
-  {
-    source: "/media/heroes/videos/:path*",
-    destination: `${OBJECTSTORE}/heroes/videos/:path*`,
-  },
+  { source: "/api/objectstore/:path*", destination: `${OBJECTSTORE}/api/:path*` },
+  { source: "/assets/skills/:path*", destination: `${OBJECTSTORE}/assets/skills/:path*` },
+  { source: "/media/heroes/portraits/:path*", destination: `${OBJECTSTORE}/heroes/portraits/:path*` },
+  { source: "/media/heroes/videos/:path*", destination: `${OBJECTSTORE}/heroes/videos/:path*` },
 ];
 
 for (const prefix of OBJECTSTORE_MODEL_PREFIXES) {
@@ -153,43 +110,32 @@ for (const prefix of OBJECTSTORE_MODEL_PREFIXES) {
     destination: `${OBJECTSTORE}/models/${prefix}/:path*`,
   });
 }
-
 for (const prefix of PREFIXES) {
   rewrites.push(
     { source: `/api/${prefix}`, destination: `${GAME_DATA}/api/${prefix}` },
     { source: `/api/${prefix}/:path*`, destination: `${GAME_DATA}/api/${prefix}/:path*` },
   );
 }
-
 for (const segment of AUTH_PATHS) {
   rewrites.push({
     source: `/api/auth/${segment}`,
     destination: `${GAME_DATA}/api/auth/${segment}`,
   });
 }
-
-/** Canonical fleet auth proxy ΓÇö id hub, not deprecated api.grudge-studio.com */
 rewrites.push(
   { source: "/auth/callback", destination: "/index.html" },
   { source: "/api/auth/:path*", destination: `${AUTH_GATEWAY}/api/auth/:path*` },
   { source: "/auth/:path*", destination: `${AUTH_GATEWAY}/auth/:path*` },
-  // Login SPA is proxied from id hub. Relative assets on /login must also proxy or
-  // they hit this game's SPA catch-all as text/html (broken bg, logos, brand).
   { source: "/login", destination: `${AUTH_GATEWAY}/login` },
   { source: "/auth-bg-racalvin.jpg", destination: `${AUTH_GATEWAY}/auth-bg-racalvin.jpg` },
   { source: "/grudge-id-logo.png", destination: `${AUTH_GATEWAY}/grudge-id-logo.png` },
   { source: "/brand/logo.png", destination: `${AUTH_GATEWAY}/brand/logo.png` },
   { source: "/brand/:path*", destination: `${AUTH_GATEWAY}/brand/:path*` },
-  { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*" },
-  // Game profiles / matches for this title ΓÇö NOT grudge-studio.com (retro ROM catalog).
+  { source: "/api/ai/:path*", destination: "https://ai.grudge-studio.com/:path*` },
   { source: "/api/games", destination: `${WARLORD_API}/api/games` },
   { source: "/api/games/:path*", destination: `${WARLORD_API}/api/games/:path*` },
   { source: "/api/mp/health", destination: "/mp-health.json" },
-  // Unknown fleet APIs ΓåÆ grudge-api (account/characters already rewritten above).
-  // Never proxy to grudge-studio.com ΓÇö that host serves NES/NDS listings as /api/games.
   { source: "/api/:path*", destination: `${GAME_DATA}/api/:path*` },
-  // Client SPA routes (Vercel does not support JS negative-lookahead path regex).
-  // Static files under assets/ models/ etc. still win over rewrites when present on disk.
   { source: "/play", destination: "/index.html" },
   { source: "/edit", destination: "/edit.html" },
   { source: "/map-edit", destination: "/edit.html" },
@@ -205,126 +151,36 @@ rewrites.push(
   { source: "/island", destination: "/index.html" },
   { source: "/faction", destination: "/index.html" },
   { source: "/warlord", destination: "/index.html" },
-  // SPA fallback — must exclude static asset dirs so /models/*.glb is never HTML
   {
     source: "/((?!assets/|models/|media/|textures/|anims/|api/|sdk/|v1/|favicon\\.svg|favicon\\.png|favicon-|apple-touch|fleet-|leaderboards|auth-bg|grudge-id-logo|brand/|grudge-game-bootstrap|edit\\.html|mp-health\\.json).*)",
     destination: "/index.html",
   },
 );
 
-/** Vercel has no local machine paths (vfc-build, Character-Animator-Mapper). Assets ship from git. */
-const CI_BUILD = "node scripts/ci-build.mjs";
-
 const config = {
   ignoreCommand: "node scripts/vercel-ignore-build.mjs",
-  buildCommand: CI_BUILD,
+  buildCommand: "node scripts/ci-build.mjs",
   installCommand: "",
   outputDirectory: ".",
   framework: null,
-  // Dead bundle URLs ΓåÆ Sprite-safe core (filename browsers have never cached).
   redirects: [
-    {
-      source: "/assets/index-warlord-fix3.js",
-      destination: BUNDLE_PIN,
-      permanent: true,
-    },
-    {
-      source: "/index-warlord-fix3.js",
-      destination: BUNDLE_PIN,
-      permanent: true,
-    },
-    {
-      source: "/assets/index-warlord-fix95.js",
-      destination: BUNDLE_PIN,
-      permanent: true,
-    },
-    {
-      source: "/assets/gw-core-20260713.js",
-      destination: BUNDLE_PIN,
-      permanent: true,
-    },
-    {
-      source: "/assets/gw-core-:rest*",
-      destination: BUNDLE_PIN,
-      permanent: false,
-    },
+    { source: "/models/maps/:file", destination: `${LFS_MEDIA}/models/maps/:file`, permanent: false },
+    { source: "/models/units/jungle/:file", destination: `${LFS_MEDIA}/models/units/jungle/:file`, permanent: false },
+    { source: "/models/units/defaultcreeps/:file", destination: `${LFS_MEDIA}/models/units/defaultcreeps/:file`, permanent: false },
+    { source: "/assets/index-warlord-fix3.js", destination: BUNDLE_PIN, permanent: true },
+    { source: "/index-warlord-fix3.js", destination: BUNDLE_PIN, permanent: true },
+    { source: "/assets/index-warlord-fix95.js", destination: BUNDLE_PIN, permanent: true },
+    { source: "/assets/gw-core-20260713.js", destination: BUNDLE_PIN, permanent: true },
+    { source: "/assets/gw-core-:rest*", destination: BUNDLE_PIN, permanent: false },
   ],
   headers: [
-    {
-      source: "/index.html",
-      headers: [
-        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
-        { key: "Pragma", value: "no-cache" },
-      ],
-    },
-    {
-      source: "/",
-      headers: [
-        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
-        { key: "Pragma", value: "no-cache" },
-      ],
-    },
-    {
-      source: "/force-reload.html",
-      headers: [
-        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
-      ],
-    },
-    {
-      source: "/assets/gw-core-(.*).js",
-      headers: [
-        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
-        { key: "Pragma", value: "no-cache" },
-        { key: "CDN-Cache-Control", value: "no-store" },
-      ],
-    },
-    {
-      source: "/assets/index-warlord-(.*).js",
-      headers: [
-        { key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" },
-        { key: "Pragma", value: "no-cache" },
-        { key: "CDN-Cache-Control", value: "no-store" },
-      ],
-    },
-    {
-      source: "/api/v1/(.*)",
-      headers: [
-        { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
-        { key: "Content-Type", value: "application/json; charset=utf-8" },
-      ],
-    },
-    {
-      source: "/v1/(.*)",
-      headers: [
-        { key: "Cache-Control", value: "no-store, max-age=0, must-revalidate" },
-        { key: "Content-Type", value: "application/json; charset=utf-8" },
-      ],
-    },
-    {
-      source: "/assets/(.*)",
-      headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
-    },
-    {
-      source: "/models/(.*)",
-      headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }],
-    },
-    {
-      source: "/textures/(.*)",
-      headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
-    },
-    {
-      source: "/anims/|sdk/|(.*)",
-      headers: [{ key: "Cache-Control", value: "public, max-age=86400, immutable" }],
-    },
+    { source: "/index.html", headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }, { key: "Pragma", value: "no-cache" }] },
+    { source: "/", headers: [{ key: "Cache-Control", value: "no-store, no-cache, must-revalidate, max-age=0" }, { key: "Pragma", value: "no-cache" }] },
+    { source: "/models/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] },
+    { source: "/assets/(.*)", headers: [{ key: "Cache-Control", value: "public, max-age=0, must-revalidate" }] },
   ],
   rewrites,
 };
 
 writeFileSync(join(ROOT, "vercel.json"), JSON.stringify(config, null, 2) + "\n");
-console.log(
-  "[vercel] wrote vercel.json with",
-  rewrites.length,
-  "rewrites,",
-  config.redirects.length,
-  "redirects",
-);
+console.log("[vercel] wrote vercel.json with", rewrites.length, "rewrites,", config.redirects.length, "redirects");
