@@ -60,8 +60,16 @@ export default defineConfig({
       three: path.resolve(import.meta.dirname, "node_modules/three"),
       "@react-three/fiber": path.resolve(import.meta.dirname, "node_modules/@react-three/fiber"),
       "@react-three/drei": path.resolve(import.meta.dirname, "node_modules/@react-three/drei"),
+      "@react-three/rapier": path.resolve(import.meta.dirname, "node_modules/@react-three/rapier"),
     },
-    dedupe: ["react", "react-dom", "three", "@react-three/fiber", "@react-three/drei"],
+    dedupe: [
+      "react",
+      "react-dom",
+      "three",
+      "@react-three/fiber",
+      "@react-three/drei",
+      "@react-three/rapier",
+    ],
   },
   root: path.resolve(import.meta.dirname),
   build: {

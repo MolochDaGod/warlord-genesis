@@ -109,11 +109,23 @@ export function runCapabilityPreflight(): CapabilityReport {
   const checks: CapabilityCheck[] = [
     {
       id: "webgl",
-      label: "WebGL / WebGL2",
+      label: "WebGL",
       severity: "required",
       ok: webgl.ok,
-      detail: webgl.ok ? "Context available" : webgl.reason || "Unavailable",
-      requiresFor: "Three.js canvas, arena lighting, meshes",
+      detail: webgl.ok
+        ? webgl.webgl2
+          ? "WebGL2 context (play path)"
+          : "WebGL1 context"
+        : webgl.reason || "Unavailable",
+      requiresFor: "three WebGLRenderer / R3F Canvas",
+    },
+    {
+      id: "webgl2",
+      label: "WebGL2",
+      severity: "recommended",
+      ok: webgl.webgl2,
+      detail: webgl.webgl2 ? "WebGL2 available" : "WebGL1 only — shadows/ST still run",
+      requiresFor: "Preferred R3F + Rapier /play context",
     },
     {
       id: "wasm",
@@ -185,9 +197,9 @@ export function runCapabilityPreflight(): CapabilityReport {
       severity: "optional",
       ok: webgpu,
       detail: webgpu
-        ? "navigator.gpu present (optional advanced path)"
-        : "Not available — WebGL renderer used",
-      requiresFor: "Future high-end renderer (not required for /play)",
+        ? "navigator.gpu present — not used by /play (R3F WebGLRenderer)"
+        : "No WebGPU — correct; play is WebGL/WebGL2",
+      requiresFor: "Not the Genesis play renderer",
     },
     {
       id: "node",

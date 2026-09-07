@@ -1,6 +1,7 @@
 export {
   FLEET_DPR,
   FLEET_MAX_DPR,
+  applyFleetRenderer,
   fleetArenaCanvasProps,
   fleetGl,
   fleetMpCanvasProps,

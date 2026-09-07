@@ -23,6 +23,7 @@ import { EM } from "../../game/entities";
 import { CanvasErrorBoundary, WebGLFallback } from "./CanvasFallback";
 import { detectWebGL } from "../../lib/webgl";
 import {
+  applyFleetRenderer,
   attachWebGLContextGuard,
   fleetArenaCanvasProps,
   withFleetCanvasProps,
@@ -84,6 +85,7 @@ function SceneContent() {
 export function Game() {
   const support = useMemo(() => detectWebGL(), []);
   const handleCreated = (state: RootState) => {
+    applyFleetRenderer(state.gl);
     attachWebGLContextGuard(state.gl.domElement, "grudge-warlords");
   };
 

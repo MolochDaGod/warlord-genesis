@@ -17,13 +17,23 @@ export function fleetGl(
     powerPreference: "high-performance",
     failIfMajorPerformanceCaveat: false,
     preserveDrawingBuffer: false,
+    stencil: false,
     ...overrides,
   };
 }
 
+/** sRGB + ACES — production r185 play canvas (not WebGPU). */
+export function applyFleetRenderer(gl: THREE.WebGLRenderer): void {
+  gl.outputColorSpace = THREE.SRGBColorSpace;
+  gl.toneMapping = THREE.ACESFilmicToneMapping;
+  gl.toneMappingExposure = 1;
+  gl.shadowMap.enabled = true;
+  gl.shadowMap.type = THREE.PCFSoftShadowMap;
+}
+
 /** Main warcamp / arena match — shadows + capped DPR. */
 export const fleetArenaCanvasProps: Partial<CanvasProps> = {
-  shadows: { type: THREE.PCFShadowMap },
+  shadows: { type: THREE.PCFSoftShadowMap },
   gl: fleetGl(),
   dpr: FLEET_DPR,
 };

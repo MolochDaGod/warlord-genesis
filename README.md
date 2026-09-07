@@ -41,6 +41,8 @@ Same Vercel project `warlord-genesis` (`prj_FE1mPbTqRv39PbvkyjrxNL5gVrJY`).
 - Sanctum standard/large: fleet Super Terrain heightfield; lanes stay walkable. 1v1 keeps the authored arena GLB.
 - Play kit: Toon RTS `{race}.glb` + one mixer. Not Meshy / capsule heroes.
 
+Play needs **WebGL/WebGL2** + WASM (Rapier). WebGPU is detected, not used. One `three` instance (Vite alias). See [docs/PLAY_DEPENDENCIES.md](docs/PLAY_DEPENDENCIES.md).
+
 ```bash
 corepack enable
 pnpm install
