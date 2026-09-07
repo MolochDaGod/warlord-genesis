@@ -17,10 +17,8 @@ import {
   weaponTypeFromModel3d,
   type PreparedGrudge6Character,
 } from "./grudge6Character";
-export { weaponTypeFromModel3d };
 import { findNativeClip } from "./sourceClips";
 import { conceptClip, type ConceptId } from "./threeAnim";
-export { GRUDGE6_FACE_YAW };
 import { resolveHandBoneName } from "./mixamoRetarget";
 import {
   enemyWarlordTypeId,
@@ -28,6 +26,8 @@ import {
   playerWarlordTypeId,
   resolveUnitDef,
 } from "./grudge6";
+
+export { GRUDGE6_FACE_YAW, weaponTypeFromModel3d };
 
 /**
  * characterTruth: anim set from equipped weapon, not class.
@@ -195,6 +195,7 @@ export class Grudge6HeroRig {
     await this.prepared.swapAnimPack(pack);
   }
 
+  /** Equip: pack from weaponTypeFromModel3d(model) else anim class. */
   setWeaponFull(
     animClass: WeaponClass,
     _instant?: boolean,
