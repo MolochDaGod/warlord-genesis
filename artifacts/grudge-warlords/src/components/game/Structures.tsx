@@ -87,7 +87,6 @@ function StructureMesh({ kind, faction }: { kind: StructureEntity["kind"]; facti
         <mesh material={stone} position={[0, 1, 0]} castShadow>
           <boxGeometry args={[1, 0.8, 1]} />
         </mesh>
-        {/* Stout wide barrel reading as a heavy cannon. */}
         <mesh material={dark} position={[0, 1.35, 0.6]} rotation={[Math.PI / 2, 0, 0]} castShadow>
           <cylinderGeometry args={[0.28, 0.32, 1.2, 10]} />
         </mesh>
@@ -106,7 +105,6 @@ function StructureMesh({ kind, faction }: { kind: StructureEntity["kind"]; facti
         <mesh material={stone} position={[0, 1, 0]} castShadow>
           <boxGeometry args={[0.9, 0.6, 0.9]} />
         </mesh>
-        {/* Long thin bolt and a crossbow bow to read as a ballista. */}
         <mesh material={trim} position={[0, 1.3, 0.6]} rotation={[Math.PI / 2, 0, 0]}>
           <cylinderGeometry args={[0.08, 0.08, 1.4, 6]} />
         </mesh>
@@ -125,14 +123,12 @@ function StructureMesh({ kind, faction }: { kind: StructureEntity["kind"]; facti
         <mesh material={dark} position={[0, 2.95, 0]} castShadow>
           <cylinderGeometry args={[0.85, 0.7, 0.5, 6]} />
         </mesh>
-        {/* Floating glowing arcane orb. */}
         <mesh material={trim} position={[0, 3.55, 0]}>
           <icosahedronGeometry args={[0.55, 1]} />
         </mesh>
       </group>
     );
   }
-  // barrier
   return (
     <group>
       <mesh material={stone} position={[0, 0.7, 0]} castShadow receiveShadow>
@@ -175,7 +171,6 @@ export function Structures() {
       let aimZ: number | null = null;
       let fireHero = false;
 
-      // Enemy buildings will also shoot the hero if he is the closest threat.
       if (s.faction === "enemy" && heroAlive) {
         const hd = distXZ(s.pos, EM.playerPos.x, EM.playerPos.z);
         const td = target ? distXZ(s.pos, target.pos.x, target.pos.z) : Infinity;
@@ -204,10 +199,7 @@ export function Structures() {
           if (s.kind === "mage") EM.addEmber(_from.clone(), "#c9a3ff");
           else if (s.kind === "cannon" || s.kind === "core") EM.addEmber(_from.clone(), "#ffc080");
           const shell = STRUCT_PROJECTILE[s.kind];
-          // Army-wide buffs (relic + ally tech) scale a structure's outgoing dmg.
           const dmg = s.damage * EM.factionDmgMult(s.faction);
-          // Heavy shells (cannon / fire / wizard) deal their damage as AoE at
-          // impact; light shells stay single-target hitscan dealt now.
           const splashShell = shell ? !!PROJECTILES[shell].splash : false;
           if (shell) {
             EM.addProjectile(
@@ -229,14 +221,12 @@ export function Structures() {
       }
     }
 
-    // Mirror core HP + resolve win / lose.
     if (EM.allyCore && EM.enemyCore) {
       g.setCoreHp(EM.allyCore.hp, EM.enemyCore.hp);
       if (EM.enemyCore.hp <= 0) g.win();
       else if (EM.allyCore.hp <= 0) g.lose();
     }
 
-    // Turret rotation + overhead HP bars (cores use the HUD frames instead).
     for (const s of EM.structures) {
       const grp = refs.get(s.id);
       if (!grp) continue;
@@ -270,7 +260,6 @@ export function Structures() {
     else refs.delete(id);
   };
 
-  // When Sanctum / 1v1 deck finishes loading, re-seat towers into pads / deck Y
   const mapVersion = useGame((s) => s.mapVersion);
   useEffect(() => {
     if (!getMapSurfaceId()) return;
@@ -278,7 +267,6 @@ export function Structures() {
     force((n) => n + 1);
   }, [mapVersion]);
 
-  // Poll once shortly after mount — AuthoredMap may register after first paint
   useEffect(() => {
     const t = window.setTimeout(() => {
       if (getMapSurfaceId()) {
@@ -312,7 +300,7 @@ export function Structures() {
             <group key={s.id} ref={setRef(s.id)} position={[s.pos.x, s.pos.y, s.pos.z]} rotation={[0, s.yaw, 0]}>
               {s.kind === "tower" ? (
                 useSanctum ? (
-                  <SanctumTurret faction={s.faction} />
+                  <SanctumTurret faction={s.faction} lane={s.lane} tier={s.tier} />
                 ) : (
                   <TowerModel
                     pack={towerPackForSide(s.faction, s.tier ?? "outer")}
