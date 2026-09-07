@@ -8,7 +8,7 @@
  */
 
 import type { GrudgeFactionId } from "./grudge6";
-import { ASSET_CDN, WARLORD_MANIFEST } from "./warlordManifest";
+import { ASSET_CDN } from "./warlordManifest";
 
 export type TowerPack = "medieval" | "elven" | "orc" | "ruins";
 export type TowerTier = "outer" | "inner";
@@ -56,18 +56,13 @@ export function towerPackForFaction(factionId: GrudgeFactionId): TowerPack {
   return towerPackForFactionTier(factionId, "outer");
 }
 
-export function towerModelUrl(pack: TowerPack, tier: TowerTier, cdnOk: boolean): string {
+/** Genesis ships these GLBs. A successful local palette probe must not switch towers to CDN maps/. */
+export function towerModelUrl(pack: TowerPack, tier: TowerTier, _cdnOk?: boolean): string {
   const file = TOWER_MODEL[pack][tier];
-  if (cdnOk) {
-    return `${WARLORD_MANIFEST.pipeline.r2.mapTowers}${pack}/${file}.glb`;
-  }
   return `${LOCAL}models/towers/${pack}/${file}.glb`;
 }
 
-export function towerAtlasUrl(pack: TowerPack, cdnOk: boolean): string {
-  if (cdnOk) {
-    return `${WARLORD_MANIFEST.pipeline.r2.mapTowerAtlases}${pack}/atlas.png`;
-  }
+export function towerAtlasUrl(pack: TowerPack, _cdnOk?: boolean): string {
   return `${LOCAL}models/towers/${pack}/atlas.png`;
 }
 

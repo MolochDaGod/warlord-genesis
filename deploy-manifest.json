@@ -3,8 +3,8 @@
   "site": "https://warlord-genesis.vercel.app",
   "buildMode": "vite",
   "bundleVersion": 20260907,
-  "bundleCacheHash": "CVf7T6M2",
-  "bundleFile": "assets/index-CVf7T6M2.js",
+  "bundleCacheHash": "B4yONmaP",
+  "bundleFile": "assets/index-B4yONmaP.js",
   "bundleChecks": [
     {
       "id": "lobby-route",
@@ -117,7 +117,7 @@
     "index.html",
     "favicon.svg",
     "vercel.json",
-    "assets/index-CVf7T6M2.js",
+    "assets/index-B4yONmaP.js",
     "assets/index-BEaAkFRw.css",
     "v1/play-kit.json",
     "v1/health.json",
@@ -723,7 +723,7 @@
   ],
   "lastBuilt": "2026-09-05T05:36:05.877Z",
   "bundleBytes": 4148436,
-  "bundleSha256": "1f903c99a8e32c10",
+  "bundleSha256": "ad466d5a5837a6d6",
   "sites": [
     "https://warlord-genesis.vercel.app",
     "https://warstrat.grudge-studio.com"

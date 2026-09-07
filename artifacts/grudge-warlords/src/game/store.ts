@@ -330,12 +330,16 @@ export const useGame = create<GameState>((set, get) => ({
     // Generate a fresh procedural battlefield at the chosen size.
     const size = get().mapSize;
     EM.newMatch(size);
-    void overlaySuperTerrain(EM.map).then((ok) => {
-      if (!ok) return;
-      const p = EM.playerPos;
-      p.y = EM.map.heightAt(p.x, p.z) + 1.15;
-      set({ mapVersion: get().mapVersion + 1 });
-    });
+    void overlaySuperTerrain(EM.map)
+      .then((ok) => {
+        if (!ok) return;
+        const p = EM.playerPos;
+        p.y = EM.map.heightAt(p.x, p.z) + 1.15;
+        set({ mapVersion: get().mapVersion + 1 });
+      })
+      .catch(() => {
+        /* keep authored deck — never reject into the console */
+      });
     // Start every deployment in combat mode with a clean selection so the
     // pointer-lock engage prompt reliably appears.
     useCommand.getState().resetCommand();

@@ -1,6 +1,5 @@
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { HeightfieldCollider, RigidBody } from "@react-three/rapier";
-import { useTexture } from "@react-three/drei";
 import * as THREE from "three";
 import { EM } from "../../game/entities";
 import { useGame } from "../../game/store";
@@ -31,7 +30,10 @@ export function Arena() {
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
         const h = heights[r * cols + c] ?? 0;
-        hfHeights[c * rows + r] = relief ? h : THREE.MathUtils.clamp(h, -0.5, 2.5);
+        const y = Number.isFinite(h) ? h : 0;
+        hfHeights[c * rows + r] = relief
+          ? THREE.MathUtils.clamp(y, 0, 24)
+          : THREE.MathUtils.clamp(y, -0.5, 2.5);
       }
     }
     return {
@@ -116,11 +118,33 @@ function SuperTerrainVisual({
   length: number;
   albedo: string;
 }) {
-  const map = useTexture(albedo);
-  map.colorSpace = THREE.SRGBColorSpace;
-  map.wrapS = THREE.RepeatWrapping;
-  map.wrapT = THREE.RepeatWrapping;
-  map.repeat.set(8, 8);
+  const [map, setMap] = useState<THREE.Texture | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    const loader = new THREE.TextureLoader();
+    loader.setCrossOrigin("anonymous");
+    loader.load(
+      albedo,
+      (tex) => {
+        if (cancelled) {
+          tex.dispose();
+          return;
+        }
+        tex.colorSpace = THREE.SRGBColorSpace;
+        tex.wrapS = THREE.RepeatWrapping;
+        tex.wrapT = THREE.RepeatWrapping;
+        tex.repeat.set(8, 8);
+        setMap(tex);
+      },
+      undefined,
+      () => {
+        /* keep grass color — never throw into CanvasErrorBoundary */
+      },
+    );
+    return () => {
+      cancelled = true;
+    };
+  }, [albedo]);
   const geom = useMemo(() => {
     const g = new THREE.PlaneGeometry(width, length, Math.max(1, cols - 1), Math.max(1, rows - 1));
     g.rotateX(-Math.PI / 2);
@@ -151,7 +175,12 @@ function SuperTerrainVisual({
   }, [cols, rows, heights, width, length]);
   return (
     <mesh geometry={geom} receiveShadow castShadow>
-      <meshStandardMaterial map={map} roughness={0.88} metalness={0.04} vertexColors={false} />
+      <meshStandardMaterial
+        map={map ?? undefined}
+        color={map ? "#ffffff" : "#4f7d32"}
+        roughness={0.88}
+        metalness={0.04}
+      />
     </mesh>
   );
 }

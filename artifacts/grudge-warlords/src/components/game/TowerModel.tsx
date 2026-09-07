@@ -121,7 +121,9 @@ function TowerMesh({ modelUrl, atlasUrl }: { modelUrl: string; atlasUrl: string 
 export function TowerModel({ pack, tier }: { pack: TowerPack; tier: TowerTier }) {
   const [cdnOk, setCdnOk] = useState(() => getEngine().cdnReachable);
   useEffect(() => {
-    bootEngine().then((s) => setCdnOk(s.cdnReachable));
+    bootEngine()
+      .then((s) => setCdnOk(s.cdnReachable))
+      .catch(() => setCdnOk(false));
   }, []);
 
   const modelUrl = towerModelUrl(pack, tier, cdnOk);
