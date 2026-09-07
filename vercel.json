@@ -7,27 +7,27 @@
   "redirects": [
     {
       "source": "/assets/index-warlord-fix3.js",
-      "destination": "/assets/index-wxMW2eZ1.js?v=20260906",
+      "destination": "/assets/index-CVf7T6M2.js?v=20260907",
       "permanent": true
     },
     {
       "source": "/index-warlord-fix3.js",
-      "destination": "/assets/index-wxMW2eZ1.js?v=20260906",
+      "destination": "/assets/index-CVf7T6M2.js?v=20260907",
       "permanent": true
     },
     {
       "source": "/assets/index-warlord-fix95.js",
-      "destination": "/assets/index-wxMW2eZ1.js?v=20260906",
+      "destination": "/assets/index-CVf7T6M2.js?v=20260907",
       "permanent": true
     },
     {
       "source": "/assets/gw-core-20260713.js",
-      "destination": "/assets/index-wxMW2eZ1.js?v=20260906",
+      "destination": "/assets/index-CVf7T6M2.js?v=20260907",
       "permanent": true
     },
     {
       "source": "/assets/gw-core-:rest*",
-      "destination": "/assets/index-wxMW2eZ1.js?v=20260906",
+      "destination": "/assets/index-CVf7T6M2.js?v=20260907",
       "permanent": false
     }
   ],

@@ -48,7 +48,7 @@ export const WARLORD_MANIFEST = {
     cdn: ASSET_CDN,
     r2: {
       units: `${ASSET_CDN}/grudge-nexus/models/rts/units/`,
-      unitPalette: `${ASSET_CDN}/grudge-nexus/textures/Color_Palette.png`,
+      unitPalette: "/models/units/Color_Palette.png",
       rtsIcons: `${ASSET_CDN}/grudge-nexus/icons/skills/`,
       bakedAnims: `${ASSET_CDN}/anims/baked/`,
       raceModels: `${ASSET_CDN}/models/grudge6/races/`,
