@@ -1,9 +1,4 @@
 #!/usr/bin/env node
-/**
- * Generate vercel.json with Grudge fleet API rewrites + warlord-genesis API proxy.
- * Always emit Git LFS media redirects for map/unit GLBs so Vercel never serves
- * 133-byte pointers as model/gltf-binary.
- */
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -26,6 +21,8 @@ const WARLORD_API =
   "https://warlord-genesis-api-production-3b5a.up.railway.app";
 const LFS_MEDIA =
   "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main";
+const TOON =
+  "https://assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters";
 
 const PREFIXES = [
   "health", "characters", "party", "account", "island", "islands", "inventory",
@@ -42,6 +39,32 @@ const OBJECTSTORE = "https://objectstore.grudge-studio.com";
 const OBJECTSTORE_MODEL_PREFIXES = ["kaykit", "characters", "grudge6", "units", "projectiles", "rts"];
 const ASSET_CDN = "https://client.grudge-studio.com";
 
+const CLASSES = ["warrior", "mage", "ranger", "worge"];
+const RACE_TO_TOON = {
+  "western-kingdoms": "human",
+  barbarians: "barbarian",
+  "high-elves": "elf",
+  dwarves: "dwarf",
+  orcs: "orc",
+  undead: "undead",
+};
+
+const heroRedirects = [];
+for (const [race, kit] of Object.entries(RACE_TO_TOON)) {
+  for (const cls of CLASSES) {
+    heroRedirects.push({
+      source: `/models/heroes/grudge6/${race}_${cls}.glb`,
+      destination: `${TOON}/${kit}.glb`,
+      permanent: false,
+    });
+  }
+}
+heroRedirects.push({
+  source: "/models/heroes/grudge6/:file",
+  destination: `${TOON}/human.glb`,
+  permanent: false,
+});
+
 const rewrites = [
   { source: "/api/v1/play-kit", destination: "/v1/play-kit.json" },
   { source: "/api/v1/play-kit.json", destination: "/v1/play-kit.json" },
@@ -53,7 +76,6 @@ const rewrites = [
   { source: "/api/assets/grudge-nexus/models/maps/:theme/:file", destination: "/models/towers/:theme/:file" },
   { source: "/api/assets/grudge-nexus/textures/Color_Palette.png", destination: "/models/units/Color_Palette.png" },
   { source: "/api/assets/grudge-nexus/models/rts/units/:file", destination: "/models/units/:file" },
-  { source: "/models/heroes/grudge6/:file", destination: "https://raw.githubusercontent.com/MolochDaGod/warlord-genesis/main/models/heroes/grudge6/:file" },
   { source: "/textures/grudge6/:race/:file", destination: "https://assets.grudge-studio.com/assets/:race/textures/:file" },
   { source: "/textures/WK_Standard_Units.webp", destination: "https://assets.grudge-studio.com/assets/western-kingdoms/textures/WK_Standard_Units.webp" },
   { source: "/api/assets/:path*", destination: `${ASSET_CDN}/:path*` },
@@ -116,6 +138,7 @@ const config = {
     { source: "/models/maps/:file", destination: `${LFS_MEDIA}/models/maps/:file`, permanent: false },
     { source: "/models/units/jungle/:file", destination: `${LFS_MEDIA}/models/units/jungle/:file`, permanent: false },
     { source: "/models/units/defaultcreeps/:file", destination: `${LFS_MEDIA}/models/units/defaultcreeps/:file`, permanent: false },
+    ...heroRedirects,
     { source: "/assets/index-warlord-fix3.js", destination: BUNDLE_PIN, permanent: true },
     { source: "/index-warlord-fix3.js", destination: BUNDLE_PIN, permanent: true },
     { source: "/assets/index-warlord-fix95.js", destination: BUNDLE_PIN, permanent: true },
