@@ -59,7 +59,7 @@ export function BuildBar() {
           );
         })}
       </div>
-      <span className="gw-buildbar-hint">1–5 place · Shift+1–5 groups · Ctrl+1–5 recall</span>
+      <span className="gw-buildbar-hint">1–5 place · F1–F5 ally orders · Shift+1–5 groups</span>
     </div>
   );
 }

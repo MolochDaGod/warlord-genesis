@@ -8,7 +8,7 @@ import { spawnMapCamps, type NeutralCampState } from "./neutralCamps";
 import { getMapSurfaceId, placeTowerOnDeck, sampleDeckY } from "../engine/mapSurface";
 
 /** Order the player can issue to selected commandable units. */
-export type OrderKind = "idle" | "move" | "attackMove" | "hold" | "stop";
+export type OrderKind = "idle" | "move" | "attackMove" | "hold" | "stop" | "follow" | "defend";
 
 export interface UnitEntity {
   id: number;

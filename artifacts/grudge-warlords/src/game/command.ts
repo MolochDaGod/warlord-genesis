@@ -89,6 +89,16 @@ export const useCommand = create<CommandState>((set, get) => ({
         u.order = "hold";
         u.anchor.copy(at);
         u.dest = at.clone();
+      } else if (order === "follow") {
+        u.order = "follow";
+        u.dest = EM.playerPos.clone();
+        u.anchor.copy(EM.playerPos);
+      } else if (order === "defend") {
+        const c = EM.map.allyCore;
+        const at = new THREE.Vector3(c.x, 0, c.z);
+        u.order = "defend";
+        u.anchor.copy(at);
+        u.dest = at.clone();
       } else if (point) {
         u.order = order; // "move" | "attackMove"
         u.dest = point.clone().setY(0);

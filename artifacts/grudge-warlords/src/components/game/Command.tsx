@@ -252,6 +252,29 @@ export function CommandLayer() {
         case "KeyS":
           cmd.issueOrder("stop");
           break;
+        case "F1":
+          e.preventDefault();
+          cmd.issueOrder(
+            "attackMove",
+            gpt ?? new THREE.Vector3(EM.map.enemyCore.x, 0, EM.map.enemyCore.z),
+          );
+          break;
+        case "F2":
+          e.preventDefault();
+          cmd.issueOrder("hold", gpt);
+          break;
+        case "F3":
+          e.preventDefault();
+          cmd.issueOrder("stop");
+          break;
+        case "F4":
+          e.preventDefault();
+          cmd.issueOrder("follow");
+          break;
+        case "F5":
+          e.preventDefault();
+          cmd.issueOrder("defend");
+          break;
         case "Escape":
           cmd.setBuild(null);
           cmd.setSelection([]);

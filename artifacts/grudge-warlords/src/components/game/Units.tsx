@@ -328,6 +328,22 @@ function decide(u: UnitEntity, heroAlive: boolean, dt: number): Decision {
       }
       return NO_OP;
     }
+    if (u.order === "follow") {
+      const t = acquire(u, range * 0.85);
+      if (t && distXZ(t.pos, EM.playerPos.x, EM.playerPos.z) < range + 8) {
+        return engage(u, t);
+      }
+      if (distXZ(u.pos, EM.playerPos.x, EM.playerPos.z) < 3.2) return NO_OP;
+      return { moveTo: pathTarget(u, EM.playerPos), target: null, hero: false };
+    }
+    if (u.order === "defend") {
+      const c = EM.map.allyCore;
+      const t = acquire(u, range);
+      if (t && distXZ(t.pos, c.x, c.z) < range + 14) return engage(u, t);
+      if (distXZ(u.pos, c.x, c.z) < 4) return NO_OP;
+      _tmp.set(c.x, 0, c.z);
+      return { moveTo: pathTarget(u, _tmp), target: null, hero: false };
+    }
     // idle / hold: guard the anchor, engage intruders, then leash back.
     const t = acquire(u, range);
     if (t) {

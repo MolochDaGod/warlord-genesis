@@ -31,6 +31,7 @@ const ORDERS: { key: string; label: string }[] = [
   { key: "H", label: "Hold" },
   { key: "S", label: "Stop" },
   { key: "1–5", label: "Fortify" },
+  { key: "F1–F5", label: "Attack · Hold · Stop · Follow · Defend" },
 ];
 
 /** Aggregate the live selection into per-type counts for the selection panel. */
