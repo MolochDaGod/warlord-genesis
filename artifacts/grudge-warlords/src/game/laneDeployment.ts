@@ -74,6 +74,22 @@ export function playerDefaultDeployment(heroes?: LaneHeroPicks): LaneDeployment 
   return defaultLaneDeployment(playerGrudgeFaction(), heroes);
 }
 
+/**
+ * Live bundle sometimes stored `laneDeployment` without `.heroes`
+ * (crash: Cannot destructure meleeGuard of A.heroes). Always return a full doc.
+ */
+export function asLaneDeployment(raw: unknown): LaneDeployment {
+  const fallback = playerDefaultDeployment();
+  if (!raw || typeof raw !== "object") return fallback;
+  const d = raw as Partial<LaneDeployment> & { meleeGuard?: string; rangedGuard?: string };
+  const heroes: LaneHeroPicks = {
+    meleeGuard: d.heroes?.meleeGuard || d.meleeGuard || fallback.heroes.meleeGuard,
+    rangedGuard: d.heroes?.rangedGuard || d.rangedGuard || fallback.heroes.rangedGuard,
+  };
+  const lanes = d.lanes ?? fallback.lanes;
+  return { heroes, lanes };
+}
+
 export function factionMeleeIds(factionId: GrudgeFactionId): string[] {
   return factionUnitIds(factionId).filter((id) => !resolveUnitDef(id)?.ranged);
 }
