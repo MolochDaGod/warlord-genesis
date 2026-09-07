@@ -1,1 +1,29 @@
-PLACEHOLDER
+{
+  "ignoreCommand": "node scripts/vercel-ignore-build.mjs",
+  "buildCommand": "node scripts/ci-build.mjs",
+  "installCommand": "",
+  "outputDirectory": ".",
+  "framework": null,
+  "redirects": [
+    {
+      "source": "/models/maps/:file",
+      "destination": "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main/models/maps/:file",
+      "permanent": false
+    },
+    {
+      "source": "/models/units/jungle/:file",
+      "destination": "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main/models/units/jungle/:file",
+      "permanent": false
+    },
+    {
+      "source": "/models/units/defaultcreeps/:file",
+      "destination": "https://media.githubusercontent.com/media/MolochDaGod/warlord-genesis/main/models/units/defaultcreeps/:file",
+      "permanent": false
+    },
+    {
+      "source": "/assets/index-warlord-fix3.js",
+      "destination": "/assets/index-CddL9kWW.js?v=20260907",
+      "permanent": true
+    }
+  ]
+}
