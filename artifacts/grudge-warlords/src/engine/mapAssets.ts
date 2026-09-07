@@ -2,7 +2,8 @@
  * Authored battlefield GLBs — replaces procedural grey heightfield visuals.
  *
  *  • sanctum_island  — large 3-lane map (standard / large)
- *  • sanctum_turret  — lane towers on Sanctum (missing towers in the island GLB)
+ *  • sanctum_turret  — Sketchfab pack of ALL Blue/Red lane turrets + bases.
+ *                      SanctumTurret instances ONE armature per pad; do not plant the whole scene.
  *  • arena_1v1       — small 1v1 / skirmish map (1vs1_high_poly source)
  *
  * Gameplay pathing still uses mapgen lanes + WalkGrid; these are the visuals
@@ -63,7 +64,6 @@ export const AUTHORED_MAPS: Record<AuthoredMapId, AuthoredMapDef> = {
     id: "sanctum",
     url: MAP_GLB.sanctum,
     label: "Sanctum Island",
-    // Raw GLB ~190×190 — keep near-native so 2 m heroes match kit scale
     targetWidth: 190,
     targetLength: 190,
     useSanctumTurrets: true,
@@ -73,7 +73,6 @@ export const AUTHORED_MAPS: Record<AuthoredMapId, AuthoredMapDef> = {
     id: "arena1v1",
     url: MAP_GLB.arena1v1,
     label: "Arena 1v1",
-    // Raw ~56×47 — small 1v1 field (1vs1_high_poly.glb)
     targetWidth: 56,
     targetLength: 50,
     useSanctumTurrets: false,
