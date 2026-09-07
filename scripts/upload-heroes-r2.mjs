@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 /**
  * Upload GRUDGE6 faction hero GLBs to R2 (grudge-assets bucket).
- * Served at assets.grudge-studio.com/models/heroes/grudge6/{repo}_{class}.glb
+ * Play does NOT read these keys — Vercel redirects
+ * /models/heroes/grudge6/{repo}_{class}.glb →
+ * assets.grudge-studio.com/asset-packs/toon-rts-characters/glb/characters/{kit}.glb
+ * Keep this script for legacy R2 objects only. Do not upload the 40MB megakit.
  */
 import fs from "node:fs";
 import path from "node:path";
