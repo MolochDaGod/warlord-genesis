@@ -6,6 +6,14 @@
  */
 const LOCAL = import.meta.env.BASE_URL;
 
+export interface RockSpot {
+  x: number;
+  z: number;
+  scale: number;
+  rot: number;
+  variant: number;
+}
+
 export const ENV_PACKS = {
   rockclusters: `${LOCAL}models/env/rockclusters.glb`,
 } as const;
