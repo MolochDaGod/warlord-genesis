@@ -1,6 +1,6 @@
 /**
- * Shared glTF 2.0 scene prep for every new building / trap / shell pack.
- * Load binary .glb via drei useGLTF. Keep Sketchfab Y-up. Clone then fit.
+ * Shared glTF 2.0 scene prep. Environment kits use isolateMeshes() so we never
+ * dump a whole Sketchfab cluster onto a lane pad.
  */
 import * as THREE from "three";
 import { clone as cloneSkeleton } from "three/examples/jsm/utils/SkeletonUtils.js";
@@ -10,6 +10,13 @@ export interface GltfFitOpts {
   maxDim?: number;
   shadows?: boolean;
   keepMaterials?: boolean;
+}
+
+export interface IsolatedMesh {
+  name: string;
+  geometry: THREE.BufferGeometry;
+  material: THREE.Material | THREE.Material[];
+  size: THREE.Vector3;
 }
 
 export function cloneGltfScene(scene: THREE.Object3D): THREE.Object3D {
@@ -45,6 +52,38 @@ export function prepareGltfMaterials(root: THREE.Object3D, keep = true): void {
       sm.needsUpdate = true;
     }
   });
+}
+
+export function isolateMeshes(scene: THREE.Object3D, opts?: { minDim?: number }): IsolatedMesh[] {
+  const out: IsolatedMesh[] = [];
+  const minDim = opts?.minDim ?? 0.08;
+  scene.updateWorldMatrix(true, true);
+  scene.traverse((o) => {
+    const m = o as THREE.Mesh;
+    if (!m.isMesh || !m.geometry) return;
+    const geo = m.geometry.clone();
+    geo.applyMatrix4(m.matrixWorld);
+    geo.computeBoundingBox();
+    const box = geo.boundingBox;
+    if (!box) return;
+    const size0 = box.getSize(new THREE.Vector3());
+    if (Math.max(size0.x, size0.y, size0.z) < minDim) return;
+    const cx = (box.min.x + box.max.x) / 2;
+    const cz = (box.min.z + box.max.z) / 2;
+    geo.translate(-cx, -box.min.y, -cz);
+    geo.computeBoundingBox();
+    geo.computeVertexNormals();
+    const size = geo.boundingBox?.getSize(new THREE.Vector3()) ?? size0;
+    const mats = Array.isArray(m.material) ? m.material.map((x) => x.clone()) : (m.material as THREE.Material).clone();
+    const probe = Array.isArray(mats) ? mats : [mats];
+    for (const mat of probe) {
+      const sm = mat as THREE.MeshStandardMaterial;
+      if (sm.map) sm.map.colorSpace = THREE.SRGBColorSpace;
+    }
+    out.push({ name: m.name || `mesh_${out.length}`, geometry: geo, material: mats, size });
+  });
+  out.sort((a, b) => b.size.y * b.size.x - a.size.y * a.size.x);
+  return out;
 }
 
 export function fitGltfRoot(root: THREE.Object3D, opts: GltfFitOpts = {}): void {
