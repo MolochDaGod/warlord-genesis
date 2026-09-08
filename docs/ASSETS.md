@@ -2,6 +2,8 @@
 
 All new buildings, traps, shells, and the win-condition altar load as **binary glTF 2.0 (`.glb`)** through `useGLTF` + `instantiateGltf` in `artifacts/grudge-warlords/src/engine/gltfScene.ts`.
 
+Environment kits (rocks, etc.) use **`isolateMeshes()`** — every mesh is pulled out and scattered individually. Never plant the whole Sketchfab scene on a lane.
+
 Do **not** drop FBX / OBJ / Unity prefabs into play. Convert first:
 
 ```bat
@@ -23,6 +25,7 @@ Copy from `D:\Games\Models\` into `models/` (Vercel rewrites) or the Vite public
 | `altar_light_version.glb` | `models/buildings/core/altar.glb` |
 | `cc0_-_bomb.glb` | `models/projectiles/bomb.glb` |
 | `stylized_stone_wall.glb` | `models/buildings/deploy/stone_wall.glb` |
+| `rockclusters (1).glb` | `models/env/rockclusters.glb` |
 | `defence_tower_for_unity_5.glb` | `models/buildings/deploy/defence_tower.glb` |
 | `squire_cannontower_dd2_inspired.glb` | `models/buildings/deploy/squire_cannon.glb` |
 | `mechanical_howitzer.glb` | `models/buildings/deploy/howitzer.glb` |
@@ -43,5 +46,9 @@ Copy from `D:\Games\Models\` into `models/` (Vercel rewrites) or the Vite public
 | `water_tower.glb` | `models/buildings/deploy/water_tower.glb` |
 | `mystical_watchtower_-_decorative_game_character (1).glb` | `models/buildings/deploy/watchtower.glb` |
 | `m3dic.glb` | `models/buildings/deploy/medic.glb` |
+
+## Environment (woods only)
+
+`rockclusters.glb` is split per mesh and scattered in jungle / ridge. Placement rejects anything closer than **6.4 m** to a lane or cut-through. Towns and cores stay clear.
 
 Caps: **2 towers + 3 traps + 2 support + 1 wall**. Win/lose is still core HP.
