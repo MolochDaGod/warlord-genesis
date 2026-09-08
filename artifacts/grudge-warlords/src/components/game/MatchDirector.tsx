@@ -405,17 +405,24 @@ function decideFocus(diff: DifficultyDef) {
   ai.defendStructureId = null;
   ai.focusLane = -1;
   const threat = mostThreatenedEnemyStructure();
-  if (threat && Math.random() < diff.aiDefendBias) {
+  const losing = laneWithMaxMomentum(EM.match.momentum.ally);
+  const threatFrac = threat ? threat.hp / threat.maxHp : 1;
+
+  if (threat && threatFrac < 0.42 * Math.max(0.5, diff.aiDefendBias)) {
     ai.defendStructureId = threat.id;
     ai.focusLane = threat.lane;
     return;
   }
-  const losing = laneWithMaxMomentum(EM.match.momentum.ally);
-  if (losing.value > 0) {
+  if (losing.value >= 2) {
     ai.focusLane = losing.lane;
     return;
   }
-  if (enemyIsAhead() && Math.random() < diff.aiAggression) {
+  if (threat) {
+    ai.defendStructureId = threat.id;
+    ai.focusLane = threat.lane;
+    return;
+  }
+  if (enemyIsAhead() || diff.aiAggression >= 1) {
     ai.focusLane = weakestAllyLane();
   }
 }

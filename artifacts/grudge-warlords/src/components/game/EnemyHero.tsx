@@ -3,9 +3,10 @@ import { useFrame, useThree } from "@react-three/fiber";
 import * as THREE from "three";
 import { EM, type StructureEntity, type UnitEntity } from "../../game/entities";
 import { useGame } from "../../game/store";
-import { ENEMY_HERO, DIFFICULTY, type DifficultyDef } from "../../game/config";
+import { ENEMY_HERO, DIFFICULTY, SLAM, type DifficultyDef } from "../../game/config";
 import { Grudge6HeroRig } from "../../engine/grudge6HeroRig";
-import { findPath } from "../../game/pathfind";
+import { advancePathIndex, findPath, slideStep, type PathCostFn } from "../../game/pathfind";
+import { avoidHeading, hostileTowerCost } from "../../game/navSteer";
 import {
   type CombatEntity,
   countUnitsNear,
@@ -17,7 +18,12 @@ import {
   meleeConeHit,
   structRadius,
 } from "../../game/combat";
-
+import { abilityPoolForHero, filledLoadout, type LoadoutAbility } from "../../game/abilityLoadout";
+import { apiWeaponForLoadout, type WarlordWeaponSkill } from "../../game/warlordWeaponSkills";
+import { HERO_DASH, performHeroDashVfx, performHeroSlam, performHeroWeaponSkill } from "../../game/heroActions";
+import { loadoutHasRanged, planHeroCast, tickAbilityCds } from "../../game/heroBrain";
+import { useRoster } from "../../game/roster";
+import { useMeta } from "../../game/metaProgression";
 const _dir = new THREE.Vector3();
 const _fwd = new THREE.Vector3();
 const _flow = { x: 0, z: 0 };
@@ -40,7 +46,7 @@ const _flow = { x: 0, z: 0 };
  *    structure as an objective, A*-path to it, but COORDINATE first — stage a
  *    short way back and wait for enough friendly creeps to mass before diving a
  *    defended objective (an exposed / undefended one is razed immediately).
- *  - SIGNATURE: a deterministic ground-slam AoE when surrounded (Normal+).
+ *  - SKILLS: same 6-slot loadout as the player (dash, slam, weapon, class).
  */
 export function EnemyHero() {
   const { camera } = useThree();
@@ -72,10 +78,19 @@ export function EnemyHero() {
   const navIdx = useRef(0); // current waypoint along navPath
   const navGoal = useRef<{ x: number; z: number } | null>(null); // goal navPath was computed for
   const repathTimer = useRef(0); // throttle A* recomputes
-  const slamCd = useRef(0); // signature ground-slam cooldown
+  const slamCd = useRef(0); // kept in sync with loadout slam id
+  const skillCd = useRef<Record<string, number>>({});
+  const dashTimer = useRef(0);
+  const dashDir = useRef({ x: 0, z: 0 });
+  const stuckT = useRef(0);
+  const lastNavX = useRef(0);
+  const lastNavZ = useRef(0);
+  const lastCast = useRef(0);
   const executing = useRef(false); // currently hunting a low-HP player (for the message)
   const retreating = useRef(false); // committed to a retreat (hysteresis-latched)
   const retreatHold = useRef(0); // min seconds to stay committed to the current retreat decision
+  const loadoutCache = useRef<LoadoutAbility[]>([]);
+  const loadoutKey = useRef("");
 
   /** Reset all per-life tactical state (spawn / respawn). */
   const resetTactics = () => {
@@ -90,6 +105,10 @@ export function EnemyHero() {
     navGoal.current = null;
     repathTimer.current = 0;
     slamCd.current = 0;
+    skillCd.current = {};
+    dashTimer.current = 0;
+    stuckT.current = 0;
+    lastCast.current = 0;
     executing.current = false;
     retreating.current = false;
     retreatHold.current = 0;
@@ -169,17 +188,21 @@ export function EnemyHero() {
    * the throttle elapses; falls back to straight-line steering if no path exists
    * (the caller's wall-slide handles obstacles).
    */
-  const navTo = (hero: UnitEntity, goal: { x: number; z: number }): { x: number; z: number } => {
+  const navTo = (hero: UnitEntity, goal: { x: number; z: number }, diving = false): { x: number; z: number } => {
     const grid = EM.map.grid;
     const moved = navGoal.current
       ? Math.hypot(goal.x - navGoal.current.x, goal.z - navGoal.current.z)
       : Infinity;
     const p0 = navPath.current;
+    const stuck = stuckT.current > 0.55;
     const needRepath =
-      !p0 || navIdx.current >= p0.length || moved > 4 || repathTimer.current <= 0;
+      !p0 || navIdx.current >= p0.length || moved > 4 || repathTimer.current <= 0 || stuck;
     if (needRepath) {
       repathTimer.current = ENEMY_HERO.repathInterval;
-      const p = findPath(grid, hero.pos.x, hero.pos.z, goal.x, goal.z);
+      if (stuck) stuckT.current = 0;
+      const extra: PathCostFn = hostileTowerCost(hero.faction, diving);
+      const snap = grid.nearestWalkable(goal.x, goal.z, 10);
+      const p = findPath(grid, hero.pos.x, hero.pos.z, snap.x, snap.z, extra);
       if (p && p.length) {
         navPath.current = p;
         navIdx.current = 0;
@@ -190,14 +213,39 @@ export function EnemyHero() {
       }
     }
     const p = navPath.current;
-    if (!p) return goal;
-    while (
-      navIdx.current < p.length - 1 &&
-      distXZ(hero.pos, p[navIdx.current].x, p[navIdx.current].z) < 1.6
-    ) {
-      navIdx.current++;
+    if (!p) {
+      const ff = diving ? EM.map.flowToAllyCore : null;
+      if (ff && ff.sampleDir(hero.pos.x, hero.pos.z, _flow)) {
+        return { x: hero.pos.x + _flow.x * 3, z: hero.pos.z + _flow.z * 3 };
+      }
+      return goal;
     }
+    navIdx.current = advancePathIndex(grid, hero.pos.x, hero.pos.z, p, navIdx.current);
     return p[navIdx.current];
+  };
+
+  /** Same class / weapons / card-level pool as the player; empty slots are filled. */
+  const enemyLoadout = (): LoadoutAbility[] => {
+    try {
+      const r = useRoster.getState();
+      const cardLevel = Math.max(1, useMeta.getState().characterLevel(r.prefabId));
+      const key = `${r.classId}|${r.meleeId}|${r.rangedId}|${cardLevel}|${(r.abilitySlots ?? []).join(",")}`;
+      if (key === loadoutKey.current && loadoutCache.current.length) return loadoutCache.current;
+      const pool = abilityPoolForHero({
+        classId: r.classId,
+        meleeId: r.meleeId,
+        rangedId: r.rangedId,
+        cardLevel,
+      });
+      const out = filledLoadout(r.abilitySlots, pool, cardLevel);
+      loadoutKey.current = key;
+      loadoutCache.current = out.length
+        ? out
+        : pool.filter((a) => a.kind === "mobility").slice(0, 2);
+      return loadoutCache.current;
+    } catch {
+      return [];
+    }
   };
 
   // Target head-height for the floating HP bar: the scaled rig height plus
@@ -326,6 +374,9 @@ export function EnemyHero() {
     // --- Decide ------------------------------------------------------------
     attackCd.current -= dt;
     slamCd.current -= dt;
+    tickAbilityCds(skillCd.current, dt);
+    dashTimer.current = Math.max(0, dashTimer.current - dt);
+    lastCast.current = Math.max(0, lastCast.current - dt);
     retargetTimer.current -= dt;
     repathTimer.current -= dt;
 
@@ -377,6 +428,8 @@ export function EnemyHero() {
     let attackTarget: CombatEntity | null = null;
     let attackPlayer = false;
     let speed = hero.def.speed;
+    const loadout = enemyLoadout();
+    const rangedKit = loadoutHasRanged(loadout);
 
     if (retreat) {
       // Pull back toward the enemy's OWN core via its flow-field.
@@ -390,24 +443,32 @@ export function EnemyHero() {
       speed *= ENEMY_HERO.retreatSpeedMult;
     } else if (goPlayer) {
       const reach = hero.def.attackRange + 0.9;
-      if (playerD <= reach) {
+      faceAt = { x: EM.playerPos.x, z: EM.playerPos.z };
+      if (rangedKit && !execute && playerD < 7 && heroHpFrac < 0.75) {
+        const ax = hero.pos.x - EM.playerPos.x;
+        const az = hero.pos.z - EM.playerPos.z;
+        const al = Math.hypot(ax, az) || 1;
+        moveTo = navTo(hero, { x: hero.pos.x + (ax / al) * 6, z: hero.pos.z + (az / al) * 6 });
+        if (playerD <= reach) attackPlayer = true;
+      } else if (playerD <= reach) {
         attackPlayer = true;
-        faceAt = { x: EM.playerPos.x, z: EM.playerPos.z };
       } else {
-        // Straight-line when close; A*-path the long execute chase across terrain.
-        moveTo =
-          playerD > aggro
-            ? navTo(hero, { x: EM.playerPos.x, z: EM.playerPos.z })
-            : { x: EM.playerPos.x, z: EM.playerPos.z };
+        moveTo = playerD > 8 ? navTo(hero, { x: EM.playerPos.x, z: EM.playerPos.z }, true) : { x: EM.playerPos.x, z: EM.playerPos.z };
       }
     } else if (target) {
       const reach =
         hero.def.attackRange + (isUnit(target) ? target.def.radius : structRadius(target.kind));
-      if (targetD <= reach) {
+      faceAt = { x: target.pos.x, z: target.pos.z };
+      if (rangedKit && isUnit(target) && targetD < 6.5 && heroHpFrac < 0.8) {
+        const ax = hero.pos.x - target.pos.x;
+        const az = hero.pos.z - target.pos.z;
+        const al = Math.hypot(ax, az) || 1;
+        moveTo = { x: hero.pos.x + (ax / al) * 5, z: hero.pos.z + (az / al) * 5 };
+        if (targetD <= reach) attackTarget = target;
+      } else if (targetD <= reach) {
         attackTarget = target;
-        faceAt = { x: target.pos.x, z: target.pos.z };
       } else {
-        moveTo = { x: target.pos.x, z: target.pos.z };
+        moveTo = targetD > 8 ? navTo(hero, { x: target.pos.x, z: target.pos.z }, true) : { x: target.pos.x, z: target.pos.z };
       }
     } else {
       // PUSH: no immediate threat — pick the weakest lane objective and either
@@ -444,7 +505,7 @@ export function EnemyHero() {
             attackTarget = obj;
             faceAt = { x: obj.pos.x, z: obj.pos.z };
           } else {
-            moveTo = navTo(hero, { x: obj.pos.x, z: obj.pos.z });
+            moveTo = navTo(hero, { x: obj.pos.x, z: obj.pos.z }, true);
           }
         }
       } else {
@@ -461,27 +522,40 @@ export function EnemyHero() {
     // --- Move (slide along terrain, clamp to walkable, snap height) ---------
     let desiredYaw = hero.yaw;
     let moving = false;
+    if (dashTimer.current > 0) {
+      const step = HERO_DASH.speed * dt;
+      const steer = avoidHeading(hero.pos.x, hero.pos.z, dashDir.current.x, dashDir.current.z);
+      const mv = slideStep(grid, hero.pos.x, hero.pos.z, steer.x * step, steer.z * step);
+      hero.pos.x = mv.x;
+      hero.pos.z = mv.z;
+      desiredYaw = Math.atan2(dashDir.current.x, dashDir.current.z);
+      moving = true;
+      moveTo = null;
+    }
     if (moveTo) {
       _dir.set(moveTo.x - hero.pos.x, 0, moveTo.z - hero.pos.z);
       const dist = _dir.length();
       if (dist > 0.05) {
         _dir.multiplyScalar(1 / dist);
-        const step = speed * dt;
-        let nx = hero.pos.x + _dir.x * step;
-        let nz = hero.pos.z + _dir.z * step;
-        if (!grid.isWalkableWorld(nx, nz)) {
-          if (Math.abs(_dir.x) > 1e-5 && grid.isWalkableWorld(nx, hero.pos.z)) {
-            nz = hero.pos.z;
-          } else if (Math.abs(_dir.z) > 1e-5 && grid.isWalkableWorld(hero.pos.x, nz)) {
-            nx = hero.pos.x;
-          } else {
-            nx = hero.pos.x;
-            nz = hero.pos.z;
-          }
+        let sx = _dir.x;
+        let sz = _dir.z;
+        const steer = avoidHeading(hero.pos.x, hero.pos.z, sx, sz);
+        sx = steer.x;
+        sz = steer.z;
+        if (stuckT.current > 0.35) {
+          const a = (hero.id & 1) === 1 ? 0.9 : -0.9;
+          const cs = Math.cos(a);
+          const sn = Math.sin(a);
+          const rx = sx * cs - sz * sn;
+          const rz = sx * sn + sz * cs;
+          sx = rx;
+          sz = rz;
         }
-        hero.pos.x = nx;
-        hero.pos.z = nz;
-        desiredYaw = Math.atan2(_dir.x, _dir.z);
+        const step = speed * dt;
+        const mv = slideStep(grid, hero.pos.x, hero.pos.z, sx * step, sz * step);
+        hero.pos.x = mv.x;
+        hero.pos.z = mv.z;
+        desiredYaw = Math.atan2(sx, sz);
         moving = true;
       }
     } else if (faceAt) {
@@ -495,53 +569,129 @@ export function EnemyHero() {
     }
     hero.pos.y = EM.map.heightAt(hero.pos.x, hero.pos.z);
 
+    const traveled = Math.hypot(hero.pos.x - lastNavX.current, hero.pos.z - lastNavZ.current);
+    if (moveTo && traveled < 0.04) stuckT.current += dt;
+    else stuckT.current = Math.max(0, stuckT.current - dt * 0.5);
+    lastNavX.current = hero.pos.x;
+    lastNavZ.current = hero.pos.z;
+
     // Smooth facing toward the intended heading (frame-rate independent).
     let dy = desiredYaw - hero.yaw;
     while (dy > Math.PI) dy -= Math.PI * 2;
     while (dy < -Math.PI) dy += Math.PI * 2;
     hero.yaw += dy * Math.min(1, dt * 10);
 
-    // --- Signature: Warlord's Wrath ground-slam (deterministic; when surrounded) ---
+    // --- Same loadout as the player: slam / dash / weapon skills ----------
     let slammed = false;
-    if (!moving && diff.heroSlam && slamCd.current <= 0) {
-      const reach = hero.def.attackRange + 1.5;
-      let surrounded = countUnitsNear("ally", hero.pos.x, hero.pos.z, reach);
-      const pSlamD = !g.heroDead ? distXZ(hero.pos, EM.playerPos.x, EM.playerPos.z) : Infinity;
-      if (pSlamD <= reach) surrounded++;
-      if (surrounded >= ENEMY_HERO.slam.minTargets) {
+    const hostilesInSlam =
+      countUnitsNear("ally", hero.pos.x, hero.pos.z, SLAM.shockRadius * 0.55) +
+      (!g.heroDead && distXZ(hero.pos, EM.playerPos.x, EM.playerPos.z) <= SLAM.shockRadius * 0.55 ? 1 : 0);
+    const goalPt = faceAt ?? moveTo ?? (goPlayer ? { x: EM.playerPos.x, z: EM.playerPos.z } : null);
+    const towardX = goalPt ? goalPt.x - hero.pos.x : Math.sin(hero.yaw);
+    const towardZ = goalPt ? goalPt.z - hero.pos.z : Math.cos(hero.yaw);
+    const core = EM.map.enemyCore;
+    let targetHpFrac = 1;
+    if (goPlayer) targetHpFrac = playerHpFrac;
+    else if (attackTarget && isUnit(attackTarget)) targetHpFrac = attackTarget.hp / attackTarget.maxHp;
+    else if (attackTarget) targetHpFrac = attackTarget.hp / attackTarget.maxHp;
+    else if (target && isUnit(target)) targetHpFrac = target.hp / target.maxHp;
+    const plan =
+      lastCast.current <= 0
+        ? planHeroCast(
+            {
+              hpFrac: heroHpFrac,
+              retreating: retreat,
+              executing: execute,
+              chasing: !!(goPlayer || target || attackTarget),
+              targetDist: goPlayer ? playerD : target ? targetD : Infinity,
+              targetHpFrac,
+              targetIsHero: goPlayer,
+              targetIsStructure: !!(attackTarget && !isUnit(attackTarget)),
+              hostilesInSlam,
+              alliesNear: countUnitsNear("enemy", hero.pos.x, hero.pos.z, ENEMY_HERO.groupRadius),
+              towardX,
+              towardZ,
+              awayX: core.x - hero.pos.x,
+              awayZ: core.z - hero.pos.z,
+              dashing: dashTimer.current > 0,
+            },
+            loadout,
+            skillCd.current,
+          )
+        : null;
+    if (plan && dashTimer.current <= 0) {
+      if (plan.kind === "slam") {
         slammed = true;
-        slamCd.current = ENEMY_HERO.slam.cooldown;
+        const slamAb = loadout.find((a) => a.mobility === "slam");
+        skillCd.current[slamAb?.id ?? "mobility.slam"] = slamAb?.cooldown ?? 11;
+        lastCast.current = 0.35;
         attackCd.current = hero.def.attackCooldown;
         a.attack();
         hero.swing = 1;
-        const dmg =
-          hero.def.damage * hero.dmgMult * ENEMY_HERO.slam.damageMult * EM.factionDmgMult(hero.faction);
-        EM.addShockwave({
-          pos: new THREE.Vector3(hero.pos.x, 0.1, hero.pos.z),
-          maxRadius: ENEMY_HERO.slam.radius,
-          duration: ENEMY_HERO.slam.duration,
-          damage: dmg,
-          color: ENEMY_HERO.color,
-          faction: hero.faction,
-          slow: ENEMY_HERO.slam.slow,
+        performHeroSlam({
+          x: hero.pos.x,
+          y: hero.pos.y,
+          z: hero.pos.z,
+          faction: "enemy",
+          damageMult: hero.dmgMult * g.damageMult,
         });
-        EM.addFireBurst(
-          new THREE.Vector3(hero.pos.x, hero.pos.y + 0.3, hero.pos.z),
-          ENEMY_HERO.color,
-          8,
-          0.8,
-        );
         g.pushMessage("THE WARLORD SLAMS THE EARTH", "warn");
-        // Shockwaves only damage units/structures; resolve the player hit directly.
-        if (pSlamD <= ENEMY_HERO.slam.radius) {
-          g.damagePlayer(dmg);
-          EM.addSpark(EM.playerPos.clone().setY(1.2), ENEMY_HERO.color);
+      } else if (plan.kind === "dash") {
+        const dashAb = loadout.find((a) => a.mobility === "dash");
+        skillCd.current[dashAb?.id ?? "mobility.dash"] = dashAb?.cooldown ?? 6;
+        lastCast.current = 0.2;
+        dashDir.current = { x: plan.x, z: plan.z };
+        dashTimer.current = HERO_DASH.duration;
+        performHeroDashVfx(hero.pos.x, hero.pos.z);
+      } else if (plan.kind === "skill") {
+        const ab = plan.ability;
+        skillCd.current[ab.id] = ab.cooldown;
+        lastCast.current = 0.4;
+        attackCd.current = hero.def.attackCooldown * 0.55;
+        const skill: WarlordWeaponSkill =
+          ab.weaponSkill ??
+          ({
+            id: ab.id,
+            label: ab.label,
+            baked: ab.baked ?? "",
+            animKey: ab.animKey,
+            description: ab.description,
+            cooldown: ab.cooldown,
+            damage: 28,
+            damageType: "physical",
+            blend: 0.9,
+            hotbarSlot: 1,
+            effects: [],
+            keyLabel: "1",
+          } satisfies WarlordWeaponSkill);
+        a.castWeaponSkill?.(skill);
+        hero.swing = 1;
+        if (faceAt) {
+          desiredYaw = Math.atan2(faceAt.x - hero.pos.x, faceAt.z - hero.pos.z);
+          hero.yaw = desiredYaw;
         }
+        _fwd.set(Math.sin(hero.yaw), 0, Math.cos(hero.yaw)).normalize();
+        const origin = new THREE.Vector3(hero.pos.x, hero.pos.y + 1.2, hero.pos.z);
+        let api: ReturnType<typeof apiWeaponForLoadout> = "SWORD";
+        try {
+          const r = useRoster.getState();
+          api = apiWeaponForLoadout(r.meleeId, r.rangedId, rangedKit ? "ranged" : "melee");
+        } catch {
+          /* default sword */
+        }
+        performHeroWeaponSkill({
+          skill,
+          origin,
+          dir: _fwd,
+          apiWeapon: api,
+          damageMult: hero.dmgMult * g.damageMult,
+          faction: "enemy",
+        });
       }
     }
 
     // --- Attack (forward melee cone; hits units/structures + the player) ----
-    if (!moving && !slammed && (attackTarget || attackPlayer) && attackCd.current <= 0) {
+    if ((!moving || (rangedKit && (attackTarget || attackPlayer))) && !slammed && (attackTarget || attackPlayer) && attackCd.current <= 0) {
       a.attack();
       hero.swing = 1;
       attackCd.current = hero.def.attackCooldown;

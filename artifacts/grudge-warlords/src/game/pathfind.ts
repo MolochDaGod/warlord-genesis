@@ -225,16 +225,52 @@ export class FlowField {
   /** Unit-length steering direction toward the goal from a world point. */
   sampleDir(x: number, z: number, out: { x: number; z: number }): boolean {
     const grid = this.grid;
-    const c = grid.cellX(x);
-    const r = grid.cellZ(z);
+    let c = grid.cellX(x);
+    let r = grid.cellZ(z);
     if (!grid.inBounds(c, r)) {
       out.x = 0;
       out.z = 0;
       return false;
     }
+    if (!grid.isWalkableCell(c, r)) {
+      const w = grid.nearestWalkable(x, z, 8);
+      c = grid.cellX(w.x);
+      r = grid.cellZ(w.z);
+      if (!grid.isWalkableCell(c, r)) {
+        out.x = 0;
+        out.z = 0;
+        return false;
+      }
+    }
     const cols = grid.cols;
+    const distAt = (cc: number, rr: number): number => {
+      if (!grid.isWalkableCell(cc, rr)) return Infinity;
+      return this.dist[rr * cols + cc];
+    };
+    const here = distAt(c, r);
+    const dE = distAt(c + 1, r);
+    const dW = distAt(c - 1, r);
+    const dN = distAt(c, r + 1);
+    const dS = distAt(c, r - 1);
+    let gx = 0;
+    let gz = 0;
+    if (isFinite(dW) && isFinite(dE)) gx = dW - dE;
+    else if (isFinite(dW) && isFinite(here)) gx = dW - here;
+    else if (isFinite(dE) && isFinite(here)) gx = here - dE;
+    if (isFinite(dS) && isFinite(dN)) gz = dS - dN;
+    else if (isFinite(dS) && isFinite(here)) gz = dS - here;
+    else if (isFinite(dN) && isFinite(here)) gz = here - dN;
+
+    const glen = Math.hypot(gx, gz);
+    if (glen > 1e-4 && isFinite(glen)) {
+      out.x = gx / glen;
+      out.z = gz / glen;
+      return true;
+    }
+
+    // Tight corridor / plateau: fall back to the lowest-cost neighbour hop.
     let best = -1;
-    let bestD = this.dist[r * cols + c];
+    let bestD = here;
     for (const [dc, dr] of NEIGHBORS) {
       const nc = c + dc;
       const nr = r + dr;
@@ -258,10 +294,8 @@ export class FlowField {
     let dx = tx - x;
     let dz = tz - z;
     const len = Math.hypot(dx, dz) || 1;
-    dx /= len;
-    dz /= len;
-    out.x = dx;
-    out.z = dz;
+    out.x = dx / len;
+    out.z = dz / len;
     return true;
   }
 }
@@ -283,6 +317,70 @@ function losClear(grid: WalkGrid, c0: number, r0: number, c1: number, r1: number
     if (!grid.isWalkableCell(c, r)) return false;
   }
   return true;
+}
+
+export function losWorld(grid: WalkGrid, x0: number, z0: number, x1: number, z1: number): boolean {
+  return losClear(grid, grid.cellX(x0), grid.cellZ(z0), grid.cellX(x1), grid.cellZ(z1));
+}
+
+/**
+ * Wall-slide a displacement: if the full step is blocked, try X-only then Z-only
+ * so agents glide along ridges instead of stalling.
+ */
+export function slideStep(
+  grid: WalkGrid,
+  x: number,
+  z: number,
+  dx: number,
+  dz: number,
+): { x: number; z: number } {
+  if (grid.isWalkableWorld(x + dx, z + dz)) return { x: x + dx, z: z + dz };
+  if (Math.abs(dx) > 1e-5 && grid.isWalkableWorld(x + dx, z)) return { x: x + dx, z };
+  if (Math.abs(dz) > 1e-5 && grid.isWalkableWorld(x, z + dz)) return { x, z: z + dz };
+  return { x, z };
+}
+
+/**
+ * Advance along a waypoint list: consume arrived points, then string-pull any
+ * further point that still has walkable LOS from the agent.
+ */
+export function advancePathIndex(
+  grid: WalkGrid,
+  x: number,
+  z: number,
+  path: { x: number; z: number }[],
+  idx: number,
+  arrive = 1.6,
+): number {
+  let i = idx;
+  const n = path.length;
+  if (n === 0) return 0;
+  while (i < n - 1 && Math.hypot(path[i].x - x, path[i].z - z) < arrive) i++;
+  while (i < n - 1 && losWorld(grid, x, z, path[i + 1].x, path[i + 1].z)) i++;
+  return i;
+}
+
+export type PathCostFn = (c: number, r: number) => number;
+
+let scratchN = 0;
+let scratchG: Float32Array | null = null;
+let scratchF: Float32Array | null = null;
+let scratchFrom: Int32Array | null = null;
+let scratchClosed: Uint8Array | null = null;
+
+function pathScratch(n: number) {
+  if (scratchN < n || !scratchG) {
+    scratchN = n;
+    scratchG = new Float32Array(n);
+    scratchF = new Float32Array(n);
+    scratchFrom = new Int32Array(n);
+    scratchClosed = new Uint8Array(n);
+  }
+  scratchG.fill(Infinity);
+  scratchF.fill(Infinity);
+  scratchFrom.fill(-1);
+  scratchClosed.fill(0);
+  return { g: scratchG, f: scratchF, from: scratchFrom, closed: scratchClosed };
 }
 
 /**
@@ -322,6 +420,7 @@ export function findPath(
   sz: number,
   gx: number,
   gz: number,
+  extraCost?: PathCostFn,
 ): { x: number; z: number }[] | null {
   let sc = grid.cellX(sx);
   let sr = grid.cellZ(sz);
@@ -343,12 +442,9 @@ export function findPath(
   const n = cols * grid.rows;
   const start = sr * cols + sc;
   const goal = gr * cols + gc;
-  if (start === goal) return [{ x: grid.worldX(gc), z: grid.worldZ(gr) }];
+  if (start === goal) return [{ x: gx, z: gz }];
 
-  const g = new Float32Array(n).fill(Infinity);
-  const f = new Float32Array(n).fill(Infinity);
-  const from = new Int32Array(n).fill(-1);
-  const closed = new Uint8Array(n);
+  const { g, f, from, closed } = pathScratch(n);
   const h = (c: number, r: number) => {
     const dc = Math.abs(c - gc);
     const dr = Math.abs(r - gr);
@@ -375,7 +471,8 @@ export function findPath(
       }
       const ni = nr * cols + nc;
       if (closed[ni]) continue;
-      const tentative = g[cur] + cost;
+      const penalty = extraCost ? extraCost(nc, nr) : 0;
+      const tentative = g[cur] + cost * (1 + penalty);
       if (tentative < g[ni]) {
         from[ni] = cur;
         g[ni] = tentative;
@@ -394,8 +491,14 @@ export function findPath(
   }
   cells.reverse();
   const smoothed = smoothCells(grid, sc, sr, cells);
-  return smoothed.map((ci) => ({
+  const pts = smoothed.map((ci) => ({
     x: grid.worldX(ci % cols),
     z: grid.worldZ((ci / cols) | 0),
   }));
+  // Land on the requested world goal, not the cell centre, so last-mile steering
+  // does not orbit a snapped grid point.
+  if (pts.length > 0) {
+    pts[pts.length - 1] = { x: gx, z: gz };
+  }
+  return pts;
 }

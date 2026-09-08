@@ -2,7 +2,7 @@
  * Production specialization skills — cooldowns, heals, slows, power shots.
  */
 
-import { AI_DEFEND } from "./config";
+import { AI_DEFEND, type Faction } from "./config";
 import { EM, type UnitEntity } from "./entities";
 import { isUnit, distXZ } from "./combat";
 import type { UnitSkillId } from "./productionSpecs";
@@ -27,16 +27,17 @@ function startCd(u: UnitEntity, skill: UnitSkillId) {
   u.skillCd[skill] = SKILL_CD[skill];
 }
 
-export function tickUnitSkills(u: UnitEntity, dt: number, heroAlive: boolean) {
+export function tickUnitSkills(u: UnitEntity, dt: number, _heroAlive: boolean) {
   for (const k of Object.keys(u.skillCd) as UnitSkillId[]) {
     if (u.skillCd[k]! > 0) u.skillCd[k] = Math.max(0, u.skillCd[k]! - dt);
   }
-  if (!u.alive || u.faction !== "ally") return;
+  if (!u.alive || (u.faction !== "ally" && u.faction !== "enemy")) return;
+  const fac = u.faction;
 
   if (u.skills.includes("healPulse") && cdReady(u, "healPulse")) {
     let healed = false;
     for (const ally of EM.units) {
-      if (!ally.alive || ally.faction !== "ally") continue;
+      if (!ally.alive || ally.faction !== fac) continue;
       if (distXZ(u.pos, ally.pos.x, ally.pos.z) > 7) continue;
       const missing = ally.maxHp - ally.hp;
       if (missing < 4) continue;
@@ -50,13 +51,21 @@ export function tickUnitSkills(u: UnitEntity, dt: number, heroAlive: boolean) {
 
   if (u.skills.includes("auraHeal") && cdReady(u, "auraHeal")) {
     for (const ally of EM.units) {
-      if (!ally.alive || ally.faction !== "ally") continue;
+      if (!ally.alive || ally.faction !== fac) continue;
       if (distXZ(u.pos, ally.pos.x, ally.pos.z) > 5) continue;
       ally.hp = Math.min(ally.maxHp, ally.hp + Math.round(ally.maxHp * 0.04));
     }
     startCd(u, "auraHeal");
   }
+}
 
+/** World position of this faction's warlord (player for ally, unit hero for enemy). */
+export function factionHeroPos(faction: Faction): { x: number; z: number } | null {
+  if (faction === "ally") return EM.playerPos;
+  for (const u of EM.units) {
+    if (u.alive && u.isHero && u.faction === "enemy") return u.pos;
+  }
+  return null;
 }
 
 /** Modify outgoing attack for skill procs; returns damage multiplier. */
@@ -97,23 +106,31 @@ export function trySkillOnAttack(
   return dmg;
 }
 
-/** True when allies should peel to defend the warlord. */
-export function heroNeedsDefense(heroAlive: boolean): boolean {
-  if (!heroAlive) return false;
+/** True when this faction's warlord is threatened and nearby troops should peel. */
+export function heroNeedsDefense(heroAlive: boolean, faction: Faction = "ally"): boolean {
+  const hp = factionHeroPos(faction);
+  if (!hp) return false;
+  if (faction === "ally" && !heroAlive) return false;
+  const foe: Faction = faction === "ally" ? "enemy" : "ally";
   for (const e of EM.units) {
-    if (!e.alive || e.faction !== "enemy" || e.isHero) continue;
-    if (distXZ(e.pos, EM.playerPos.x, EM.playerPos.z) <= AI_DEFEND.threatRadius) return true;
+    if (!e.alive || e.faction !== foe || e.isHero) continue;
+    if (distXZ(e.pos, hp.x, hp.z) <= AI_DEFEND.threatRadius) return true;
+  }
+  if (faction === "enemy" && heroAlive) {
+    if (Math.hypot(EM.playerPos.x - hp.x, EM.playerPos.z - hp.z) <= AI_DEFEND.threatRadius) return true;
   }
   return false;
 }
 
-/** Nearest enemy threatening the hero within range. */
+/** Nearest foe threatening this unit's warlord, within `range` of the unit. */
 export function threatNearHero(u: UnitEntity, range: number) {
+  const hp = factionHeroPos(u.faction);
+  if (!hp) return null;
   let best: import("./combat").CombatEntity | null = null;
   let bestD = Infinity;
   for (const e of EM.units) {
     if (!e.alive || e.faction === u.faction || e.isHero) continue;
-    const dHero = distXZ(e.pos, EM.playerPos.x, EM.playerPos.z);
+    const dHero = distXZ(e.pos, hp.x, hp.z);
     if (dHero > AI_DEFEND.threatRadius) continue;
     const d = distXZ(u.pos, e.pos.x, e.pos.z);
     if (d <= range && d < bestD) {

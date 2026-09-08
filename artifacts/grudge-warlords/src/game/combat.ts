@@ -183,6 +183,7 @@ export function findPriorityTarget(u: UnitEntity, range: number): CombatEntity |
     let score = -Math.sqrt(dd);
     score += (1 - o.hp / o.maxHp) * AI_LANE.lowHpWeight;
     if (o.targetId === u.id) score += AI_LANE.threatSelfBonus;
+    if (o.isHero) score += 16;
     if (score > bestScore) {
       bestScore = score;
       best = o;

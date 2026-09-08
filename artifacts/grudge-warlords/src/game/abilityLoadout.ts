@@ -132,6 +132,21 @@ export function resolveAbility(id: string | null | undefined, pool: LoadoutAbili
   return pool.find((a) => a.id === id) ?? null;
 }
 
+/** Resolve a 6-slot bar from ids against a pool, filling empties from the same pool. */
+export function filledLoadout(
+  slots: Array<string | null> | undefined,
+  pool: LoadoutAbility[],
+  cardLevel: number,
+): LoadoutAbility[] {
+  const filled = defaultFillSlots(slots ?? emptySlots(), pool, cardLevel);
+  const out: LoadoutAbility[] = [];
+  for (const id of filled) {
+    const ab = resolveAbility(id, pool);
+    if (ab) out.push(ab);
+  }
+  return out;
+}
+
 /** Fill empty unlocked slots from the pool (weapon first, then mobility, then class). */
 export function defaultFillSlots(
   current: Array<string | null>,

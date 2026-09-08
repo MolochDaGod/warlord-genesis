@@ -5,8 +5,9 @@ import { EM, type UnitEntity } from "../../game/entities";
 import { AI_DEFEND, AI_LANE, ARCHER_SHELLS, NEUTRAL_CAMPS, PROJECTILES, type ProjectileModel } from "../../game/config";
 import { campById } from "../../game/neutralCamps";
 import type { UnitSkillId } from "../../game/skillRuntime";
-import { heroNeedsDefense, threatNearHero, tickUnitSkills, trySkillOnAttack } from "../../game/skillRuntime";
-import { findPath } from "../../game/pathfind";
+import { heroNeedsDefense, threatNearHero, tickUnitSkills, trySkillOnAttack, factionHeroPos } from "../../game/skillRuntime";
+import { findPath, losWorld, type WalkGrid } from "../../game/pathfind";
+import { obstacleCellCost } from "../../game/navSteer";
 import { useGame } from "../../game/store";
 import {
   type CombatEntity,
@@ -21,7 +22,6 @@ import {
   structRadius,
 } from "../../game/combat";
 import { UnitMesh } from "./UnitMesh";
-import type { WalkGrid } from "../../game/pathfind";
 
 const _dir = new THREE.Vector3();
 const _tmp = new THREE.Vector3();
@@ -95,6 +95,7 @@ interface Decision {
   moveTo: THREE.Vector3 | null;
   target: CombatEntity | null;
   hero: boolean;
+  kite?: boolean;
 }
 
 const NO_OP: Decision = { moveTo: null, target: null, hero: false };
@@ -174,17 +175,22 @@ function laneStaging(u: UnitEntity, dt: number): THREE.Vector3 | null {
 
 function engage(u: UnitEntity, t: CombatEntity): Decision {
   const reach = u.def.attackRange * u.specRangeMult + (isUnit(t) ? t.def.radius : structRadius(t.kind));
-  if (distXZ(u.pos, t.pos.x, t.pos.z) <= reach) {
+  const d = distXZ(u.pos, t.pos.x, t.pos.z);
+  if (u.def.ranged && isUnit(t) && d < reach * 0.42) {
+    if (!u.chaseDest) u.chaseDest = new THREE.Vector3();
+    const ax = u.pos.x - t.pos.x;
+    const az = u.pos.z - t.pos.z;
+    const al = Math.hypot(ax, az) || 1;
+    u.chaseDest.set(u.pos.x + (ax / al) * 4, 0, u.pos.z + (az / al) * 4);
+    return { moveTo: u.chaseDest, target: t, hero: false, kite: true };
+  }
+  if (d <= reach) {
     clearPath(u);
     return { moveTo: null, target: t, hero: false };
   }
-  // A* chase so units route around ridges instead of grinding into cliffs
   if (!u.chaseDest) u.chaseDest = new THREE.Vector3();
   u.chaseDest.set(t.pos.x, 0, t.pos.z);
-  const d = distXZ(u.pos, t.pos.x, t.pos.z);
-  // Close range: direct steer (cheaper, smoother last-mile)
   if (d < 5) return { moveTo: u.chaseDest, target: t, hero: false };
-  // Recompute path when target drifts far from the planned goal
   if (u.pathFor && distXZ(u.pathFor, u.chaseDest.x, u.chaseDest.z) > 3.5) {
     clearPath(u);
   }
@@ -210,21 +216,30 @@ function laneTarget(u: UnitEntity): THREE.Vector3 | null {
  */
 function pathTarget(u: UnitEntity, dest: THREE.Vector3): THREE.Vector3 {
   if (u.pathFor !== dest) {
-    u.path = findPath(EM.map.grid, u.pos.x, u.pos.z, dest.x, dest.z);
+    u.path = findPath(EM.map.grid, u.pos.x, u.pos.z, dest.x, dest.z, obstacleCellCost);
     u.pathIdx = 0;
     u.pathFor = dest;
   }
   const path = u.path;
   if (!path || path.length === 0) return dest;
+  const grid = EM.map.grid;
   while (u.pathIdx < path.length - 1) {
     const wp = path[u.pathIdx];
     if (distXZ(u.pos, wp.x, wp.z) < 1.6) {
       u.pathIdx++;
       continue;
     }
-    return _tmp.set(wp.x, 0, wp.z);
+    break;
   }
-  return dest;
+  while (
+    u.pathIdx < path.length - 1 &&
+    losWorld(grid, u.pos.x, u.pos.z, path[u.pathIdx + 1].x, path[u.pathIdx + 1].z)
+  ) {
+    u.pathIdx++;
+  }
+  if (u.pathIdx >= path.length - 1) return dest;
+  const wp = path[u.pathIdx];
+  return _tmp.set(wp.x, 0, wp.z);
 }
 
 function clearPath(u: UnitEntity) {
@@ -281,16 +296,18 @@ function decide(u: UnitEntity, heroAlive: boolean, dt: number): Decision {
   if (u.faction === "neutral") return decideNeutral(u, heroAlive);
 
   const range = u.def.aggroRange * u.specRangeMult;
-  const defend = u.faction === "ally" && heroNeedsDefense(heroAlive);
-  const nearHero = heroAlive && distXZ(u.pos, EM.playerPos.x, EM.playerPos.z) <= AI_DEFEND.radius;
+  const defendAlly = u.faction === "ally" && heroNeedsDefense(heroAlive, "ally");
+  const defendEnemy = u.faction === "enemy" && heroNeedsDefense(heroAlive, "enemy");
+  const hp = factionHeroPos(u.faction);
+  const nearHero = !!hp && distXZ(u.pos, hp.x, hp.z) <= AI_DEFEND.radius;
 
-  if (defend && nearHero && u.skills.includes("defendWarlord")) {
+  if ((defendAlly || defendEnemy) && nearHero && u.skills.includes("defendWarlord")) {
     const t = threatNearHero(u, range);
     if (t) return engage(u, t);
-    return { moveTo: EM.playerPos, target: null, hero: false };
+    if (defendAlly) return { moveTo: EM.playerPos, target: null, hero: false };
   }
 
-  if (defend && nearHero) {
+  if ((defendAlly || defendEnemy) && nearHero) {
     const t = threatNearHero(u, range) ?? acquirePriority(u, range);
     if (t) return engage(u, t);
   }
@@ -535,7 +552,7 @@ export function Units() {
 
       // Attack when standing in range (face target, hold attack loco for clip length).
       u.attackTimer -= dt;
-      if (!movingNow && (d.target || d.hero) && u.attackTimer <= 0) {
+      if ((!movingNow || d.kite) && (d.target || d.hero) && u.attackTimer <= 0) {
         performAttack(u, d, g);
         u.attackTimer = u.def.attackCooldown * u.specAttackRateMult;
         // Hold attack locomotion ~0.55s so one-shot clips can finish (was ~0.25s)
