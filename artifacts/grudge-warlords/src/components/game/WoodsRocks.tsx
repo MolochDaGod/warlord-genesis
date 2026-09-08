@@ -7,7 +7,6 @@ import { useGLTF } from "@react-three/drei";
 import * as THREE from "three";
 import { EM } from "../../game/entities";
 import { useGame } from "../../game/store";
-import type { RockSpot } from "../../game/mapgen";
 import {
   envPackUrl,
   ROCK_COUNT_LARGE,
@@ -15,6 +14,7 @@ import {
   ROCK_FIT_H,
   ROCK_LANE_CLEAR,
   ROCK_MIN_SPACING,
+  type RockSpot,
 } from "../../engine/envAssets";
 import { isolateMeshes, prepareGltfMaterials } from "../../engine/gltfScene";
 
@@ -38,7 +38,8 @@ function mulberry32(seed: number): () => number {
 function scatterWoods(): RockSpot[] {
   const map = EM.map;
   if (!map) return [];
-  if (map.rocks?.length) return map.rocks;
+  const seeded = (map as { rocks?: RockSpot[] }).rocks;
+  if (seeded?.length) return seeded;
   const rnd = mulberry32((map.seed ^ 0x51c3d9) >>> 0);
   const large = map.size === "large";
   const target = large ? ROCK_COUNT_LARGE : ROCK_COUNT_STANDARD;
