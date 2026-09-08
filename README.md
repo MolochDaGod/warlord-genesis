@@ -51,6 +51,16 @@ pnpm --filter @workspace/grudge-warlords run dev
 
 Open `http://localhost:5173/play`.
 
+## glTF assets
+
+New buildings, traps, shells, and both win-condition cores load as **binary glTF 2.0 (`.glb`)** through `useGLTF` + `instantiateGltf` (`artifacts/grudge-warlords/src/engine/gltfScene.ts`).
+
+- Sketchfab Y-up root matrix is kept. Clone the scene, then fit height / ground Y=0 / sRGB maps.
+- Do not drop FBX/OBJ into play. Optional clean: `npx @gltf-transform/cli copy in.glb out.glb`.
+- Full source → in-game path table: [docs/ASSETS.md](docs/ASSETS.md).
+
+Fortify tabs: AoE / Magic / Bolt / Trap / Eng / Sup. Caps: **2 towers + 3 traps + 2 support + 1 stone wall**. Destroy the enemy **altar core** to win (same win condition, new mesh).
+
 ## Deploy
 
 Compile happens **off Vercel’s git builder** (`.vercelignore` drops `/artifacts`). One path:
@@ -94,6 +104,7 @@ pnpm run edit:verify
 - [docs/AUTH_AND_FLOW.md](docs/AUTH_AND_FLOW.md) — login, one-SPA law, deploy
 - [docs/PLAY_DEPENDENCIES.md](docs/PLAY_DEPENDENCIES.md) — WebGL / WASM
 - [docs/GAME_DEFINITIONS.md](docs/GAME_DEFINITIONS.md) — flow, units
+- [docs/ASSETS.md](docs/ASSETS.md) — glTF drop map and loaders
 
 ## License
 
